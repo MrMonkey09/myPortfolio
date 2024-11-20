@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import EstiloSobreMi from "../EstiloSobreMi.js";
+import EstiloSobreMi from "../Estilo.js";
 
 function Encabezado({ encabezado }) {
   return (

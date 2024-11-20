@@ -1,16 +1,17 @@
-/* eslint-disable react/prop-types */
-import EstiloPrincipal from "../../EstiloPrincipal";
 import Resumen from "./Elementos/Resumen.jsx";
 import Encabezado from "./Elementos/Encabezado.jsx";
 import Intereses from "./Elementos/Intereses.jsx";
+import Configuracion from "./Configuracion.js";
 
-function SobreMi({ encabezado, resumen, intereses }) {
+const contenido = Configuracion.contenido;
+
+function SobreMi() {
   return (
-    <section style={EstiloPrincipal.enLinea.subContenedor}>
-      <Encabezado encabezado={encabezado} />
-      <Resumen resumen={resumen} />
-      <Intereses intereses={intereses} />
-    </section>
+    <>
+      <Encabezado encabezado={contenido.encabezado} />
+      <Resumen resumen={contenido.resumen} />
+      <Intereses intereses={contenido.intereses} />
+    </>
   );
 }
 

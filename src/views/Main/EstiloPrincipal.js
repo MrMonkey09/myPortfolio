@@ -11,9 +11,6 @@ const EstiloPrincipal = new Object({
     contenidoPrincipal: {
       width: "80%",
       height: "90%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
     },
     subContenedor: {
       width: "90%",

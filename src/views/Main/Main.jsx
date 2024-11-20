@@ -4,15 +4,21 @@ import ContenedorPrincipal from "./ContenedorPrincipal/ContenedorPrincipal";
 import "./Main.css";
 import Router from "./Router";
 import Aplicaciones from "./Aplicaciones/Aplicaciones";
+import EstiloPrincipal from "./EstiloPrincipal";
 
 function Main() {
   const [aplicacionActual, setAplicacionActual] = useState(Aplicaciones[0]);
 
   return (
     <>
-      <BarraLateral setAplicacionActual={setAplicacionActual} Aplicaciones={Aplicaciones} />
+      <BarraLateral
+        setAplicacionActual={setAplicacionActual}
+        Aplicaciones={Aplicaciones}
+      />
       <ContenedorPrincipal>
-        <Router aplicacionActual={aplicacionActual} />
+        <section style={EstiloPrincipal.enLinea.subContenedor}>
+          <Router aplicacionActual={aplicacionActual} />
+        </section>
       </ContenedorPrincipal>
     </>
   );

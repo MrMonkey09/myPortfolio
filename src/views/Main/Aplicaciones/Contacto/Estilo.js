@@ -1,4 +1,4 @@
-const EstiloSobreMi = new Object({
+const Estilo = new Object({
   enLinea: {
     encabezado: {
       position: "relative",
@@ -46,7 +46,7 @@ const EstiloSobreMi = new Object({
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
-        gap:"0 10px"
+        gap: "0 10px",
       },
 
       bordePunteado: {
@@ -60,8 +60,23 @@ const EstiloSobreMi = new Object({
         borderRadius: "8px 0 0 0",
       },
     },
+    resumen: {
+      width: "100%",
+      height: "auto",
+    },
+    intereses: {
+      display: "flex",
+      flexFlow: "column wrap",
+      width: "100%",
+      height: "40%",
+
+      tarjeta: {
+        display: "flex",
+        flexFlow: "row nowrap",
+      },
+    },
   },
   clases: ["borde-x-defecto"],
 });
 
-export default EstiloSobreMi;
+export default Estilo;

@@ -3,7 +3,7 @@ import EstiloPrincipal from "../EstiloPrincipal";
 
 function ContenedorPrincipal({ children }) {
   return (
-    <main style={EstiloPrincipal.enLinea.contenidoPrincipal} id="main-content">
+    <main style={EstiloPrincipal.enLinea.contenidoPrincipal} id="main-content" className="centrar-y">
       {children}
     </main>
   );
