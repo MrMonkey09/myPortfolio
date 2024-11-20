@@ -2,7 +2,7 @@ import EstiloMenuApp from "../../BarraLateral/MenuApp/EstiloMenuApp";
 import Contacto from "./Contacto";
 
 const ContactoInfo = {
-  ID: "008",
+  ID: "005",
   nombre: "Contacto",
   icono: (
     <svg
