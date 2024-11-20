@@ -19,30 +19,35 @@ const Configuracion = {
     intereses: {
       listado: [
         {
+          id:"001",
           nombre: "Tocar la guitarra",
           icono: "https://www.svgrepo.com/show/403629/guitar.svg",
           descripcion:
             "Explorando diferentes géneros mejorando mis habilidades",
         },
         {
+          id:"002",
           nombre: "Tocar la guitarra",
           icono: "https://www.svgrepo.com/show/403629/guitar.svg",
           descripcion:
             "Explorando diferentes géneros mejorando mis habilidades",
         },
         {
+          id:"003",
           nombre: "Tocar la guitarra",
           icono: "https://www.svgrepo.com/show/403629/guitar.svg",
           descripcion:
             "Explorando diferentes géneros mejorando mis habilidades",
         },
         {
+          id:"004",
           nombre: "Tocar la guitarra",
           icono: "https://www.svgrepo.com/show/403629/guitar.svg",
           descripcion:
             "Explorando diferentes géneros mejorando mis habilidades",
         },
         {
+          id:"005",
           nombre: "Tocar la guitarra",
           icono: "https://www.svgrepo.com/show/403629/guitar.svg",
           descripcion:

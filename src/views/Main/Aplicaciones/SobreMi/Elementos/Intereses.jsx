@@ -20,7 +20,7 @@ function Intereses({ intereses }) {
     <ul id="intereses" style={estilo}>
       {intereses.listado.map((interes) => {
         console.log(interes);
-        return <Interes interes={interes} key={interes.nombre} />;
+        return <Interes interes={interes} key={interes.id} />;
       })}
     </ul>
   );
