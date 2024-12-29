@@ -17,12 +17,17 @@ function Interes({ interes }) {
 
 function Intereses({ intereses }) {
   return (
-    <ul id="intereses" style={estilo}>
-      {intereses.listado.map((interes) => {
-        console.log(interes);
-        return <Interes interes={interes} key={interes.id} />;
-      })}
-    </ul>
+    <div id="intereses">
+      <h3>
+        Intereses <span>personales</span>
+      </h3>
+      <ul style={estilo}>
+        {intereses.listado.map((interes) => {
+          console.log(interes);
+          return <Interes interes={interes} key={interes.id} />;
+        })}
+      </ul>
+    </div>
   );
 }
 

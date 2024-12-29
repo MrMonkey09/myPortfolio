@@ -1,78 +1,22 @@
 const Estilo = new Object({
   enLinea: {
-    encabezado: {
-      position: "relative",
-      display: "flex",
-      flexFlow: "column nowrap",
-      justifyContent: "center",
-      alignItems: "center",
-      width: "100%",
-      height: "30%",
+    educacionContainer: {
+      
+      timeLine: {
+        listStyleType: "none", // Elimina los puntos de la lista
+        position: "relative",
+        paddingLeft: "20px", // Espacio para la línea del timeline
 
-      saludo: {
-        height: "30%",
-        width: "90%",
-        color: "var(--color-extra)",
-        display: "flex",
-        flexFlow: "row nowrap",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "0 12px",
-        marginTop: "80px",
+        
 
-        icono: {
-          width: "3.5%",
-          height: "auto",
-          fill: "var(--color-extra)",
+        timeLineItemContent: {
+          position: "relative",
+          backgroundColor: "red",
+          color:"white",
+          padding: "10px",
+          borderRadius: "5px",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         },
-
-        texto: {
-          fontSize: "2rem",
-        },
-      },
-
-      nombre: {
-        fontSize: "2rem",
-        color: "var(--color-fuente-secundaria)",
-
-        cambioColor: {
-          color: "var(--color-fuente-primaria)",
-        },
-      },
-
-      datos: {
-        display: "flex",
-        flexFlow: "row nowrap",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        gap: "0 10px",
-      },
-
-      bordePunteado: {
-        borderTop: "5px dotted var(--color-fuente-primaria)",
-        borderLeft: "5px dotted var(--color-fuente-primaria)",
-        width: "5rem",
-        height: "5rem",
-        position: "absolute",
-        top: "30px",
-        left: "30px",
-        borderRadius: "8px 0 0 0",
-      },
-    },
-    resumen: {
-      width: "100%",
-      height: "auto",
-    },
-    intereses: {
-      display: "flex",
-      flexFlow: "column wrap",
-      width: "100%",
-      height: "40%",
-
-      tarjeta: {
-        display: "flex",
-        flexFlow: "row nowrap",
       },
     },
   },

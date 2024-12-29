@@ -2,8 +2,9 @@ const Configuracion = {
   icono: "",
   contenido: {
     encabezado: {
-      saludo: "Hola...",
-      nombre: "Mr Monkey",
+      saludo: "Explora",
+      nombre01: "Mis",
+      nombre02: "Proyectos",
       datos: {
         ciudad: "Antofagasta, Chile",
         correo: "alfredoa_gestay@outlook.com",

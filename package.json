@@ -26,14 +26,6 @@
     "vite": "^5.4.9"
   },
   "compilerOptions": {
-    "baseUrl": "./src",
-    "paths": {
-      "@utilities/*": [
-        "utilities/*"
-      ],
-      "@views/*": [
-        "views/*"
-      ]
-    }
+    "baseUrl": "./src"
   }
 }

@@ -3,7 +3,8 @@ const Configuracion = {
   contenido: {
     encabezado: {
       saludo: "Hola...",
-      nombre: "Mr Monkey",
+      nombre01: "Soy",
+      nombre02: "Mr Monkey!",
       datos: {
         ciudad: "Antofagasta, Chile",
         correo: "alfredoa_gestay@outlook.com",
@@ -19,35 +20,7 @@ const Configuracion = {
     intereses: {
       listado: [
         {
-          id:"001",
-          nombre: "Tocar la guitarra",
-          icono: "https://www.svgrepo.com/show/403629/guitar.svg",
-          descripcion:
-            "Explorando diferentes géneros mejorando mis habilidades",
-        },
-        {
-          id:"002",
-          nombre: "Tocar la guitarra",
-          icono: "https://www.svgrepo.com/show/403629/guitar.svg",
-          descripcion:
-            "Explorando diferentes géneros mejorando mis habilidades",
-        },
-        {
-          id:"003",
-          nombre: "Tocar la guitarra",
-          icono: "https://www.svgrepo.com/show/403629/guitar.svg",
-          descripcion:
-            "Explorando diferentes géneros mejorando mis habilidades",
-        },
-        {
-          id:"004",
-          nombre: "Tocar la guitarra",
-          icono: "https://www.svgrepo.com/show/403629/guitar.svg",
-          descripcion:
-            "Explorando diferentes géneros mejorando mis habilidades",
-        },
-        {
-          id:"005",
+          id: "001",
           nombre: "Tocar la guitarra",
           icono: "https://www.svgrepo.com/show/403629/guitar.svg",
           descripcion:

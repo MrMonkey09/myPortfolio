@@ -1,7 +1,10 @@
+import Encabezado from "../../../../utilities/Elementos/Encabezado";
+import Configuracion from "./Configuracion";
+
 function Contacto() {
   return (
     <>
-      Contacto
+      <Encabezado encabezado={Configuracion.contenido.encabezado} />
     </>
   );
 }

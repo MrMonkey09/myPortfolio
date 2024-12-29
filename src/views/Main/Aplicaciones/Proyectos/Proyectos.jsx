@@ -1,7 +1,10 @@
+import Encabezado from "../../../../utilities/Elementos/Encabezado";
+import Configuracion from "./Configuracion";
+
 function Proyectos() {
   return (
     <>
-      Proyectos
+      <Encabezado encabezado={Configuracion.contenido.encabezado} />
     </>
   );
 }

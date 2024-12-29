@@ -1,5 +1,5 @@
 import Resumen from "./Elementos/Resumen.jsx";
-import Encabezado from "./Elementos/Encabezado.jsx";
+import Encabezado from "../../../../utilities/Elementos/Encabezado.jsx";
 import Intereses from "./Elementos/Intereses.jsx";
 import Configuracion from "./Configuracion.js";
 
