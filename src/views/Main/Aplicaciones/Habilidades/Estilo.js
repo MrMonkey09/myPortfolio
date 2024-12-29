@@ -9,9 +9,9 @@ const Estilo = new Object({
         width: "100%",
         height: "40%",
 
-        listado: {
+        tarjetas: {
           display: "flex",
-          flexFlow: "row nowrap",
+          flexFlow: "column wrap",
           justifyContent: "space-between",
           alignItems: "center",
           width: "100%",
@@ -19,16 +19,18 @@ const Estilo = new Object({
           padding: "0",
           margin: "0",
           listStyleType: "none",
+          overflowY: "hidden",
+          overflowX: "auto",
 
-          tarjetas: {
+          tarjeta: {
             backgroundColor: "white",
-            width: "20%",
+            width: "500px",
             height: "100%",
             display: "flex",
             flexFlow: "column nowrap",
             justifyContent: "center",
             alignItems: "center",
-            borderRadius:"20px"
+            borderRadius: "20px",
           },
         },
       },
