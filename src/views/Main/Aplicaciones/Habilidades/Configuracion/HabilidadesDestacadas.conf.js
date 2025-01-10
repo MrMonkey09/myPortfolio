@@ -1,4 +1,4 @@
-const TarjetasConf = [
+const HabilidadesDestacadasConf = [
   {
     id: "1",
     titulo: "Soy mejor que todos",
@@ -31,4 +31,4 @@ const TarjetasConf = [
   },
 ];
 
-export default TarjetasConf;
+export default HabilidadesDestacadasConf;

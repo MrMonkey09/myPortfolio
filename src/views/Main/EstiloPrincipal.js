@@ -17,6 +17,7 @@ const EstiloPrincipal = new Object({
       height: "100%",
       background: "var(--color-contenedor)",
       borderRadius: "2%",
+      overflowY:"auto"
     },
   },
   clases: ["borde-x-defecto"],

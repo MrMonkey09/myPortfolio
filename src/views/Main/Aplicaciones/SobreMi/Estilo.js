@@ -68,11 +68,15 @@ const Estilo = new Object({
       display: "flex",
       flexFlow: "column wrap",
       width: "100%",
-      height: "40%",
+      height: "auto",
+      padding: "0",
+      margin: "0",
 
       tarjeta: {
         display: "flex",
         flexFlow: "row nowrap",
+        height: "8rem",
+        width: "30%",
       },
     },
   },

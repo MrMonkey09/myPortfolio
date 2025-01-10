@@ -17,7 +17,7 @@ function Interes({ interes }) {
 
 function Intereses({ intereses }) {
   return (
-    <div id="intereses">
+    <div style={estilo} id="intereses">
       <h3>
         Intereses <span>personales</span>
       </h3>
