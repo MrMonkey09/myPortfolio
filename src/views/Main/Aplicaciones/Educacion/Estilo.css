@@ -8,10 +8,11 @@
   align-items: center;
   margin: 0;
 
-  #timeLineItem {
+  .timeLineItem {
     position: relative;
     padding-left: 20px;
     border-left: 2px solid #ff0000;
+    width: 96%;
 
     #timeLineItemContent {
       position: relative;
