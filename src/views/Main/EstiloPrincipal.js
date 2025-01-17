@@ -17,7 +17,11 @@ const EstiloPrincipal = new Object({
       height: "100%",
       background: "var(--color-contenedor)",
       borderRadius: "2%",
-      overflowY:"auto"
+      overflowY:"auto",
+      display:"flex",
+      flexFlow:"column nowrap",
+      justifyContent:"start",
+      alignItems:"center"
     },
   },
   clases: ["borde-x-defecto"],

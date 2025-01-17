@@ -61,8 +61,29 @@ const Estilo = new Object({
       },
     },
     resumen: {
-      width: "100%",
+      width: "95%",
       height: "auto",
+      paddingTop: "30px",
+
+      titulo: { fontSize: "1.4rem", padding: "0", margin: "15px 0 0 0" },
+
+      contenedorDescripcion: {
+        width: "100%",
+        display: "flex",
+        flexFlow: "row nowrap",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: "0 20px",
+
+        imagen: {
+          width: "20%",
+        },
+        descripcion: {
+          width: "80%",
+          textAlign: "center",
+          fontSize: "1.1rem",
+        },
+      },
     },
     intereses: {
       display: "flex",

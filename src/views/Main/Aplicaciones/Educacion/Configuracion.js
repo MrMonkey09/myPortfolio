@@ -13,7 +13,7 @@ const Configuracion = new Object({
     Puntos: [
       {
         id: 1,
-        titulo: "Doctorado en Ciencias de la Computación",
+        titulo: "Doctorado en Ciencias de la Computación 1234",
         ubicacion: "Antofagasta, Chile",
         fecha: "09Nov99 -> 11Oct24",
         descripcion:
