@@ -26,7 +26,7 @@ const Configuracion = {
       },
       {
         id: "002",
-        nombre: "Tocar la guitarra",
+        nombre: "toco violin",
         icono: "https://www.svgrepo.com/show/403629/guitar.svg",
         descripcion: "Explorando diferentes géneros mejorando mis habilidades",
       },

@@ -87,12 +87,18 @@ const Estilo = new Object({
     },
     intereses: {
       display: "flex",
-      flexFlow: "column wrap",
-      width: "100%",
+      flexFlow: "column nowrap",
+      width: "95%",
       height: "auto",
       padding: "0",
       margin: "0",
 
+      titulo: { fontSize: "1.4rem", padding: "0", margin: "15px 0 0 0" },
+
+      tarjetas:{
+
+      },
+      
       tarjeta: {
         display: "flex",
         flexFlow: "row nowrap",
