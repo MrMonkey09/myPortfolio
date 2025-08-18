@@ -1,4 +1,4 @@
-import Encabezado from "../../../../utilities/Elementos/Encabezado";
+import Encabezado from "@utilities/Elementos/Encabezado/Encabezado.jsx";
 import Configuracion from "./Configuracion";
 
 function Proyectos() {

@@ -1,10 +1,11 @@
-import Encabezado from "@utilities/Elementos/Encabezado";
-import Configuracion from "./Configuracion";
+import Encabezado from "@utilities/Elementos/Encabezado/Encabezado.jsx";
+import Configuracion from "./Configuracion.js";
 import "./Estilo.css";
-import LineaTiempo from "@utilities/Elementos/LineaTiempo";
+import LineaTiempo from "@utilities/Elementos/LineaTiempo.jsx";
 import Estilo from "./Estilo";
 
 function Educacion() {
+  
   return (
     <>
       <Encabezado encabezado={Configuracion.contenido.encabezado} />

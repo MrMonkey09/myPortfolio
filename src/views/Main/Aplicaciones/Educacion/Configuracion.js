@@ -14,26 +14,32 @@ const Configuracion = new Object({
       {
         id: 1,
         titulo: "Doctorado en Ciencias de la Computación 1234",
+        universidad:"INACAP",
+        logo: "/assets/images/inacap.png",
         ubicacion: "Antofagasta, Chile",
         fecha: "09Nov99 -> 11Oct24",
         descripcion:
-          "Cursando un doctorado con enfoque en aprendizaje profundo y sus aplicaciones en el mundo real, específicamente en: Visión por Computadora Investigación innovadora en IA Desarrollo de nuevos algoritmos para el reconocimiento de imágenes Involucrado en investigaciones de vanguardia y contribuyendo al avance de la IA a través de publicaciones en conferencias de primer nivel.",
+          "Cursando un doctorado con enfoque en aprendizaje profundo y sus aplicaciones en el mundo real, \n específicamente en: \n ~ Visión por Computadora \n ~ Investigación innovadora en IA \n ~ Desarrollo de nuevos algoritmos para el reconocimiento de imágenes \n ~ Involucrado en investigaciones de vanguardia y contribuyendo al avance de la IA a través de publicaciones en conferencias de primer nivel.",
       },
       {
         id: 2,
         titulo: "Doctorado en Ciencias de la Computación",
+        universidad:"INACAP",
+        logo: "/assets/images/inacap.png",
         ubicacion: "Antofagasta, Chile",
         fecha: "09Nov99 -> 11Oct24",
         descripcion:
-          "Cursando un doctorado con enfoque en aprendizaje profundo y sus aplicaciones en el mundo real, específicamente en: Visión por Computadora Investigación innovadora en IA Desarrollo de nuevos algoritmos para el reconocimiento de imágenes Involucrado en investigaciones de vanguardia y contribuyendo al avance de la IA a través de publicaciones en conferencias de primer nivel.",
+          "Cursando un doctorado con enfoque en aprendizaje profundo y sus aplicaciones en el mundo real, \n específicamente en: \n ~ Visión por Computadora \n ~ Investigación innovadora en IA \n ~ Desarrollo de nuevos algoritmos para el reconocimiento de imágenes \n ~ Involucrado en investigaciones de vanguardia y contribuyendo al avance de la IA a través de publicaciones en conferencias de primer nivel.",
       },
       {
         id: 3,
         titulo: "Doctorado en Ciencias de la Computación",
+        universidad:"INACAP",
+        logo: "/assets/images/inacap.png",
         ubicacion: "Antofagasta, Chile",
         fecha: "09Nov99 -> 11Oct24",
         descripcion:
-          "Cursando un doctorado con enfoque en aprendizaje profundo y sus aplicaciones en el mundo real, específicamente en: Visión por Computadora Investigación innovadora en IA Desarrollo de nuevos algoritmos para el reconocimiento de imágenes Involucrado en investigaciones de vanguardia y contribuyendo al avance de la IA a través de publicaciones en conferencias de primer nivel.",
+          "Cursando un doctorado con enfoque en aprendizaje profundo y sus aplicaciones en el mundo real, \n específicamente en: \n ~ Visión por Computadora \n ~ Investigación innovadora en IA \n ~ Desarrollo de nuevos algoritmos para el reconocimiento de imágenes \n ~ Involucrado en investigaciones de vanguardia y contribuyendo al avance de la IA a través de publicaciones en conferencias de primer nivel.",
       },
     ],
   },

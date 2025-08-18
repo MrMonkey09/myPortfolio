@@ -1,0 +1,15 @@
+.contenido-principal {
+  width: 80%;
+  height: 95%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+@media (max-width: 600px) {
+  .contenido-principal {
+    width: 90%;
+    padding: 0;
+    margin: 0;
+  }
+}

@@ -2,9 +2,9 @@ const Configuracion = {
   icono: "",
   contenido: {
     encabezado: {
-      saludo: "Hola...",
-      nombre01: "Soy",
-      nombre02: "Mr Monkey!",
+      saludo: "¡Hola! Bienvenido a mi portafolio",
+      nombre01: "Soy ",
+      nombre02: "Mr Monkey",
       datos: {
         ciudad: "Antofagasta, Chile",
         correo: "alfredoa_gestay@outlook.com",
@@ -12,29 +12,29 @@ const Configuracion = {
       },
     },
     resumen: {
-      portada:
-        "https://ryanbalieiro.github.io/react-portfolio-template/images/svg/logo.svg",
       descripcion:
-        "Soy desarrollador de Python y JavaScript con más de 2 años de experiencia, especializado en desarrollo Web FullStack. Además, cuento con experiencia en sistemas, servidores, inteligencia artificial y videojuegos. La experiencia practica que he logrado obtener con este corto tiempo han reafirmado mis habilidades como desarrollador. Por lo que, con este variado historial podré adaptarme a una amplia gama de necesidades de proyectos. Gracias por tu visita, espero colaborar contigo pronto. <h1>Hello World!</h1>",
+        "Soy desarrollador de Python y JavaScript con más de 2 años de experiencia, especializado en desarrollo web FullStack. También tengo experiencia en sistemas, servidores, inteligencia artificial y desarrollo de videojuegos. Mi trayectoria, aunque breve, ha fortalecido mis habilidades y me permite adaptarme a una amplia variedad de proyectos. ¡Gracias por visitar mi portafolio! Espero que podamos colaborar pronto.",
+        portada: "/assets/images/iconos/logo.svg",
     },
     intereses: [
       {
         id: "001",
-        nombre: "Tocar la guitarra",
-        icono: "https://www.svgrepo.com/show/403629/guitar.svg",
-        descripcion: "Explorando diferentes géneros mejorando mis habilidades",
+        titulo: "Tocar la guitarra",
+        imagen: "/assets/images/iconos/guitar.svg",
+        descripcion:
+          "Exploro diferentes géneros y mejoro mis habilidades constantemente.",
       },
       {
         id: "002",
-        nombre: "toco violin",
-        icono: "https://www.svgrepo.com/show/403629/guitar.svg",
-        descripcion: "Explorando diferentes géneros mejorando mis habilidades",
+        titulo: "Tocar el violín",
+        imagen: "/assets/images/iconos/guitar.svg",
+        descripcion: "Disfruto interpretar piezas clásicas y modernas.",
       },
       {
         id: "003",
-        nombre: "Tocar la guitarra",
-        icono: "https://www.svgrepo.com/show/403629/guitar.svg",
-        descripcion: "Explorando diferentes géneros mejorando mis habilidades",
+        titulo: "Videojuegos",
+        imagen: "/assets/images/iconos/gamepad.svg",
+        descripcion: "Me apasiona el desarrollo y disfrute de videojuegos.",
       },
     ],
   },

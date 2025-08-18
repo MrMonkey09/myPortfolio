@@ -1,4 +1,3 @@
-import EstiloMenuApp from "../../BarraLateral/MenuApp/EstiloMenuApp";
 import Habilidades from "./Habilidades";
 
 const HabilidadesInfo = {
@@ -9,7 +8,7 @@ const HabilidadesInfo = {
       id="003"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 -960 960 960"
-      style={EstiloMenuApp.estilos.aplicacion.img}
+      className="menu-app-icon"
     >
       <path
         id="003"

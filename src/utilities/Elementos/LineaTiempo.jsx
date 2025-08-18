@@ -1,65 +1,67 @@
+import { useEffect, useRef } from "react";
+
 /* eslint-disable react/prop-types */
 function PuntoTiempo({ Punto }) {
+  const descripcionHtml = useRef(null);
+
+  useEffect(() => {
+    console.log("PuntoTiempo: ", Punto);
+    console.log("PuntoTiempo descripcionHtml: ", descripcionHtml.current);
+    const descripcionFormateada = Punto.descripcion.replace(/\n/g, "<br>");
+    descripcionHtml.current.innerHTML = descripcionFormateada;
+    console.log("PuntoTiempo descripcionFormateada: ", descripcionHtml.current);
+    console.log("PuntoTiempo texto formateado: ", descripcionFormateada);
+  }, [descripcionHtml]);
+
   return (
     <li className="timeLineItem" id={Punto.id}>
       <article id="timeLineItemContent">
-        <div>
-          <img src={Punto.imagen} alt="" />
-        </div>
-        <div>
-          <header>
-            <div className="header-left">
-              <h5 className="title">{Punto.titulo}</h5>
-              <div className="info">
-                <div className="fa-icon-wrapper d-inline me-2">
-                  <i className="fa-icon fa-solid fa-building"></i>
-                </div>
-                <span className="">{Punto.ubicacion}</span>
-              </div>
+        <header className="header">
+          <div className="header-left">
+            <h3 className="title">{Punto.titulo}</h3>
+            <div className="info">
+              <span className="ciudad">{Punto.ubicacion}</span>
             </div>
-            <div className="header-right">
-              <div className="info-badge text-1 undefined">
-                <div className="fa-icon-wrapper d-inline me-2 opacity-50">
-                  <i className="fa-icon undefined"></i>
-                </div>
-                <span>{Punto.fecha}</span>
+          </div>
+          <div className="header-right">
+            <img
+              src="/assets/images/iconos/calendario.svg"
+              alt="icono calendario"
+            />
+            <span>{Punto.fecha}</span>
+          </div>
+        </header>
+        <main className="main">
+          <div className="text">
+            <p ref={descripcionHtml}>{Punto.descripcion}</p>
+          </div>
+          <div className="tags">
+            <span className="badge">
+              <div className="fa-icon-wrapper d-inline me-2 opacity-25">
+                <i className="fa-icon fa-solid fa-bullseye"></i>
               </div>
-            </div>
-          </header>
-          <main>
-            <div>
-              <div className="text">
-                <p>{Punto.descripcion}</p>
+              APRENDIZAJE PROFUNDO
+            </span>
+            <span className="badge">
+              <div className="fa-icon-wrapper d-inline me-2 opacity-25">
+                <i className="fa-icon fa-solid fa-bullseye"></i>
               </div>
-              <div className="tags">
-                <span className="badge badge-sm ">
-                  <div className="fa-icon-wrapper d-inline me-2 opacity-25">
-                    <i className="fa-icon fa-solid fa-bullseye"></i>
-                  </div>
-                  APRENDIZAJE PROFUNDO
-                </span>
-                <span className="badge badge-sm ">
-                  <div className="fa-icon-wrapper d-inline me-2 opacity-25">
-                    <i className="fa-icon fa-solid fa-bullseye"></i>
-                  </div>
-                  VISIÓN POR COMPUTADORA
-                </span>
-                <span className="badge badge-sm ">
-                  <div className="fa-icon-wrapper d-inline me-2 opacity-25">
-                    <i className="fa-icon fa-solid fa-bullseye"></i>
-                  </div>
-                  INVESTIGACIÓN IA
-                </span>
-                <span className="badge badge-sm ">
-                  <div className="fa-icon-wrapper d-inline me-2 opacity-25">
-                    <i className="fa-icon fa-solid fa-bullseye"></i>
-                  </div>
-                  ALGORITMOS
-                </span>
+              VISIÓN POR COMPUTADORA
+            </span>
+            <span className="badge">
+              <div className="fa-icon-wrapper d-inline me-2 opacity-25">
+                <i className="fa-icon fa-solid fa-bullseye"></i>
               </div>
-            </div>
-          </main>
-        </div>
+              INVESTIGACIÓN IA
+            </span>
+            <span className="badge">
+              <div className="fa-icon-wrapper d-inline me-2 opacity-25">
+                <i className="fa-icon fa-solid fa-bullseye"></i>
+              </div>
+              ALGORITMOS
+            </span>
+          </div>
+        </main>
       </article>
     </li>
   );

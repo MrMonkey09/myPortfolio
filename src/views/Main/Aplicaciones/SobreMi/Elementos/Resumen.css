@@ -1,0 +1,49 @@
+#resumen {
+  width: 95%;
+  height: auto;
+  padding-top: 30px;
+}
+
+#resumen h3,
+#intereses h3 {
+  font-size: 1.5rem;
+  padding: 0;
+  margin: 15px 0 0 0;
+}
+
+#resumen .contenedor-descripcion {
+  width: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0 20px;
+}
+
+#resumen .contenedor-descripcion img {
+  width: 20%;
+}
+
+#resumen .contenedor-descripcion .descripcion {
+  width: 80%;
+  text-align: center;
+  font-size: 1.2rem;
+}
+/* Responsividad */
+@media (max-width: 600px) {
+  .intereses-lista {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .interes-item,
+  #intereses .tarjeta {
+    width: 90% !important;
+    min-width: 160px !important;
+    max-width: 400px !important;
+  }
+  #intereses {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+}

@@ -1,4 +1,15 @@
-.ok{
-    filter: drop-shadow();
-    
+/* Estilo para el subcontenedor */
+.sub-contenedor {
+  width: 100%;
+  height: 100%;
+  background: var(--contenedor);
+  border-radius: 2%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fuente-primaria) transparent;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: start;
+  align-items: center;
 }

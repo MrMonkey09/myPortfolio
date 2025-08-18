@@ -15,7 +15,7 @@ const Configuracion = {
       Nombre: {
         id: 1,
         tipo: "texto",
-        icono: "src\\assets\\images\\img-prueba.svg",
+        icono: "/assets/images/img-prueba.svg",
         ejemplo: "Alfredo Rodriguez Markraci",
         ayuda: "",
         necesario: true,
@@ -23,7 +23,7 @@ const Configuracion = {
       Correo: {
         id: 2,
         tipo: "correo",
-        icono: "src\\assets\\images\\img-prueba.svg",
+        icono: "/assets/images/img-prueba.svg",
         minimo: "6",
         ejemplo: "alfredo@makraci.com",
         ayuda:
@@ -35,7 +35,7 @@ const Configuracion = {
         tipo: "numero",
         maximo: "9",
         minimo: "9",
-        icono: "src\\assets\\images\\img-prueba.svg",
+        icono: "/assets/images/img-prueba.svg",
         ejemplo: "912345678",
         ayuda:
           "El número de contacto debe contener el dígito 9 seguido de los 8 dígitos correspondientes a móviles Chilenos",
@@ -44,7 +44,7 @@ const Configuracion = {
       "Red Social Preferente": {
         id: 4,
         tipo: "enlace",
-        icono: "src\\assets\\images\\img-prueba.svg",
+        icono: "/assets/images/img-prueba.svg",
         ejemplo: "https://www.instagram.com/tuperfil/",
         ayuda: "",
         necesario: true,

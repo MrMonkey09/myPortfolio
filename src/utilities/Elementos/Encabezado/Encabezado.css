@@ -1,0 +1,98 @@
+#encabezado {
+  position: relative;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 30%;
+}
+
+#encabezado #saludo {
+  height: 30%;
+  width: 90%;
+  color: var(--extra);
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0 12px;
+  margin-top: 80px;
+}
+
+#encabezado #saludo svg {
+  width: 3.5%;
+  height: auto;
+  fill: var(--extra);
+}
+
+#encabezado #saludo h4,
+#encabezado #nombre {
+  font-size: 2rem;
+}
+
+#encabezado #nombre {
+  color: var(--fuente-secundaria);
+}
+
+#encabezado #nombre .cambio-color {
+  color: var(--fuente-primaria);
+}
+
+#encabezado #datos {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 0 10px;
+}
+
+#encabezado #borde-punteado {
+  border-top: 5px dotted var(--fuente-primaria);
+  border-left: 5px dotted var(--fuente-primaria);
+  width: 5rem;
+  height: 5rem;
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  border-radius: 8px 0 0 0;
+}
+/* Responsividad */
+@media (max-width: 600px) {
+  #encabezado {
+    height: 40%;
+  }
+
+  #encabezado #borde-punteado {
+    top: 20px;
+    left: 20px;
+  }
+
+  #encabezado #saludo {
+    flex-flow: row wrap;
+    margin: 20px 0 0 0;
+    width: 90%;
+  }
+
+  #encabezado #saludo svg {
+    width: 100%;
+    height: 30px;
+  }
+
+  #encabezado #saludo h4 {
+    font-size: 1.5rem;
+    margin: 0;
+    text-align: center;
+  }
+
+  #encabezado #nombre {
+    font-size: 1.8rem;
+    width: 100%;
+  }
+
+  #encabezado #datos {
+    flex-direction: column;
+    align-items: center;
+  }
+}

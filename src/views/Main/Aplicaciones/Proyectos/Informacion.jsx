@@ -1,15 +1,14 @@
-import EstiloMenuApp from "../../BarraLateral/MenuApp/EstiloMenuApp";
 import Proyectos from "./Proyectos";
 
 const ProyectosInfo =   {
-  ID: "004",
+  ID: "005",
   nombre: "Proyectos",
   icono: (
     <svg
       id="005"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 -960 960 960"
-      style={EstiloMenuApp.estilos.aplicacion.img}
+      className="menu-app-icon"
     >
       <path
         id="005"

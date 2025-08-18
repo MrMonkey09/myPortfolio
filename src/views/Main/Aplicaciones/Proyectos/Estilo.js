@@ -12,7 +12,7 @@ const Estilo = new Object({
       saludo: {
         height: "30%",
         width: "90%",
-        color: "var(--color-extra)",
+        color: "var(--extra)",
         display: "flex",
         flexFlow: "row nowrap",
         justifyContent: "center",
@@ -23,7 +23,7 @@ const Estilo = new Object({
         icono: {
           width: "3.5%",
           height: "auto",
-          fill: "var(--color-extra)",
+          fill: "var(--extra)",
         },
 
         texto: {
@@ -33,10 +33,10 @@ const Estilo = new Object({
 
       nombre: {
         fontSize: "2rem",
-        color: "var(--color-fuente-secundaria)",
+        color: "var(--fuente-secundaria)",
 
         cambioColor: {
-          color: "var(--color-fuente-primaria)",
+          color: "var(--fuente-primaria)",
         },
       },
 
@@ -50,8 +50,8 @@ const Estilo = new Object({
       },
 
       bordePunteado: {
-        borderTop: "5px dotted var(--color-fuente-primaria)",
-        borderLeft: "5px dotted var(--color-fuente-primaria)",
+        borderTop: "5px dotted var(--fuente-primaria)",
+        borderLeft: "5px dotted var(--fuente-primaria)",
         width: "5rem",
         height: "5rem",
         position: "absolute",

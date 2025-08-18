@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
-import EstiloPrincipal from "../EstiloPrincipal";
+import "./ContenedorPrincipal.css";
 
 function ContenedorPrincipal({ children }) {
   return (
-    <main style={EstiloPrincipal.enLinea.contenidoPrincipal} id="main-content" className="centrar-y">
+    <main id="main-content" className="contenido-principal centrar-y">
       {children}
     </main>
   );

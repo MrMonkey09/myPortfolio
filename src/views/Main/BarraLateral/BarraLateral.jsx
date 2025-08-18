@@ -1,21 +1,26 @@
-/* eslint-disable react/prop-types */
-import EstiloPrincipal from "../EstiloPrincipal";
+import './BarraLateral.css';
 import Avatar from "./Avatar/Avatar";
 import MenuApp from "./MenuApp/MenuApp";
 import Options from "./Options/Options";
 
 function BarraLateral({ setAplicacionActual, Aplicaciones }) {
   return (
-    <aside style={EstiloPrincipal.enLinea.barraLateral} id="sidebar">
-      <Avatar
-        src={"https://avatars.githubusercontent.com/u/100534316?v=4"}
-        name1="Mr"
-        name2="Monkey"
-        nameIcon="https://ryanbalieiro.github.io/react-portfolio-template/images/svg/logo.svg"
-        role="Desarrollador FullStack"
-      />
-      <MenuApp setAplicacionActual={setAplicacionActual} Aplicaciones={Aplicaciones} />
-      <Options />
+    <aside className="barra-lateral" id="sidebar">
+      <div className="avatar">
+        <Avatar
+          src={"https://avatars.githubusercontent.com/u/100534316?v=4"}
+          name1="Mr"
+          name2="Monkey"
+          nameIcon="/assets/images/iconos/logo.svg"
+          role="Desarrollador FullStack"
+        />
+      </div>
+      <div className="menu-app">
+        <MenuApp
+          setAplicacionActual={setAplicacionActual}
+          Aplicaciones={Aplicaciones}
+        />
+      </div>
     </aside>
   );
 }

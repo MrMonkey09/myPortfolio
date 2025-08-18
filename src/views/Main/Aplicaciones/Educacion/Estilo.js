@@ -1,26 +1,26 @@
-const Estilo = new Object({
+const Estilo = {
   enLinea: {
-    educacionContainer: {
-      
-      timeLine: {
-        listStyleType: "none", // Elimina los puntos de la lista
+    timeLine: {
+      listStyleType: "none",
+      position: "relative",
+      paddingLeft: "20px",
+      width: "100%",
+      maxWidth: "100vw",
+      overflowX: "hidden",
+
+      timeLineItemContent: {
         position: "relative",
-        paddingLeft: "20px", // Espacio para la línea del timeline
-
-        
-
-        timeLineItemContent: {
-          position: "relative",
-          backgroundColor: "red",
-          color:"white",
-          padding: "10px",
-          borderRadius: "5px",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-        },
+        backgroundColor: "#ff0000", // O el color que prefieras
+        color: "white",
+        padding: "10px",
+        borderRadius: "5px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        width: "100%",
+        maxWidth: "100vw",
+        overflowX: "hidden",
       },
     },
   },
   clases: ["borde-x-defecto"],
-});
-
+};
 export default Estilo;

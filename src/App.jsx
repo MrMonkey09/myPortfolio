@@ -1,4 +1,3 @@
-import "./App.css";
 import Main from "./views/Main/Main";
 
 function App() {

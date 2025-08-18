@@ -1,23 +1,14 @@
-import Estilo from "../Estilo";
-const estilo = Estilo.enLinea.resumen;
-
+import "./Resumen.css";
 /* eslint-disable react/prop-types */
 function Resumen({ resumen }) {
-  console.log(resumen);
   return (
-    <div id="resumen" style={estilo}>
-      <h3 style={estilo.titulo}>
+    <div id="resumen">
+      <h3>
         Un poco <span>sobre mí...</span>
       </h3>
-      <div style={estilo.contenedorDescripcion}>
-        <img
-          style={estilo.contenedorDescripcion.imagen}
-          src={resumen.portada}
-          alt="portada-resumen"
-        />
-        <span style={estilo.contenedorDescripcion.descripcion}>
-          {resumen.descripcion}
-        </span>
+      <div className="contenedor-descripcion">
+        <img src={resumen.portada} alt="portada-resumen" />
+        <span className="descripcion">{resumen.descripcion}</span>
       </div>
     </div>
   );
