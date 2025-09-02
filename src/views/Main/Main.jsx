@@ -1,3 +1,4 @@
+import { useState } from "react";
 import BarraLateral from "./BarraLateral/BarraLateral";
 import ContenedorPrincipal from "./ContenedorPrincipal/ContenedorPrincipal";
 import "./Main.css";
@@ -11,6 +12,8 @@ function Main() {
   const toggleMobileMenu = () => {
     setMenuMobileOpen(!menuMobileOpen);
   };
+
+
 
   return (
     <>
