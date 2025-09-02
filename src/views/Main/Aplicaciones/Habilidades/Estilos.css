@@ -90,3 +90,45 @@
     }
   }
 }
+
+/* Resposividad */
+
+/* Tablet */
+@media (max-width: 768px) {
+  #tarjetas-destacadas {
+    height: 25%;
+    .tarjetas {
+      .tarjeta {
+        padding: 0;
+        flex-flow: row nowrap;
+        width: 420px;
+
+        img {
+          height: 60%;
+          margin-right: 10px;
+        }
+      }
+    }
+  }
+
+  .tarjetas-incrustadas {
+    padding-left: 20px;
+    width: 95%;
+    justify-content: center;
+    align-items: center;
+
+    #titulo {
+      height: auto;
+    }
+
+    .tarjetas {
+      justify-content: center;
+      align-items: center;
+
+      .tarjeta{
+        width: 60%;
+        height: 19%;
+      }
+    }
+  }
+}

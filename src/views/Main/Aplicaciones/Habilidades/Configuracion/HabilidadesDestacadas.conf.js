@@ -1,33 +1,29 @@
 const HabilidadesDestacadasConf = [
   {
     id: "1",
-    titulo: "Soy mejor que todos",
-    descripcion: "Cómeme los huevos malnacido",
-    imagen: "/assets/images/iconos/img-prueba.svg",
+    titulo: "Trabajo en equipo",
+    descripcion: "Capacidad para colaborar eficazmente en pareja o grupo.",
+    imagen: "/assets/images/iconos/ampolleta.svg",
   },
   {
     id: "2",
-    titulo: "Soy mejor que muchos",
-    descripcion: "Cómeme los huevos malhechor",
-    imagen: "/assets/images/iconos/img-prueba.svg",
+    titulo: "Comunicación",
+    descripcion: "Habilidad para expresar ideas y escuchar activamente.",
+    imagen: "/assets/images/iconos/ampolleta.svg",
   },
   {
     id: "3",
-    titulo: "Soy mejor que pocos",
-    descripcion: "Cómeme los huevos malcriado",
-    imagen: "/assets/images/iconos/img-prueba.svg",
+    titulo: "Liderazgo",
+    descripcion:
+      "Capacidad para guiar y motivar a un equipo hacia objetivos comunes.",
+    imagen: "/assets/images/iconos/ampolleta.svg",
   },
   {
     id: "4",
-    titulo: "Soy mejor y punto",
-    descripcion: "Cómeme los huevos y punto",
-    imagen: "/assets/images/iconos/img-prueba.svg",
-  },
-  {
-    id: "5",
-    titulo: "Soy mejor",
-    descripcion: "Cómeme los huevos",
-    imagen: "/assets/images/iconos/img-prueba.svg",
+    titulo: "Resolución de problemas",
+    descripcion:
+      "Habilidad para identificar desafíos y encontrar soluciones efectivas.",
+    imagen: "/assets/images/iconos/ampolleta.svg",
   },
 ];
 

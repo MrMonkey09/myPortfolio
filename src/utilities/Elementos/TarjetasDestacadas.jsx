@@ -1,9 +1,8 @@
 /* eslint-disable react/prop-types */
 function TarjetasDestacadas({ Conf }) {
-  console.log({ Conf });
   let tarjetas = Conf;
   return (
-    <ul className="tarjetas" >
+    <ul className="tarjetas">
       {tarjetas.map((tarjeta) => {
         return (
           <li
@@ -12,9 +11,9 @@ function TarjetasDestacadas({ Conf }) {
           >
             <img
               src={tarjeta.imagen}
-              alt="img-prueba"
+              alt={tarjeta.titulo}
             />
-            <div className="contenido" >
+            <div className="contenido">
               <h2
                 className="titulo"
               >

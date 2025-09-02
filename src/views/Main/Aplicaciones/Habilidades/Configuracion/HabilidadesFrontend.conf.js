@@ -2,7 +2,7 @@ const HabilidadesFrontendConf = [
   {
     id: "1",
     titulo: "React JS",
-    descripcion: "+ de 2 años de experiencia",
+    descripcion: "+ de 4 años de experiencia",
     imagen: "/assets/images/tecnologias/react-original-wordmark.svg",
   },
   {
@@ -14,7 +14,7 @@ const HabilidadesFrontendConf = [
   {
     id: "3",
     titulo: "Django",
-    descripcion: "+ de 1 año de experiencia",
+    descripcion: "+ de 2 año de experiencia",
     imagen: "/assets/images/tecnologias/django-plain-wordmark.svg",
   },
   {

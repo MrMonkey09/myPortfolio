@@ -36,30 +36,14 @@ function PuntoTiempo({ Punto }) {
             <p ref={descripcionHtml}>{Punto.descripcion}</p>
           </div>
           <div className="tags">
-            <span className="badge">
+            {Punto.etiquetas && Punto.etiquetas.map((etiqueta, idx) => (
+              <span key={idx} className="badge">
               <div className="fa-icon-wrapper d-inline me-2 opacity-25">
                 <i className="fa-icon fa-solid fa-bullseye"></i>
               </div>
-              APRENDIZAJE PROFUNDO
+                {etiqueta}
             </span>
-            <span className="badge">
-              <div className="fa-icon-wrapper d-inline me-2 opacity-25">
-                <i className="fa-icon fa-solid fa-bullseye"></i>
-              </div>
-              VISIÓN POR COMPUTADORA
-            </span>
-            <span className="badge">
-              <div className="fa-icon-wrapper d-inline me-2 opacity-25">
-                <i className="fa-icon fa-solid fa-bullseye"></i>
-              </div>
-              INVESTIGACIÓN IA
-            </span>
-            <span className="badge">
-              <div className="fa-icon-wrapper d-inline me-2 opacity-25">
-                <i className="fa-icon fa-solid fa-bullseye"></i>
-              </div>
-              ALGORITMOS
-            </span>
+            ))}
           </div>
         </main>
       </article>
@@ -85,3 +69,4 @@ function LineaTiempo({ Conf, CustomStyle }) {
 }
 
 export default LineaTiempo;
+

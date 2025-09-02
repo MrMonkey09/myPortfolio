@@ -1,60 +1,72 @@
-function SelectorTipoFormulario(campo, nombre, CustomStyle) {
+function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
+  const handleChange = (e) => {
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  };
+
   switch (campo.tipo) {
     case "texto":
       return (
-        <>
-          <label htmlFor={campo.id}>{nombre}</label>
-          <input
-            type="text"
-            placeholder={campo.ejemplo}
-            enterKeyHint={campo.ayuda}
-            name={nombre}
-            id={campo.id}
-            style={CustomStyle?.campoTexto}
-          />
-        </>
+        <input
+          className="campo-formulario-input"
+          type="text"
+          placeholder={campo.ejemplo}
+          enterKeyHint={campo.ayuda}
+          name={nombreCampo}
+          id={campo.id}
+          onChange={handleChange}
+        />
+      );
+    case "cajaTexto":
+      return (
+        <textarea
+          className="campo-formulario-textarea"
+          placeholder={campo.ejemplo}
+          enterKeyHint={campo.ayuda}
+          name={nombreCampo}
+          id={campo.id}
+          rows={4}
+          onChange={handleChange}
+        />
       );
     case "numero":
       return (
-        <>
-          <label htmlFor={campo.id}>{nombre}</label>
-          <input
-            type="number"
-            name={nombre}
-            placeholder={campo.ejemplo}
-            id={campo.id}
-            style={CustomStyle?.campoNumero}
-          />
-        </>
+        <input
+          className="campo-formulario-input"
+          type="number"
+          name={nombreCampo}
+          placeholder={campo.ejemplo}
+          id={campo.id}
+          onChange={handleChange}
+        />
       );
     case "correo":
       return (
-        <>
-          <label htmlFor={campo.id}>{nombre}</label>
-          <input
-            type="email"
-            name={nombre}
-            placeholder={campo.ejemplo}
-            id={campo.id}
-            style={CustomStyle?.campoCorreo}
-          />
-        </>
+        <input
+          className="campo-formulario-input"
+          type="email"
+          name={nombreCampo}
+          placeholder={campo.ejemplo}
+          id={campo.id}
+          onChange={handleChange}
+        />
       );
     case "enlace":
       return (
-        <>
-          <label htmlFor={campo.id}>{nombre}</label>
-          <input
-            type="url"
-            name={nombre}
-            placeholder={campo.ejemplo}
-            id={campo.id}
-          />
-        </>
+        <input
+          className="campo-formulario-input"
+          type="url"
+          name={nombreCampo}
+          placeholder={campo.ejemplo}
+          id={campo.id}
+          onChange={handleChange}
+        />
       );
     default:
-      return;
+      return null;
   }
 }
 
 export default SelectorTipoFormulario;
+

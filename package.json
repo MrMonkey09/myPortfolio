@@ -4,12 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "web:dev": "vite --host 0.0.0.0",
+    "web:build": "vite build",
     "lint": "eslint .",
-    "start": "vite preview --host 0.0.0.0"
+    "web:start": "vite preview --host 0.0.0.0",
+    "api:dev": "node ./api/server.js --host 0.0.0.0"
   },
   "dependencies": {
+    "@notionhq/client": "^4.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

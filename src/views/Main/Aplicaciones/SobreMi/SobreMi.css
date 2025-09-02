@@ -1,0 +1,15 @@
+/* Estilos generales para SobreMi */
+.sobre-mi-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 97%;
+}
+
+/* Responsividad general */
+@media (max-width: 768px) {
+  .sobre-mi-container {
+    padding: 5px;
+  }
+}

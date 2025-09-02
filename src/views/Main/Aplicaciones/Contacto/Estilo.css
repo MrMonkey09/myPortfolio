@@ -1,0 +1,128 @@
+#contenedor-principal-contacto {
+  width: 100%;
+  height: 70%;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#contenedor-formulario {
+  width: 50%;
+  height: 100%;
+  margin: 0;
+  background: var(--contenedor, #262626);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 1rem 0;
+}
+
+#contenedor-formulario h1 {
+  text-align: center;
+  color: var(--fuente-primaria, #74ff4e);
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+#contenedor-contacto {
+  width: 40%;
+  height: 100%;
+  background: var(--contenedor, #262626);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+#contenedor-contacto h1 {
+  text-align: center;
+  color: var(--fuente-primaria, #74ff4e);
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.tarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  scrollbar-width: thin;
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--extra, #606060bc);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.tarjeta img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.tarjeta .contenido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tarjeta .titulo {
+  color: var(--fuente-primaria, #74ff4e);
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.tarjeta .descripcion {
+  color: var(--fuente-secundaria, #e2e2e2);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.formulario-contacto {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Resposividad */
+
+/* Tablet */
+@media (max-width: 768px) {
+  #contenedor-principal-contacto {
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    justify-content: start;
+
+    #contenedor-formulario {
+      height: auto;
+      width: 80%;
+
+      .formulario-contacto {
+        .campo-formulario {
+          height: 20%;
+        }
+      }
+    }
+
+    #contenedor-contacto {
+      height: 70%;
+      padding-bottom: 10px;
+      width: 80%;
+
+      .tarjetas {
+        padding: 0;
+        height: 89%;
+      }
+    }
+  }
+}

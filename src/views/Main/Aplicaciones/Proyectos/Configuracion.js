@@ -11,46 +11,88 @@ const Configuracion = {
         github: "MrMonkey09",
       },
     },
-    resumen: {
-      portada:
-          "/assets/images/iconos/logo.svg",
-        descripcion:
-        "Soy desarrollador de Python y JavaScript con más de 2 años de experiencia, especializado en desarrollo Web FullStack. Además, cuento con experiencia en sistemas, servidores, inteligencia artificial y videojuegos. La experiencia practica que he logrado obtener con este corto tiempo han reafirmado mis habilidades como desarrollador. Por lo que, con este variado historial podré adaptarme a una amplia gama de necesidades de proyectos. Gracias por tu visita, espero colaborar contigo pronto. <h1>Hello World!</h1>",
-    },
-    intereses: {
-      listado: [
-        {
-          nombre: "Tocar la guitarra",
-          icono: "/assets/images/iconos/guitar.svg",
-          descripcion:
-            "Explorando diferentes géneros mejorando mis habilidades",
-        },
-        {
-          nombre: "Tocar la guitarra",
-          icono: "/assets/images/iconos/guitar.svg",
-          descripcion:
-            "Explorando diferentes géneros mejorando mis habilidades",
-        },
-        {
-          nombre: "Tocar la guitarra",
-          icono: "/assets/images/iconos/guitar.svg",
-          descripcion:
-            "Explorando diferentes géneros mejorando mis habilidades",
-        },
-        {
-          nombre: "Tocar la guitarra",
-          icono: "/assets/images/iconos/guitar.svg",
-          descripcion:
-            "Explorando diferentes géneros mejorando mis habilidades",
-        },
-        {
-          nombre: "Tocar la guitarra",
-          icono: "/assets/images/iconos/guitar.svg",
-          descripcion:
-            "Explorando diferentes géneros mejorando mis habilidades",
-        },
-      ],
-    },
+    proyectos: [
+      {
+        id: 1,
+        titulo: "Proyecto Uno",
+        descripcion: "Descripción del proyecto uno.",
+        enlace: "https://github.com/MrMonkey09/proyecto-uno",
+        tecnologias: ["JavaScript", "React", "CSS"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+      {
+        id: 2,
+        titulo: "Proyecto Dos",
+        descripcion: "Descripción del proyecto dos.",
+        enlace: "https://github.com/MrMonkey09/proyecto-dos",
+        tecnologias: ["Node.js", "Express", "MongoDB"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+      {
+        id: 3,
+        titulo: "Proyecto Tres",
+        descripcion: "Descripción del proyecto tres.",
+        enlace: "https://github.com/MrMonkey09/proyecto-tres",
+        tecnologias: ["Python", "Django", "PostgreSQL"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+      {
+        id: 3,
+        titulo: "Proyecto Tres",
+        descripcion: "Descripción del proyecto tres.",
+        enlace: "https://github.com/MrMonkey09/proyecto-tres",
+        tecnologias: ["Python", "Django", "PostgreSQL"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+      {
+        id: 3,
+        titulo: "Proyecto Tres",
+        descripcion: "Descripción del proyecto tres.",
+        enlace: "https://github.com/MrMonkey09/proyecto-tres",
+        tecnologias: ["Python", "Django", "PostgreSQL"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+      {
+        id: 3,
+        titulo: "Proyecto Tres",
+        descripcion: "Descripción del proyecto tres.",
+        enlace: "https://github.com/MrMonkey09/proyecto-tres",
+        tecnologias: ["Python", "Django", "PostgreSQL"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+      {
+        id: 3,
+        titulo: "Proyecto Tres",
+        descripcion: "Descripción del proyecto tres.",
+        enlace: "https://github.com/MrMonkey09/proyecto-tres",
+        tecnologias: ["Python", "Django", "PostgreSQL"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+      {
+        id: 3,
+        titulo: "Proyecto Tres",
+        descripcion: "Descripción del proyecto tres.",
+        enlace: "https://github.com/MrMonkey09/proyecto-tres",
+        tecnologias: ["Python", "Django", "PostgreSQL"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+      {
+        id: 3,
+        titulo: "Proyecto Tres",
+        descripcion: "Descripción del proyecto tres.",
+        enlace: "https://github.com/MrMonkey09/proyecto-tres",
+        tecnologias: ["Python", "Django", "PostgreSQL"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+      {
+        id: 3,
+        titulo: "Proyecto Tres",
+        descripcion: "Descripción del proyecto tres.",
+        enlace: "https://github.com/MrMonkey09/proyecto-tres",
+        tecnologias: ["Python", "Django", "PostgreSQL"],
+        imagen: "/assets/images/iconos/calendario.svg",
+      },
+    ],
   },
 };
 

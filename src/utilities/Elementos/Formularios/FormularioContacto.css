@@ -1,0 +1,71 @@
+.formulario-contacto {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.campo-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.campo-formulario label {
+  color: var(--fuente-primaria, #74ff4e);
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.campo-formulario-input,
+.campo-formulario-textarea {
+  width: 95%;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #181818;
+  color: var(--fuente-secundaria, #e2e2e2);
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.campo-formulario-input:focus,
+.campo-formulario-textarea:focus {
+  border: 1.5px solid var(--fuente-primaria, #74ff4e);
+}
+
+.boton-enviar {
+  width: 100%;
+  max-width: 300px;
+  margin-top: 1rem;
+  padding: 0.7rem 2rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--fuente-primaria, #74ff4e);
+  color: #181818;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  align-self: center;
+  transition: background 0.2s;
+}
+
+.boton-enviar:hover {
+  background: #4fdc2d;
+}
+
+@media (max-width: 600px) {
+  .boton-enviar {
+    max-width: 100%;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .campo-formulario-input,
+  .campo-formulario-textarea {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.7rem;
+    width: 92%;
+  }
+}

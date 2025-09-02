@@ -40,22 +40,23 @@
 }
 
 /* Responsividad */
-@media (max-width: 600px) {
+
+@media (max-width: 768px) {
   .menu-app-item {
     flex-flow: row nowrap;
     justify-content: start;
     align-items: center;
-    height: 45px;
+    height: 87px;
     gap: 0 4px;
     padding: 0 0 0 5px;
   }
   .menu-app-item svg {
-    width: 20%;
-    height: auto;
+    width: 49px;
+    height: 49px;
   }
   .menu-app-item span {
     padding: 0 2px;
-    font-size: 0.8rem;
+    font-size: 1.2rem;
     word-break: break-all;
     word-wrap: break-word;
   }

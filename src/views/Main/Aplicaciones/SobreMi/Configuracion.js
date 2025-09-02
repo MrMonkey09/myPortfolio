@@ -19,22 +19,34 @@ const Configuracion = {
     intereses: [
       {
         id: "001",
-        titulo: "Tocar la guitarra",
-        imagen: "/assets/images/iconos/guitar.svg",
-        descripcion:
-          "Exploro diferentes géneros y mejoro mis habilidades constantemente.",
+        titulo: "Inventar mi propio software",
+        imagen: "/assets/images/iconos/codificar.svg",
+        descripcion: "Me gusta crear mis propias herramientas para mejorar mi codigo.",
       },
       {
         id: "002",
-        titulo: "Tocar el violín",
-        imagen: "/assets/images/iconos/guitar.svg",
-        descripcion: "Disfruto interpretar piezas clásicas y modernas.",
+        titulo: "Crear música",
+        imagen: "/assets/images/iconos/microfono.svg",
+        descripcion:
+          "Me encanta componer y producir mis propias canciones.",
       },
       {
         id: "003",
-        titulo: "Videojuegos",
+        titulo: "Vivir el Hip Hop",
+        imagen: "/assets/images/iconos/hiphop.svg",
+        descripcion: "El Hip Hop es mi género musical favorito. Me inspiro en 2pac y Canserbero.",
+      },
+      {
+        id: "004",
+        titulo: "Juegar Videojuegos",
         imagen: "/assets/images/iconos/gamepad.svg",
-        descripcion: "Me apasiona el desarrollo y disfrute de videojuegos.",
+        descripcion: "Me apasiona el desarrollo y disfrute de videojuegos sobre todo en comunidad.",
+      },
+      {
+        id: "005",
+        titulo: "Cocinar y comer",
+        imagen: "/assets/images/iconos/cocinar.svg",
+        descripcion: "Disfruto explorando nuevas recetas y sabores en la cocina de forma experimental.",
       },
     ],
   },

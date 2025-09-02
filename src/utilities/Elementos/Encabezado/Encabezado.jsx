@@ -28,6 +28,13 @@ function Encabezado({
         </span>
       </h1>
       <div id="borde-punteado"></div>
+      {(encabezado.datos.ciudad || encabezado.datos.correo || encabezado.datos.github) && (
+        <div id="datos">
+          {encabezado.datos.ciudad && <span>{encabezado.datos.ciudad}</span>}
+          {encabezado.datos.correo && <span>{encabezado.datos.correo}</span>}
+          {encabezado.datos.github && <span>{encabezado.datos.github}</span>}
+        </div>
+      )}
     </div>
   );
 }

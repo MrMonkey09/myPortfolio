@@ -2,13 +2,13 @@ const HabilidadesBackendConf = [
   {
     id: "1",
     titulo: "Node.js",
-    descripcion: "+ de 2 años de experiencia",
+    descripcion: "+ de 4 años de experiencia",
     imagen: "/assets/images/tecnologias/javascript-original.svg",
   },
   {
     id: "2",
-    titulo: "Python",
-    descripcion: "+ de 1 año de experiencia",
+    titulo: "FastApi",
+    descripcion: "+ de 2 año de experiencia",
     imagen: "/assets/images/tecnologias/python-plain-wordmark.svg",
   },
   {
@@ -20,7 +20,7 @@ const HabilidadesBackendConf = [
   {
     id: "4",
     titulo: "Git",
-    descripcion: "+ de 1 año de experiencia",
+    descripcion: "+ de 4 año de experiencia",
     imagen: "/assets/images/tecnologias/git-original-wordmark.svg",
   },
 ];

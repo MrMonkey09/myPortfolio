@@ -8,11 +8,11 @@ const contenido = Configuracion.contenido;
 
 function SobreMi() {
   return (
-    <>
+    <div className="sobre-mi-container">
       <Encabezado encabezado={contenido.encabezado} />
       <Resumen resumen={contenido.resumen} />
       <Intereses intereses={contenido.intereses} />
-    </>
+    </div>
   );
 }
 

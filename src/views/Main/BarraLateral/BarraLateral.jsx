@@ -3,9 +3,9 @@ import Avatar from "./Avatar/Avatar";
 import MenuApp from "./MenuApp/MenuApp";
 import Options from "./Options/Options";
 
-function BarraLateral({ setAplicacionActual, Aplicaciones }) {
+function BarraLateral({ setAplicacionActual, Aplicaciones, className }) {
   return (
-    <aside className="barra-lateral" id="sidebar">
+    <aside className={`barra-lateral ${className || ''}`} id="sidebar">
       <div className="avatar">
         <Avatar
           src={"https://avatars.githubusercontent.com/u/100534316?v=4"}
