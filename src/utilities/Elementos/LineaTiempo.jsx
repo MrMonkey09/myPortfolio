@@ -5,12 +5,8 @@ function PuntoTiempo({ Punto }) {
   const descripcionHtml = useRef(null);
 
   useEffect(() => {
-    console.log("PuntoTiempo: ", Punto);
-    console.log("PuntoTiempo descripcionHtml: ", descripcionHtml.current);
     const descripcionFormateada = Punto.descripcion.replace(/\n/g, "<br>");
     descripcionHtml.current.innerHTML = descripcionFormateada;
-    console.log("PuntoTiempo descripcionFormateada: ", descripcionHtml.current);
-    console.log("PuntoTiempo texto formateado: ", descripcionFormateada);
   }, [descripcionHtml]);
 
   return (

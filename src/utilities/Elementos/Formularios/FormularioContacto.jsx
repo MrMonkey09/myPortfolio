@@ -1,21 +1,21 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react';
+import { useState } from "react";
 import SelectorTipoFormulario from "./SelectorTipoFormulario";
-import './FormularioContacto.css';
+import "./FormularioContacto.css";
 
-function FormularioContacto({ Conf }) {
+function FormularioContacto({ Conf, enviarFormulario }) {
   const [formData, setFormData] = useState({});
 
   const handleChange = (campo, valor) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [campo]: valor
+      [campo]: valor,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Datos del formulario:', formData);
+    enviarFormulario(formData);
   };
 
   let formulario = Object.keys(Conf);
@@ -27,11 +27,8 @@ function FormularioContacto({ Conf }) {
         return (
           <div key={campoConfig.id ?? 0} className="campo-formulario">
             <label htmlFor={campo}>{campoConfig.label || campo}</label>
-            {SelectorTipoFormulario(
-              campoConfig, 
-              campo, 
-              {},
-              (valor) => handleChange(campo, valor)
+            {SelectorTipoFormulario(campoConfig, campo, {}, (valor) =>
+              handleChange(campo, valor)
             )}
           </div>
         );

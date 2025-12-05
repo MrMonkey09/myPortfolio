@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
   res.send("API de Portafolio activa 🚀");
 });
 
-app.use("/api/notion", notionRoutes);
+app.use("/", notionRoutes);
 
 app.listen(port, () => {
   console.log(`Servidor API iniciado en http://localhost:${port}`);

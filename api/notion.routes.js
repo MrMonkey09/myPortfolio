@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { Client } from "@notionhq/client";
 import dotenv from "dotenv";
+import { addPageToDB, getData } from "./bd.js";
 dotenv.config({ path: "./api/dev.env" });
 
 const router = Router();
-const notion = new Client({ auth: process.env.NOTION_TOKEN });
 
 // Middleware de protección básica por API KEY (puedes mejorarlo más adelante)
 router.use((req, res, next) => {
@@ -16,11 +15,9 @@ router.use((req, res, next) => {
 });
 
 // Endpoint protegido con API Key
-router.get("/cerebro", async (req, res) => {
+router.get("/mostrar", async (req, res) => {
   try {
-    const results = await notion.databases.query({
-      database_id: process.env.NOTION_DB_ID,
-    });
+    const results = await getData();
     res.json(results);
   } catch (error) {
     console.error("Error consultando Notion:", error);
@@ -28,16 +25,55 @@ router.get("/cerebro", async (req, res) => {
   }
 });
 
-router.post("/cerebro/<id>", async (req, res) => {
-  const dbID = req.params.id;
+/* Añadir Pagina */
+router.post("/enviar", async (req, res) => {
   try {
-    const results = await notion.databases.query({
-      database_id: dbID,
+    const formulario = req.body;
+    console.log("Datos recibidos en backend:", formulario);
+    const results = await addPageToDB({
+      Nombre: {
+        type: "title",
+        title: [{ type: "text", text: { content: formulario["Nombre"] } }],
+      },
+      "Correo electrónico": {
+        type: "email",
+        email: formulario["Correo"],
+      },
+      Teléfono: {
+        type: "phone_number",
+        phone_number: formulario["N° de Contacto"],
+      },
+      "Red Social Preferente": {
+        type: "url",
+        url: formulario["Red Social Preferente"] || null,
+      },
+      Mensaje: {
+        type: "rich_text",
+        rich_text: [
+          {
+            type: "text",
+            text: {
+              content: formulario["Mensaje"],
+              link: null,
+            },
+            annotations: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              underline: false,
+              code: false,
+              color: "default",
+            },
+            plain_text: formulario["Mensaje"],
+            href: null,
+          },
+        ],
+      },
     });
-    res.json(results);
+    res.json(formulario);
   } catch (error) {
-    console.error("Error obteniendo página de Notion:", error);
-    res.status(500).json({ error: "Error obteniendo página de Notion" });
+    console.error("Error consultando Notion:", error);
+    res.status(500).json({ error: "Error consultando Notion" });
   }
 });
 

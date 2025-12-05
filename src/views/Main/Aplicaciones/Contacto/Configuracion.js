@@ -18,7 +18,7 @@ const Configuracion = {
         icono: "assets/images/iconos/img-prueba.svg",
         ejemplo: "Alfredo Rodriguez Markraci",
         ayuda: "",
-        necesario: true,
+        requerido: true,
       },
       Correo: {
         id: 2,
@@ -28,7 +28,7 @@ const Configuracion = {
         ejemplo: "alfredo@makraci.com",
         ayuda:
           "El correo debe ser mayor a 6 caracteres dada la seguridad del sistema",
-        necesario: true,
+        requerido: true,
       },
       "N° de Contacto": {
         id: 3,
@@ -39,7 +39,7 @@ const Configuracion = {
         ejemplo: "912345678",
         ayuda:
           "El número de contacto debe contener el dígito 9 seguido de los 8 dígitos correspondientes a móviles Chilenos",
-        necesario: true,
+        requerido: true,
       },
       "Red Social Preferente": {
         id: 4,
@@ -47,7 +47,6 @@ const Configuracion = {
         icono: "assets/images/iconos/img-prueba.svg",
         ejemplo: "https://www.instagram.com/tuperfil/",
         ayuda: "",
-        necesario: true,
       },
       Mensaje: {
         id: 5,
@@ -56,7 +55,7 @@ const Configuracion = {
         ejemplo:
           "Hola soy Alfredo, me gustaría... | Hola soy Alfredo, tengo un emprendimiento podrias ayudarme con...",
         ayuda: "",
-        necesario: true,
+        requerido: true,
       },
     },
     contactos: [

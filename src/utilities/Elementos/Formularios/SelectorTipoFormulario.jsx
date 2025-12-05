@@ -16,6 +16,7 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
           name={nombreCampo}
           id={campo.id}
           onChange={handleChange}
+          required={campo.requerido || false}
         />
       );
     case "cajaTexto":
@@ -28,6 +29,7 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
           id={campo.id}
           rows={4}
           onChange={handleChange}
+          required={campo.requerido || false}
         />
       );
     case "numero":
@@ -39,6 +41,7 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
           placeholder={campo.ejemplo}
           id={campo.id}
           onChange={handleChange}
+          required={campo.requerido || false}
         />
       );
     case "correo":
@@ -50,6 +53,7 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
           placeholder={campo.ejemplo}
           id={campo.id}
           onChange={handleChange}
+          required={campo.requerido || false}
         />
       );
     case "enlace":
@@ -61,6 +65,7 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
           placeholder={campo.ejemplo}
           id={campo.id}
           onChange={handleChange}
+          required={campo.requerido || false}
         />
       );
     default:

@@ -5,7 +5,6 @@ function TarjetasIncrustadas({ Conf }) {
   return (
     <ul className="tarjetas">
       {tarjetas.map((tarjeta) => {
-        console.log({ tarjeta });
         return (
           <li key={tarjeta.id ?? 0} className="tarjeta">
             <div id="contenedor-imagen">

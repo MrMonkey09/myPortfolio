@@ -13,8 +13,6 @@ function Main() {
     setMenuMobileOpen(!menuMobileOpen);
   };
 
-
-
   return (
     <>
       <button
