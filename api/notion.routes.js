@@ -30,7 +30,7 @@ router.post("/enviar", async (req, res) => {
   try {
     const formulario = req.body;
     console.log("Datos recibidos en backend:", formulario);
-    const results = await addPageToDB({
+    await addPageToDB({
       Nombre: {
         type: "title",
         title: [{ type: "text", text: { content: formulario["Nombre"] } }],
