@@ -5,12 +5,14 @@ import HabilidadesInfo from "./Habilidades/Informacion";
 import ContactoInfo from "./Contacto/Informacion";
 import ProyectosInfo from "./Proyectos/Informacion";
 
-const Aplicaciones = [
-  SobreMiInfo,
-  EducacionInfo,
-  HabilidadesInfo,
-  ContactoInfo,
-  ProyectosInfo
+import type { Aplicacion } from "../../../types";
+
+const Aplicaciones: readonly Aplicacion[] = [
+  SobreMiInfo as Aplicacion,
+  EducacionInfo as Aplicacion,
+  HabilidadesInfo as Aplicacion,
+  ContactoInfo as unknown as Aplicacion,
+  ProyectosInfo as Aplicacion
 ];
 
 export default Aplicaciones;

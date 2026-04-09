@@ -1,6 +1,14 @@
 import './Avatar.css';
 
-function Avatar({ src, name1, name2, nameIcon, role }) {
+interface AvatarProps {
+  readonly src: string;
+  readonly name1: string;
+  readonly name2: string;
+  readonly nameIcon: string;
+  readonly role: string;
+}
+
+function Avatar({ src, name1, name2, nameIcon, role }: Readonly<AvatarProps>) {
   return (
     <section id="avatar">
       <div className="avatar-picture">

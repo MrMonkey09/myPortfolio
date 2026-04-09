@@ -4,14 +4,15 @@ import "./Estilo.css";
 import FormularioContacto from "@utilities/Elementos/Formularios/FormularioContacto";
 import TarjetasDestacadas from "@utilities/Elementos/TarjetasDestacadas";
 import { notionCommit } from "@utilities/api";
+import type { FormData } from "../../../../types";
 
 function Contacto() {
-  async function recepcionFormulario(formData) {
-    let formulario = { ...formData };
+  async function recepcionFormulario(formData: FormData) {
+    const formulario = { ...formData };
     formulario["Mensaje"] = formulario["Mensaje"].replace(/\n/g, " ~ ");
     try {
       await notionCommit(JSON.stringify(formulario));
-    } catch (error) {
+    } catch {
       window.alert("Error al enviar el formulario, por favor enviar mensaje via Whatsapp +56 9 64373971.");
     }
   }

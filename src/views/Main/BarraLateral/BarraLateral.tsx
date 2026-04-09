@@ -1,9 +1,15 @@
 import './BarraLateral.css';
 import Avatar from "./Avatar/Avatar";
 import MenuApp from "./MenuApp/MenuApp";
-import Options from "./Options/Options";
+import type { Aplicacion } from "../../../types";
 
-function BarraLateral({ setAplicacionActual, Aplicaciones, className }) {
+interface BarraLateralProps {
+  readonly setAplicacionActual: (app: Aplicacion) => void;
+  readonly Aplicaciones: readonly Aplicacion[];
+  readonly className?: string;
+}
+
+function BarraLateral({ setAplicacionActual, Aplicaciones, className }: Readonly<BarraLateralProps>) {
   return (
     <aside className={`barra-lateral ${className || ''}`} id="sidebar">
       <div className="avatar">

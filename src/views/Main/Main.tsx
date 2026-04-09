@@ -5,7 +5,9 @@ import "./Main.css";
 import Router from "./Router";
 import Aplicaciones from "./Aplicaciones/Aplicaciones";
 
-function Main() {
+import type { ReactNode } from "react";
+
+function Main(): ReactNode {
   const [aplicacionActual, setAplicacionActual] = useState(Aplicaciones[0]);
   const [menuMobileOpen, setMenuMobileOpen] = useState(false);
 

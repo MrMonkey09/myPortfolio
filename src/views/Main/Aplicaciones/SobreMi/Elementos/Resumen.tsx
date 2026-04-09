@@ -1,6 +1,13 @@
 import "./Resumen.css";
-/* eslint-disable react/prop-types */
-function Resumen({ resumen }) {
+
+interface ResumenProps {
+  readonly resumen: {
+    readonly portada: string;
+    readonly descripcion: string;
+  };
+}
+
+function Resumen({ resumen }: Readonly<ResumenProps>) {
   return (
     <div id="resumen">
       <h3>

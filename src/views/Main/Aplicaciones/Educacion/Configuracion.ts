@@ -1,4 +1,4 @@
-const Configuracion = new Object({
+const Configuracion = {
   contenido: {
     encabezado: {
       saludo: "Esta es mi",
@@ -38,6 +38,6 @@ const Configuracion = new Object({
       },
     ],
   },
-});
+};
 
 export default Configuracion;

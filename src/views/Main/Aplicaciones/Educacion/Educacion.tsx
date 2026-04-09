@@ -1,7 +1,7 @@
-import Encabezado from "@utilities/Elementos/Encabezado/Encabezado.jsx";
-import Configuracion from "./Configuracion.js";
+import Encabezado from "@utilities/Elementos/Encabezado/Encabezado";
+import Configuracion from "./Configuracion";
 import "./Estilo.css";
-import LineaTiempo from "@utilities/Elementos/LineaTiempo.jsx";
+import LineaTiempo from "@utilities/Elementos/LineaTiempo";
 
 function Educacion() {
   

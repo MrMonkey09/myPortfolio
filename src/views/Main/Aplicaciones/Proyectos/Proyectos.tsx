@@ -1,8 +1,6 @@
 import Encabezado from "@utilities/Elementos/Encabezado/Encabezado.jsx";
 import Configuracion from "./Configuracion";
 import "./Estilos.css";
-import TarjetasIncrustadas2 from "@utilities/Elementos/TarjetasIncrustadas2";
-
 function Proyectos() {
   return (
     <>
