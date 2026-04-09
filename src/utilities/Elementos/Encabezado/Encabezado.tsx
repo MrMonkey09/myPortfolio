@@ -1,5 +1,9 @@
-/* eslint-disable react/prop-types */
+import type { EncabezadoData } from "../../../types";
 import "./Encabezado.css"
+
+interface EncabezadoProps {
+  readonly encabezado?: EncabezadoData;
+}
 
 function Encabezado({
   encabezado = {
@@ -8,7 +12,7 @@ function Encabezado({
     nombre02: "",
     datos: { ciudad: "", correo: "", github: "" },
   },
-}) {
+}: Readonly<EncabezadoProps>) {
   return (
     <div id="encabezado">
       <div id="saludo">

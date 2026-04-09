@@ -1,16 +1,23 @@
 import { useEffect, useRef } from "react";
+import type { PuntoTiempoData } from "../../types";
 
-/* eslint-disable react/prop-types */
-function PuntoTiempo({ Punto }) {
-  const descripcionHtml = useRef(null);
+interface PuntoTiempoProps {
+  readonly Punto: PuntoTiempoData;
+  readonly CustomStyle?: unknown;
+}
+
+function PuntoTiempo({ Punto }: Readonly<PuntoTiempoProps>) {
+  const descripcionHtml = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    const descripcionFormateada = Punto.descripcion.replace(/\n/g, "<br>");
-    descripcionHtml.current.innerHTML = descripcionFormateada;
-  }, [descripcionHtml]);
+    if (descripcionHtml.current) {
+      const descripcionFormateada = Punto.descripcion.replace(/\n/g, "<br>");
+      (descripcionHtml.current as HTMLElement).innerHTML = descripcionFormateada;
+    }
+  }, [Punto.descripcion]);
 
   return (
-    <li className="timeLineItem" id={Punto.id}>
+    <li className="timeLineItem" id={String(Punto.id)}>
       <article id="timeLineItemContent">
         <header className="header">
           <div className="header-left">
@@ -32,7 +39,7 @@ function PuntoTiempo({ Punto }) {
             <p ref={descripcionHtml}>{Punto.descripcion}</p>
           </div>
           <div className="tags">
-            {Punto.etiquetas && Punto.etiquetas.map((etiqueta, idx) => (
+            {Punto.etiquetas && Punto.etiquetas.map((etiqueta: string, idx: number) => (
               <span key={idx} className="badge">
               <div className="fa-icon-wrapper d-inline me-2 opacity-25">
                 <i className="fa-icon fa-solid fa-bullseye"></i>
@@ -47,8 +54,13 @@ function PuntoTiempo({ Punto }) {
   );
 }
 
-function LineaTiempo({ Conf, CustomStyle }) {
-  let Puntos = Conf;
+interface LineaTiempoProps {
+  readonly Conf: readonly PuntoTiempoData[];
+  readonly CustomStyle?: Record<string, unknown>;
+}
+
+function LineaTiempo({ Conf, CustomStyle }: Readonly<LineaTiempoProps>) {
+  const Puntos = Conf;
   return (
     <ul id="timeLine">
       {Puntos.map((Punto) => {

@@ -1,5 +1,13 @@
-function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
-  const handleChange = (e) => {
+import type { ReactNode, ChangeEvent } from "react";
+import type { CampoFormulario } from "../../../types";
+
+function SelectorTipoFormulario(
+  campo: CampoFormulario,
+  nombreCampo: string,
+  CustomStyle: Record<string, unknown>,
+  onChange: (value: string) => void
+): ReactNode {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (onChange) {
       onChange(e.target.value);
     }
@@ -12,9 +20,9 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
           className="campo-formulario-input"
           type="text"
           placeholder={campo.ejemplo}
-          enterKeyHint={campo.ayuda}
+          title={campo.ayuda}
           name={nombreCampo}
-          id={campo.id}
+          id={String(campo.id)}
           onChange={handleChange}
           required={campo.requerido || false}
         />
@@ -24,9 +32,9 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
         <textarea
           className="campo-formulario-textarea"
           placeholder={campo.ejemplo}
-          enterKeyHint={campo.ayuda}
+          title={campo.ayuda}
           name={nombreCampo}
-          id={campo.id}
+          id={String(campo.id)}
           rows={4}
           onChange={handleChange}
           required={campo.requerido || false}
@@ -39,7 +47,7 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
           type="number"
           name={nombreCampo}
           placeholder={campo.ejemplo}
-          id={campo.id}
+          id={String(campo.id)}
           onChange={handleChange}
           required={campo.requerido || false}
         />
@@ -51,7 +59,7 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
           type="email"
           name={nombreCampo}
           placeholder={campo.ejemplo}
-          id={campo.id}
+          id={String(campo.id)}
           onChange={handleChange}
           required={campo.requerido || false}
         />
@@ -63,7 +71,7 @@ function SelectorTipoFormulario(campo, nombreCampo, CustomStyle, onChange) {
           type="url"
           name={nombreCampo}
           placeholder={campo.ejemplo}
-          id={campo.id}
+          id={String(campo.id)}
           onChange={handleChange}
           required={campo.requerido || false}
         />

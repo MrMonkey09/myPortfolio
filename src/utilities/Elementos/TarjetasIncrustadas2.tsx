@@ -1,4 +1,14 @@
-function TarjetasIncrustadas2({Configuracion}) {
+import type { Proyecto } from "../../types";
+
+interface TarjetasIncrustadas2Props {
+  readonly Configuracion: {
+    readonly contenido: {
+      readonly proyectos: readonly Proyecto[];
+    };
+  };
+}
+
+function TarjetasIncrustadas2({ Configuracion }: Readonly<TarjetasIncrustadas2Props>) {
   return Configuracion.contenido.proyectos.map((proyecto) => (
     <article key={proyecto.id} className="proyecto-card">
       <img

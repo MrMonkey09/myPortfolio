@@ -1,24 +1,29 @@
-/* eslint-disable react/prop-types */
 import { useState } from "react";
 import SelectorTipoFormulario from "./SelectorTipoFormulario";
 import "./FormularioContacto.css";
+import type { CampoFormulario, FormData } from "../../../types";
 
-function FormularioContacto({ Conf, enviarFormulario }) {
+interface FormularioContactoProps {
+  readonly Conf: Record<string, CampoFormulario>;
+  readonly enviarFormulario: (data: FormData) => void;
+}
+
+function FormularioContacto({ Conf, enviarFormulario }: Readonly<FormularioContactoProps>) {
   const [formData, setFormData] = useState({});
 
-  const handleChange = (campo, valor) => {
+  const handleChange = (campo: string, valor: string) => {
     setFormData((prev) => ({
       ...prev,
       [campo]: valor,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     enviarFormulario(formData);
   };
 
-  let formulario = Object.keys(Conf);
+  const formulario = Object.keys(Conf);
 
   return (
     <form onSubmit={handleSubmit} className="formulario-contacto">

@@ -1,7 +1,11 @@
-/* eslint-disable react/prop-types */
+import type { Tarjeta } from "../../types";
 
-function TarjetasIncrustadas({ Conf }) {
-  let tarjetas = Conf;
+interface TarjetasIncrustadasProps {
+  readonly Conf: readonly Tarjeta[];
+}
+
+function TarjetasIncrustadas({ Conf }: Readonly<TarjetasIncrustadasProps>) {
+  const tarjetas = Conf;
   return (
     <ul className="tarjetas">
       {tarjetas.map((tarjeta) => {
