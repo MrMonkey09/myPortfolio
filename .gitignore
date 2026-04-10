@@ -8,6 +8,10 @@ pnpm-debug.log*
 lerna-debug.log*
 bun-debug.log*
 
+# AI Agent / Pre-commit Hook Temporary Files
+lint_results*.txt
+ts_errors*.txt
+
 node_modules
 package-lock.json
 dist
