@@ -5,7 +5,7 @@
  * @returns {Promise<any>} - La respuesta en JSON
  */
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const url = `${"https://buzon.skills.avdev.cl"}${endpoint}`;
+  const url = `${import.meta.env.VITE_BASE_URL || ""}${endpoint}`;
   const defaultHeaders = {
     "Content-Type": "application/json",
     // "x-api-key": "TU_API_KEY", // Descomenta y agrega tu API key si tu endpoint es privado
@@ -27,11 +27,9 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
 // Ejemplo específico para obtener datos de Notion
 export async function notionCommit(formulario: string) {
-  // Descomenta la línea de API key y úsala si tu endpoint lo requiere
-  // const API_KEY = "TU_API_KEY";
-  return apiFetch(`/enviar`, {
+  return apiFetch(`/enviar.php`, {
     method: "POST",
-    headers: { "x-api-key": "MI_CLAVE_SECRETA_123" },
+    headers: { "x-api-key": import.meta.env.VITE_API_KEY || "" },
     body: formulario,
   });
 }
