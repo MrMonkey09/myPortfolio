@@ -1,4 +1,6 @@
-import SobreMi from "./SobreMi";
+import { lazy } from "react";
+
+const SobreMi = lazy(() => import("./SobreMi"));
 
 const SobreMiInfo =   {
   ID: "001",

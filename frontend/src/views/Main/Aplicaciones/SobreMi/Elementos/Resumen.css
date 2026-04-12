@@ -21,13 +21,20 @@
 }
 
 #resumen .contenedor-descripcion img {
-  width: 16%;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--fuente-primaria);
+  flex-shrink: 0;
 }
 
 #resumen .contenedor-descripcion .descripcion {
-  width: 80%;
-  text-align: center;
-  font-size: 1.2rem;
+  flex: 1;
+  text-align: left;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--fuente-secundaria);
 }
 
 /* Responsividad */

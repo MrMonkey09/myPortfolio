@@ -1,5 +1,5 @@
 import "./Intereses.css";
-import TarjetasDestacadas from "@utilities/Elementos/TarjetasDestacadas";
+import CarruselInteresesInfinito from "./CarruselInteresesInfinito";
 import type { Tarjeta } from "../../../../../types";
 
 interface InteresesProps {
@@ -12,7 +12,7 @@ function Intereses({ intereses }: Readonly<InteresesProps>) {
       <h3>
         Intereses <span>personales</span>
       </h3>
-      <TarjetasDestacadas Conf={intereses} />
+      <CarruselInteresesInfinito intereses={intereses} />
     </div>
   );
 }

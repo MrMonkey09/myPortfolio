@@ -1,0 +1,25 @@
+/* Tarjetas con enlace: el <a> ocupa la tarjeta y hereda el layout flex */
+.tarjeta.tarjeta--con-enlace {
+  padding: 0;
+}
+
+.tarjeta-enlace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+  text-align: inherit;
+  border-radius: inherit;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tarjeta-enlace:focus-visible {
+  outline: 2px solid var(--fuente-primaria, #74ff4e);
+  outline-offset: 2px;
+}
