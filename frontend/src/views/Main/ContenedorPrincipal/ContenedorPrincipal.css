@@ -1,9 +1,11 @@
 .contenido-principal {
-  width: 80%;
-  height: 95%;
+  flex: 1; /* Take remaining space */
+  height: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
-  justify-content: flex-start;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Prevents overflow */
 }
 
 @media (max-width: 768px) {

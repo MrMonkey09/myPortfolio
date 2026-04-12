@@ -1,17 +1,30 @@
+/* Contenedor principal para el layout */
+.main-layout {
+  display: flex;
+  flex-flow: row nowrap;
+  width: 100%;
+  max-width: 100%;
+  height: 100vh;
+  gap: 1.5rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: transparent; /* Allow index.css background GIF to show through */
+  overflow: hidden;
+}
+
 /* Estilo para el subcontenedor */
 .sub-contenedor {
   width: 100%;
   height: 100%;
-  background: var(--contenedor);
-  border-radius: 2%;
+  background: rgba(38, 38, 38, 0.85); /* Semi-transparent to show GIF */
+  backdrop-filter: blur(4px); /* Optional: adds a nice glass effect */
+  border-radius: 12px;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--fuente-primaria) transparent;
   display: flex;
   flex-flow: column nowrap;
   justify-content: start;
-  align-items: center;
+  align-items: stretch; /* Prevents centered children from clipping on the left if they overflow */
 }
 
 /* Estilos para la versión móvil */
@@ -64,9 +77,26 @@
   display: none;
 }
 
+.loading-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  padding: 2rem;
+  color: var(--fuente-secundaria);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
 @media (max-width: 768px) {
   .menu-mobile-toggle {
     display: flex;
+  }
+
+  .main-layout {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
   }
 
   .sub-contenedor {

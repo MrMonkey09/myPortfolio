@@ -2,17 +2,13 @@
   width: 100%;
   height: 100%;
   display: flex;
-  flex-flow: column wrap;
-  justify-content: start;
-  align-items: start;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
   margin: 0;
   padding: 0;
-  overflow: auto;
+  overflow: hidden;
   list-style-type: none;
-}
-
-#menu-app::-webkit-scrollbar {
-  display: none;
 }
 
 .menu-app-item {
@@ -20,23 +16,39 @@
   height: 60px;
   display: flex;
   flex-flow: row nowrap;
-  justify-content: space-around;
+  justify-content: flex-start;
   align-items: center;
-  color: var(--fuente-secundaria);
-  border: 1px solid black;
-  border-left: none;
-  border-right: none;
+  color: var(--fuente-secundaria, #e2e2e2);
+  border-bottom: 1px solid rgba(116, 255, 78, 0.05);
+  padding: 0 1.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  gap: 1rem;
+}
+
+.menu-app-item:hover {
+  background: rgba(116, 255, 78, 0.05);
+  color: #74ff4e;
+  box-shadow: inset 4px 0 0 #74ff4e;
 }
 
 .menu-app-item svg {
-  width: 12%;
-  height: auto;
-  fill: #e8eaed;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  transition: transform 0.3s ease;
+}
+
+.menu-app-item:hover svg {
+  transform: translateX(3px) scale(1.1);
+  filter: drop-shadow(0 0 5px #74ff4e);
 }
 
 .menu-app-item span {
-  width: 77%;
-  font-size: 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
 }
 
 /* Responsividad */
@@ -57,7 +69,7 @@
   .menu-app-item span {
     padding: 0 2px;
     font-size: 1.2rem;
-    word-break: break-all;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: normal;
   }
 }

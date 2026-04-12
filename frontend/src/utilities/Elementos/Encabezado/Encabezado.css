@@ -46,13 +46,37 @@
 }
 
 #encabezado #datos {
-  display: flex;
+  display: none; /* Hidden globally to avoid redundancy with Sidebar contact info */
   flex-flow: row wrap;
   justify-content: center;
   align-items: center;
   width: 100%;
-  gap: 10px 20px;
-  margin-top: 10px;
+  gap: 1rem 2rem;
+  margin-top: 1.5rem;
+}
+
+#encabezado .dato-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  color: var(--fuente-secundaria);
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50px;
+  border: 1px solid rgba(116, 255, 78, 0.1);
+  transition: all 0.3s ease;
+}
+
+#encabezado .dato-item:hover {
+  background: rgba(116, 255, 78, 0.1);
+  border-color: var(--fuente-primaria);
+  transform: translateY(-2px);
+}
+
+#encabezado .dato-item i {
+  color: var(--fuente-primaria);
+  font-size: 1.1rem;
 }
 
 #encabezado #borde-punteado {
@@ -104,8 +128,6 @@
   }
 
   #encabezado #datos {
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+    display: none;
   }
 }

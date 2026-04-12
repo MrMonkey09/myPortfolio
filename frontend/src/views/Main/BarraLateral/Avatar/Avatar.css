@@ -1,318 +1,121 @@
 #avatar {
   width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
 }
 
 .avatar-picture {
   width: 100%;
-  height: 55%;
+  aspect-ratio: 1 / 1;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .avatar-picture img {
-  width: 62%;
-  height: 100%;
-  border-radius: 10%;
-  filter: drop-shadow(1px 1px 5px gray) drop-shadow(1px 1px 5px black)
-    drop-shadow(1px 1px 5px gray);
+  width: 80%;
+  max-width: 180px;
+  height: auto;
+  border-radius: 20px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  transition: transform 0.3s ease;
+}
+
+.avatar-picture img:hover {
+  transform: scale(1.05);
 }
 
 .avatar-title {
   width: 100%;
-  height: 10%;
   text-align: center;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
+  font-weight: 700;
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   justify-content: center;
   align-items: center;
-  gap: 9px;
-  margin: 30px 0 10px 0;
-  padding: 0;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0.5rem 0;
+  color: #fff;
 }
 
 .avatar-title span {
-  color: var(--fuente-secundaria);
+  color: var(--fuente-primaria);
 }
 
 .avatar-role {
   width: 100%;
-  height: 5%;
   text-align: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: var(--fuente-secundaria);
+  opacity: 0.8;
 }
 
-/* Responsividad */
+/* Responsividad Simplificada */
 
-/* Mobile S*/
-@media (max-width: 320px) {
+/* Mobile & Tablet Sidebar Menu */
+@media (max-width: 768px) {
   #avatar {
-    justify-content: space-evenly;
-    padding-bottom: 15px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+  }
+
+  .avatar-picture {
+    width: 80px;
+    height: 80px;
+    aspect-ratio: auto;
+  }
+
+  .avatar-picture img {
+    width: 100%;
+    max-width: none;
+    border-radius: 12px;
+  }
+
+  .avatar-content-text {
+    display: flex;
     flex-direction: column;
-    flex-wrap: wrap;
+    align-items: flex-start;
+    text-align: left;
+  }
 
-    .avatar-picture {
-      height: 100%;
-      width: 53%;
+  .avatar-title {
+    font-size: 1.4rem;
+    margin: 0;
+    justify-content: flex-start;
+    text-align: left;
+  }
 
-      img {
-        width: 74%;
-        height: 60%;
-      }
-    }
-
-    .avatar-title {
-      font-size: 1.5rem;
-      margin: 0;
-      width: 52%;
-      height: 65%;
-      gap: 0;
-      flex-flow: row wrap;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 100%;
-        height: 50%;
-      }
-      span {
-        width: 30%;
-        display: inline;
-      }
-    }
-    .avatar-role {
-      font-size: 1rem;
-      width: 52%;
-      height: 25%;
-    }
+  .avatar-role {
+    font-size: 0.95rem;
+    text-align: left;
+    width: auto;
   }
 }
 
-/* Mobile M */
-@media (max-width: 375px) and (min-width: 321px) {
+/* Extra Small Mobile */
+@media (max-width: 400px) {
   #avatar {
-    justify-content: space-evenly;
-    padding-bottom: 15px;
-    flex-direction: column;
-    flex-wrap: wrap;
-
-    .avatar-picture {
-      height: 100%;
-      width: 52%;
-
-      img {
-        width: 76%;
-        height: 64%;
-      }
-    }
-    .avatar-title {
-      font-size: 1.5rem;
-      margin: 0;
-      width: 52%;
-      height: 65%;
-      gap: 0;
-      flex-flow: row wrap;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 100%;
-        height: 50%;
-      }
-      span {
-        width: 30%;
-        display: inline;
-      }
-    }
-    .avatar-role {
-      font-size: 1rem;
-      width: 52%;
-      height: 25%;
-    }
+    gap: 1rem;
+    padding: 0.75rem 1rem;
   }
-}
 
-/* Mobile L */
-@media (max-width: 425px) and (min-width: 376px) {
-  #avatar {
-    justify-content: space-evenly;
-    padding-bottom: 15px;
-    flex-direction: column;
-    flex-wrap: wrap;
-
-    .avatar-picture {
-      height: 100%;
-      width: 50%;
-
-      img {
-        width: 76%;
-        height: 67%;
-      }
-    }
-    .avatar-title {
-      font-size: 1.5rem;
-      margin: 0;
-      width: 52%;
-      height: 65%;
-      gap: 0;
-      flex-flow: row wrap;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 100%;
-        height: 50%;
-      }
-      span {
-        width: 30%;
-        display: inline;
-      }
-    }
-    .avatar-role {
-      font-size: 1rem;
-      width: 52%;
-      height: 25%;
-    }
+  .avatar-picture {
+    width: 60px;
+    height: 60px;
   }
-}
 
-/* Tablet */
-@media (max-width: 596px) and (min-width: 426px) {
-  #avatar {
-    justify-content: space-evenly;
-    padding-bottom: 15px;
-    flex-direction: column;
-    flex-wrap: wrap;
-
-    .avatar-picture {
-      height: 100%;
-      width: 45%;
-
-      img {
-        width: 75%;
-        height: 70%;
-      }
-    }
-    .avatar-title {
-      font-size: 1.5rem;
-      margin: 0;
-      width: 52%;
-      height: 65%;
-      gap: 0;
-      flex-flow: row wrap;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 100%;
-        height: 50%;
-      }
-      span {
-        width: 30%;
-        display: inline;
-      }
-    }
-    .avatar-role {
-      font-size: 1rem;
-      width: 52%;
-      height: 25%;
-    }
+  .avatar-title {
+    font-size: 1.2rem;
   }
-}
 
-@media (max-width: 768px) and (min-width: 597px) {
-  #avatar {
-    justify-content: space-evenly;
-    padding-bottom: 15px;
-    flex-direction: column;
-    flex-wrap: wrap;
-
-    .avatar-picture {
-      height: 100%;
-      width: 44%;
-
-      img {
-        width: 60%;
-        height: 70%;
-      }
-    }
-    .avatar-title {
-      font-size: 1.5rem;
-      margin: 0;
-      width: 52%;
-      height: 65%;
-      gap: 0;
-      flex-flow: row wrap;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 100%;
-        height: 50%;
-      }
-      span {
-        width: 30%;
-        display: inline;
-      }
-    }
-    .avatar-role {
-      font-size: 1rem;
-      width: 52%;
-      height: 25%;
-    }
-  }
-}
-
-/* Laptop */
-@media (max-width: 924px) and (min-width: 769px) {
-  #avatar {
-    .avatar-picture {
-      img {
-        width: 90%;
-        height: 70%;
-      }
-    }
-  }
-}
-
-@media (max-width: 1024px) and (min-width: 925px) {
-  #avatar {
-    .avatar-picture {
-      img {
-        width: 87%;
-        height: 78%;
-      }
-    }
-  }
-}
-
-/* Laptop-L */
-@media (max-width: 1224px) and (min-width: 1025px) {
-  #avatar {
-    .avatar-picture {
-      img {
-        width: 85%;
-        height: 90%;
-      }
-    }
-  }
-}
-
-@media (max-width: 1440px) and (min-width: 1225px) {
-  #avatar {
-    .avatar-picture {
-      img {
-        width: 82%;
-        height: 95%;
-      }
-    }
+  .avatar-role {
+    font-size: 0.85rem;
   }
 }

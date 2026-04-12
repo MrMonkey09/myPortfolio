@@ -1,45 +1,39 @@
 .avatar {
   width: 100%;
-  height: 45%;
+  flex: 0 0 auto;
   display: flex;
   flex-flow: column nowrap;
   justify-content: center;
   align-items: center;
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid rgba(116, 255, 78, 0.1);
 }
 
 .menu-app {
   width: 100%;
-  height: 60%;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: column nowrap;
   justify-content: start;
-  align-items: start;
+  align-items: stretch;
   margin: 0;
   padding: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   list-style-type: none;
 }
 
-.options {
-  width: 100%;
-  height: 8%;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
-  gap: 0 17%;
-  align-items: center;
-  border-top: 1px solid black;
-}
-
 .barra-lateral {
-  width: 18%;
-  height: 95%;
-  background: var(--contenedor);
+  flex: 0 0 250px;
+  height: 100%;
+  background: rgba(38, 38, 38, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   flex-flow: column nowrap;
-  border-radius: 10px;
-  transition: left 0.3s ease-in-out;
+  border-radius: 12px;
+  border-right: 1px solid rgba(116, 255, 78, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Responsividad */
@@ -51,9 +45,10 @@
     width: 100%;
     height: 90%;
     z-index: 1000;
-    transition: top 0.3s ease-in-out;
-    background: var(--contenedor);
-    border-radius: 0 0 10px 10px;
+    transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(38, 38, 38, 0.95);
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
 
   .barra-lateral.open {
@@ -61,15 +56,12 @@
   }
 
   .avatar {
-    height: 30%;
-    border-bottom: 1px solid black;
+    flex: 0 0 auto;
   }
 
   .menu-app {
-    height: 70%;
-  }
-
-  .options {
-    height: 10%;
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-flow: column nowrap;
   }
 }
