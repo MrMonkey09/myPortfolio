@@ -1,4 +1,8 @@
 .env.deploy
+.env
+.env.*
 backend/.env
+frontend/.env.development
+frontend/.env.production
 backend/*.log
 backend/contactos_backup.json
