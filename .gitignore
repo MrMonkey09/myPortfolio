@@ -1,0 +1,4 @@
+.env.deploy
+backend/.env
+backend/*.log
+backend/contactos_backup.json
