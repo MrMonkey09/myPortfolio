@@ -13,7 +13,7 @@ const frontend = spawn("npm", ["run", "web:dev"], {
 });
 
 // Arrancar Backend (PHP Built-in Server en puerto 3001)
-const backend = spawn("php", ["-S", "localhost:3001"], {
+const backend = spawn("php", ["-S", "localhost:3001", "-t", "."], {
   cwd: path.join(__dirname, "..", "backend"),
   stdio: "inherit",
   shell: true,
