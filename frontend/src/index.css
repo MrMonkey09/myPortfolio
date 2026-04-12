@@ -12,6 +12,9 @@
   --fuente-principal: "Courier New", Courier, monospace;
 }
 
+/* Nota: El cursor personalizado se maneja via CursorPersonalizado.tsx */
+/* En dispositivos táctiles se restaura el cursor nativo */
+
 /* --- Estilos Globales de Scrollbar (Matrix Style) --- */
 ::-webkit-scrollbar {
   width: 8px;

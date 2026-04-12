@@ -8,56 +8,7 @@
 #tarjetas-destacadas {
   width: 100%;
   flex-shrink: 0;
-
-  .tarjetas {
-    display: flex;
-    flex-flow: row nowrap;
-    gap: 2rem;
-    width: 100%;
-    padding: 1.5rem;
-    margin: 0;
-    list-style-type: none;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
-    scrollbar-color: var(--fuente-primaria) transparent;
-    -webkit-overflow-scrolling: touch;
-
-    .tarjeta {
-      background-color: rgba(255, 255, 255, 0.03);
-      flex: 0 0 320px; /* Fixed width for carousel items */
-      min-height: 140px;
-      display: flex;
-      flex-flow: column nowrap;
-      justify-content: center;
-      align-items: center;
-      border-radius: 20px;
-      padding: 1.25rem;
-      border: 1px solid rgba(116, 255, 78, 0.1);
-      scroll-snap-align: center;
-      transition: transform 0.3s ease;
-      
-      img {
-        width: 3rem;
-        height: 3rem;
-        margin-bottom: 0.5rem;
-      }
-      
-      .contenido {
-        text-align: center;
-        .titulo {
-          font-size: 1.1rem;
-          margin-bottom: 0.25rem;
-          display: block;
-        }
-        .descripcion {
-          font-size: 0.85rem;
-          opacity: 0.7;
-        }
-      }
-    }
-  }
+  padding: 1.5rem;
 }
 
 .tarjetas-incrustadas {

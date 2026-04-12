@@ -1,6 +1,6 @@
 import Encabezado from "@utilities/Elementos/Encabezado/Encabezado";
 import Configuracion from "./Configuracion/Configuracion";
-import TarjetasDestacadas from "@utilities/Elementos/TarjetasDestacadas";
+import CarruselDestacadas from "./Elementos/CarruselDestacadas";
 import TarjetasIncrustadas from "@utilities/Elementos/TarjetasIncrustadas";
 import HabilidadesBackendConf from "./Configuracion/HabilidadesBackend.conf";
 import HabilidadesFrontendConf from "./Configuracion/HabilidadesFrontend.conf";
@@ -12,8 +12,8 @@ function Habilidades() {
     <>
       <Encabezado encabezado={Configuracion.contenido.encabezado} />
       <section id="Habilidades" className="section-fade-in">
-        <article id="tarjetas-destacadas" className="mask-horizontal">
-          <TarjetasDestacadas Conf={HabilidadesDestacadasConf} />
+        <article id="tarjetas-destacadas">
+          <CarruselDestacadas tarjetas={HabilidadesDestacadasConf} />
         </article>
         <article id="backend" className="tarjetas-incrustadas mask-horizontal">
           <h3 className="titulo-seccion">Backend</h3>
