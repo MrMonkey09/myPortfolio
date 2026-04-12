@@ -1,0 +1,319 @@
+/* ============================================
+   SERVICIOS — Design System
+   Dark theme with neon green accents (#74ff4e)
+   ============================================ */
+
+.servicios-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  flex: 1;
+  min-height: 0; /* Important for flex child with overflow */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fuente-primaria) transparent;
+}
+
+/* ---- Navigation Pills ---- */
+.servicios-nav {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem 1rem 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fuente-primaria) transparent;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(116, 255, 78, 0.1);
+}
+
+.servicios-nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(116, 255, 78, 0.15);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--fuente-secundaria);
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.servicios-nav-pill:hover {
+  background: rgba(116, 255, 78, 0.08);
+  border-color: rgba(116, 255, 78, 0.35);
+  color: var(--fuente-primaria);
+}
+
+.servicios-nav-pill--active {
+  background: rgba(116, 255, 78, 0.12);
+  border-color: var(--fuente-primaria);
+  color: var(--fuente-primaria);
+  box-shadow: 0 0 16px rgba(116, 255, 78, 0.15),
+    inset 0 0 8px rgba(116, 255, 78, 0.05);
+}
+
+.servicios-nav-pill__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.servicios-nav-pill__text {
+  font-weight: 500;
+}
+
+/* ---- Content Area ---- */
+.servicios-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 0 0.5rem 2rem 0.5rem;
+}
+
+
+.servicios-content__header {
+  padding: 0 0.25rem;
+}
+
+.servicios-content__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--fuente-primaria);
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.02em;
+}
+
+.servicios-content__subtitle {
+  font-size: 0.9rem;
+  color: var(--fuente-secundaria);
+  margin: 0;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+/* ---- Pricing Cards Grid ---- */
+.servicios-planes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1200px; /* Contain the grid on very wide screens */
+  padding-bottom: 2rem;
+}
+
+/* ---- Individual Plan Card ---- */
+.servicio-plan-card {
+  position: relative;
+  background: linear-gradient(
+    145deg,
+    rgba(38, 38, 38, 0.9) 0%,
+    rgba(30, 30, 30, 0.95) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 1.5rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible; /* Changed to visible to avoid clipping child elements like badges or shadows */
+  min-height: 280px;
+}
+
+.servicio-plan-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(116, 255, 78, 0.2),
+    transparent
+  );
+  transition: background 0.35s ease;
+}
+
+.servicio-plan-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(116, 255, 78, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(116, 255, 78, 0.06);
+}
+
+.servicio-plan-card:hover::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--fuente-primaria),
+    transparent
+  );
+}
+
+/* Highlighted Card */
+.servicio-plan-card--destacado {
+  border-color: rgba(116, 255, 78, 0.25);
+  background: linear-gradient(
+    145deg,
+    rgba(116, 255, 78, 0.06) 0%,
+    rgba(30, 30, 30, 0.95) 100%
+  );
+}
+
+.servicio-plan-card--destacado::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--fuente-primaria),
+    transparent
+  );
+  height: 3px;
+}
+
+/* Badge */
+.servicio-plan-card__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--fuente-primaria);
+  color: #0d0d0d;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+/* Plan Name */
+.servicio-plan-card__nombre {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  padding-right: 4rem;
+}
+
+/* Price */
+.servicio-plan-card__precio {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--fuente-primaria);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* Features List */
+.servicio-plan-card__features {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.servicio-plan-card__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--fuente-secundaria);
+  line-height: 1.35;
+  opacity: 0.85;
+}
+
+.servicio-plan-card__check {
+  color: var(--fuente-primaria);
+  font-weight: 700;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.servicio-plan-card__cta {
+  margin-top: auto;
+  align-self: stretch;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(116, 255, 78, 0.35);
+  background: rgba(116, 255, 78, 0.08);
+  color: var(--fuente-primaria);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+
+.servicio-plan-card__cta:hover {
+  background: rgba(116, 255, 78, 0.18);
+  border-color: var(--fuente-primaria);
+  color: #fff;
+}
+
+.servicio-plan-card__cta:focus-visible {
+  outline: 2px solid var(--fuente-primaria);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .servicios-section {
+    padding: 0.5rem;
+    height: auto;
+  }
+
+  .servicios-nav {
+    gap: 0.35rem;
+  }
+
+  .servicios-nav-pill {
+    padding: 0.6rem;
+    min-width: 44px;
+    justify-content: center;
+    font-size: 0.72rem;
+  }
+
+  .servicios-nav-pill__text {
+    display: none;
+  }
+
+  .servicios-nav-pill__icon {
+    font-size: 1.15rem;
+  }
+
+  .servicios-planes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .servicios-content__title {
+    font-size: 1.15rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .servicio-plan-card {
+    padding: 1.15rem 1rem 1rem;
+  }
+
+  .servicio-plan-card__nombre {
+    font-size: 1rem;
+  }
+
+  .servicio-plan-card__precio {
+    font-size: 1.1rem;
+  }
+}
