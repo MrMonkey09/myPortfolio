@@ -21,7 +21,7 @@ async function deployFrontend() {
   client.ftp.verbose = true;
   try {
     console.log("🚀 Construyendo Frontend...");
-    execSync("npm run build", { cwd: path.join(__dirname, "..", "frontend"), stdio: "inherit" });
+    execSync("npm run web:build", { cwd: path.join(__dirname, "..", "frontend"), stdio: "inherit" });
 
     console.log(`📡 Conectando a FTP: ${config.host}`);
     await client.access(config);
