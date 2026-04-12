@@ -7,7 +7,13 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, "..", ".env.deploy") });
+dotenv.config({ path: path.join(__dirname, "..", ".env.deploy"), override: true });
+
+function normalizeRemoteDir(value, fallback) {
+  const raw = (value || "").trim().replace(/^['"]|['"]$/g, "");
+  if (!raw) return fallback;
+  return raw.startsWith("/") ? raw : `/${raw}`;
+}
 
 const config = {
   host: process.env.FTP_HOST,
@@ -26,9 +32,15 @@ async function deployFrontend() {
     console.log(`📡 Conectando a FTP: ${config.host}`);
     await client.access(config);
 
-    const remoteDir = process.env.FTP_FRONTEND_DIR || "/public_html";
+    const remoteDir = normalizeRemoteDir(process.env.FTP_FRONTEND_DIR, "/public_html");
     console.log(`📂 Subiendo Frontend a ${remoteDir}...`);
     await client.ensureDir(remoteDir);
+    await client.cd(remoteDir);
+
+    if (remoteDir === "/") {
+      throw new Error("FTP_FRONTEND_DIR no puede ser '/'. Esto evitará borrar la raíz por seguridad.");
+    }
+
     await client.clearWorkingDir();
     await client.uploadFromDir(path.join(__dirname, "..", "frontend", "dist"));
 
@@ -46,13 +58,14 @@ async function deployBackend() {
     console.log(`📡 Conectando a FTP: ${config.host}`);
     await client.access(config);
 
-    const remoteDir = process.env.FTP_BACKEND_DIR || "/api";
+    const remoteDir = normalizeRemoteDir(process.env.FTP_BACKEND_DIR, "/api");
     console.log(`📂 Subiendo Backend PHP a ${remoteDir}...`);
     await client.ensureDir(remoteDir);
+    await client.cd(remoteDir);
     
     // Subir sistema PHP
     const backendPath = path.join(__dirname, "..", "backend");
-    await client.uploadFrom(path.join(backendPath, "enviar.php"), "enviar.php");
+    await client.uploadFrom(path.join(backendPath, "enviar.php"), `${remoteDir}/enviar.php`);
     
     console.log("ℹ️ Recuerda que debes subir tu propio archivo .env al servidor para producción manualmente (por seguridad).");
     console.log("✅ Backend PHP desplegado exitosamente.");
@@ -63,6 +76,10 @@ async function deployBackend() {
 }
 
 const target = process.argv[2];
+
+console.log("🧭 FTP_FRONTEND_DIR:", normalizeRemoteDir(process.env.FTP_FRONTEND_DIR, "/public_html"));
+console.log("🧭 FTP_BACKEND_DIR:", normalizeRemoteDir(process.env.FTP_BACKEND_DIR, "/api"));
+
 if (target === "frontend") deployFrontend();
 else if (target === "backend") deployBackend();
 else {
