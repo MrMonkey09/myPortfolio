@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import type { PuntoTiempoData } from "../../types";
 
 interface PuntoTiempoProps {
@@ -7,18 +6,14 @@ interface PuntoTiempoProps {
 }
 
 function PuntoTiempo({ Punto }: Readonly<PuntoTiempoProps>) {
-  const descripcionHtml = useRef<HTMLParagraphElement>(null);
-
-  useEffect(() => {
-    if (descripcionHtml.current) {
-      const descripcionFormateada = Punto.descripcion.replace(/\n/g, "<br>");
-      (descripcionHtml.current as HTMLElement).innerHTML = descripcionFormateada;
-    }
-  }, [Punto.descripcion]);
-
   return (
     <li className="timeLineItem" id={String(Punto.id)}>
-      <article id="timeLineItemContent">
+      {Punto.logo && (
+        <div className="timeLineItemLogo">
+          <img src={Punto.logo} alt={`Logo ${Punto.universidad}`} />
+        </div>
+      )}
+      <article className="timeLineItemContent">
         <header className="header">
           <div className="header-left">
             <h3 className="title">{Punto.titulo}</h3>
@@ -36,7 +31,7 @@ function PuntoTiempo({ Punto }: Readonly<PuntoTiempoProps>) {
         </header>
         <main className="main">
           <div className="text">
-            <p ref={descripcionHtml}>{Punto.descripcion}</p>
+            <p>{Punto.descripcion}</p>
           </div>
           <div className="tags">
             {Punto.etiquetas && Punto.etiquetas.map((etiqueta: string, idx: number) => (

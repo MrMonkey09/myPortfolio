@@ -1,4 +1,4 @@
-import Encabezado from "@utilities/Elementos/Encabezado/Encabezado.jsx";
+import Encabezado from "@utilities/Elementos/Encabezado/Encabezado";
 import Configuracion from "./Configuracion/Configuracion";
 import TarjetasDestacadas from "@utilities/Elementos/TarjetasDestacadas";
 import TarjetasIncrustadas from "@utilities/Elementos/TarjetasIncrustadas";
@@ -11,16 +11,16 @@ function Habilidades() {
   return (
     <>
       <Encabezado encabezado={Configuracion.contenido.encabezado} />
-      <section id="Habilidades">
-        <article id="tarjetas-destacadas">
+      <section id="Habilidades" className="section-fade-in">
+        <article id="tarjetas-destacadas" className="mask-horizontal">
           <TarjetasDestacadas Conf={HabilidadesDestacadasConf} />
         </article>
-        <article id="backend" className="tarjetas-incrustadas">
-          <h3 id="titulo">Backend</h3>
+        <article id="backend" className="tarjetas-incrustadas mask-horizontal">
+          <h3 className="titulo-seccion">Backend</h3>
           <TarjetasIncrustadas Conf={HabilidadesBackendConf} />
         </article>
-        <article id="frontend" className="tarjetas-incrustadas">
-          <h3 id="titulo">Frontend</h3>
+        <article id="frontend" className="tarjetas-incrustadas mask-horizontal">
+          <h3 className="titulo-seccion">Frontend</h3>
           <TarjetasIncrustadas Conf={HabilidadesFrontendConf} />
         </article>
       </section>

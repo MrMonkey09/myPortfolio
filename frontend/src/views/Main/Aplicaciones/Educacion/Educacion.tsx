@@ -8,7 +8,7 @@ function Educacion() {
   return (
     <>
       <Encabezado encabezado={Configuracion.contenido.encabezado} />
-      <section id="educacion">
+      <section id="educacion" className="section-fade-in">
         <LineaTiempo
           Conf={Configuracion.contenido.Puntos}
         />

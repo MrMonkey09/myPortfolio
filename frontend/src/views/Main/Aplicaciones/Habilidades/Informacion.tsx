@@ -1,4 +1,6 @@
-import Habilidades from "./Habilidades";
+import { lazy } from "react";
+
+const Habilidades = lazy(() => import("./Habilidades"));
 
 const HabilidadesInfo = {
   ID: "003",

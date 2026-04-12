@@ -10,13 +10,13 @@ function TarjetasIncrustadas({ Conf }: Readonly<TarjetasIncrustadasProps>) {
     <ul className="tarjetas">
       {tarjetas.map((tarjeta) => {
         return (
-          <li key={tarjeta.id ?? 0} className="tarjeta">
-            <div id="contenedor-imagen">
-              <img src={tarjeta.imagen} alt="habilidad-img" />
+          <li key={tarjeta.id ?? 0} className="tarjeta tarjeta-incrustada">
+            <div className="tarjeta-incrustada__media">
+              <img src={tarjeta.imagen} alt={tarjeta.titulo} />
             </div>
-            <div id="contenedor-texto">
-              <h3 id="titulo">{tarjeta.titulo}</h3>
-              <span id="descripcion">{tarjeta.descripcion}</span>
+            <div className="tarjeta-incrustada__body">
+              <h3 className="tarjeta-incrustada__titulo">{tarjeta.titulo}</h3>
+              <span className="tarjeta-incrustada__desc">{tarjeta.descripcion}</span>
             </div>
           </li>
         );

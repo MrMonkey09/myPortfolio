@@ -1,4 +1,6 @@
-import Contacto from "./Contacto";
+import { lazy } from "react";
+
+const Contacto = lazy(() => import("./Contacto"));
 
 const ContactoInfo = {
   ID: "004",

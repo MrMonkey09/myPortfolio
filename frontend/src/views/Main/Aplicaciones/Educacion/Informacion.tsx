@@ -1,4 +1,6 @@
-import Educacion from "./Educacion";
+import { lazy } from "react";
+
+const Educacion = lazy(() => import("./Educacion"));
 
 const EducacionInfo = {
   ID: "002",
