@@ -1,15 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectorTipoFormulario from "./SelectorTipoFormulario";
 import "./FormularioContacto.css";
 import type { CampoFormulario, FormData } from "../../../types";
 
+const CAMPO_SERVICIO = "Servicio de interés";
+
 interface FormularioContactoProps {
   readonly Conf: Record<string, CampoFormulario>;
   readonly enviarFormulario: (data: FormData) => void;
+  /** Texto del plan elegido en catálogo; vacío si el usuario entró por el menú. */
+  readonly presetServicioDesdeCatalogo?: string;
 }
 
-function FormularioContacto({ Conf, enviarFormulario }: Readonly<FormularioContactoProps>) {
-  const [formData, setFormData] = useState({});
+function FormularioContacto({
+  Conf,
+  enviarFormulario,
+  presetServicioDesdeCatalogo = "",
+}: Readonly<FormularioContactoProps>) {
+  const [formData, setFormData] = useState<FormData>(() =>
+    presetServicioDesdeCatalogo
+      ? { [CAMPO_SERVICIO]: presetServicioDesdeCatalogo }
+      : {}
+  );
+
+  useEffect(() => {
+    if (!presetServicioDesdeCatalogo) {
+      setFormData((prev) => {
+        if (!prev[CAMPO_SERVICIO]) return prev;
+        return { ...prev, [CAMPO_SERVICIO]: "" };
+      });
+      return;
+    }
+    setFormData((prev) => {
+      if (prev[CAMPO_SERVICIO] === presetServicioDesdeCatalogo) return prev;
+      return { ...prev, [CAMPO_SERVICIO]: presetServicioDesdeCatalogo };
+    });
+  }, [presetServicioDesdeCatalogo]);
 
   const handleChange = (campo: string, valor: string) => {
     setFormData((prev) => ({
@@ -31,9 +57,12 @@ function FormularioContacto({ Conf, enviarFormulario }: Readonly<FormularioConta
         const campoConfig = Conf[campo];
         return (
           <div key={campoConfig.id ?? 0} className="campo-formulario">
-            <label htmlFor={campo}>{campoConfig.label || campo}</label>
-            {SelectorTipoFormulario(campoConfig, campo, {}, (valor) =>
-              handleChange(campo, valor)
+            <label htmlFor={String(campoConfig.id)}>{campoConfig.label || campo}</label>
+            {SelectorTipoFormulario(
+              campoConfig,
+              campo,
+              formData[campo] ?? "",
+              (valor) => handleChange(campo, valor)
             )}
           </div>
         );

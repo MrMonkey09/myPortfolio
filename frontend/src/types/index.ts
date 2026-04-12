@@ -14,6 +14,8 @@ export interface Aplicacion {
 export interface PuntoTiempoData {
   readonly id: number | string;
   readonly titulo: string;
+  readonly universidad?: string;
+  readonly logo?: string;
   readonly ubicacion: string;
   readonly fecha: string;
   readonly descripcion: string;
@@ -27,6 +29,8 @@ export interface Tarjeta {
   readonly titulo: string;
   readonly descripcion: string;
   readonly imagen: string;
+  /** Si existe, la tarjeta completa actúa como enlace (p. ej. contacto). */
+  readonly enlace?: string;
 }
 
 export interface Proyecto {
@@ -62,6 +66,11 @@ export interface ConfiguracionSeccion {
 
 // --- Forms ---
 
+export interface OpcionSeleccionFormulario {
+  readonly value: string;
+  readonly label: string;
+}
+
 export interface CampoFormulario {
   readonly id: number | string;
   readonly label?: string;
@@ -72,6 +81,7 @@ export interface CampoFormulario {
   readonly minimo?: string;
   readonly maximo?: string;
   readonly icono?: string;
+  readonly opciones?: readonly OpcionSeleccionFormulario[];
 }
 
 export type FormData = Record<string, string>;

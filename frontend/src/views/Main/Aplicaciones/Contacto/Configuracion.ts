@@ -1,3 +1,5 @@
+import { getOpcionesInteresServicio } from "../serviciosContactoOpciones";
+
 const Configuracion = {
   icono: "",
   contenido: {
@@ -12,6 +14,14 @@ const Configuracion = {
       },
     },
     formulario: {
+      "Servicio de interés": {
+        id: 0,
+        tipo: "seleccion",
+        label: "Servicio de interés",
+        opciones: [...getOpcionesInteresServicio()],
+        ayuda: "Elige el plan o servicio sobre el que quieres consultar",
+        requerido: false,
+      },
       Nombre: {
         id: 1,
         tipo: "texto",
@@ -64,36 +74,45 @@ const Configuracion = {
         titulo: "Email",
         descripcion: "alfredo.gestay@gmail.com",
         imagen: "assets/images/iconos/email.svg",
+        enlace:
+          "mailto:alfredo.gestay@gmail.com?subject=Consulta%20desde%20tu%20portfolio",
       },
       {
         id: "2",
         titulo: "Whatsapp - Solo mensajes",
         descripcion: "+56 9 64373971",
         imagen: "assets/images/iconos/whatsapp.svg",
+        enlace:
+          "https://wa.me/56964373971?text=Hola%2C%20te%20contacto%20desde%20tu%20portfolio.",
       },
       {
         id: "3",
         titulo: "Ciudad, Pais.",
         descripcion: "Antofagasta, Antofagasta, Chile",
         imagen: "assets/images/iconos/chile-bandera.svg",
+        enlace:
+          "https://www.google.com/maps/search/?api=1&query=Antofagasta%2C%20Chile",
       },
       {
         id: "4",
         titulo: "GitHub",
         descripcion: "@MrMonkey09",
         imagen: "assets/images/iconos/github.svg",
+        enlace: "https://github.com/MrMonkey09",
       },
       {
         id: "5",
         titulo: "LinkedIn",
         descripcion: "@Alfredo Andrés Guerra Estay",
         imagen: "assets/images/iconos/linkedin.svg",
+        enlace: "https://www.linkedin.com/in/alfredo-guerra-estay/",
       },
       {
         id: "6",
         titulo: "Instagram",
         descripcion: "@mr0monkey",
         imagen: "assets/images/iconos/instagram.svg",
+        enlace: "https://www.instagram.com/mr0monkey/",
       },
     ],
   },

@@ -18,7 +18,8 @@
 }
 
 .campo-formulario-input,
-.campo-formulario-textarea {
+.campo-formulario-textarea,
+.campo-formulario-select {
   width: 95%;
   padding: 0.7rem 1rem;
   border-radius: 8px;
@@ -28,10 +29,17 @@
   font-size: 1rem;
   outline: none;
   transition: border 0.2s;
+  font-family: inherit;
+}
+
+.campo-formulario-select {
+  cursor: pointer;
+  appearance: auto;
 }
 
 .campo-formulario-input:focus,
-.campo-formulario-textarea:focus {
+.campo-formulario-textarea:focus,
+.campo-formulario-select:focus {
   border: 1.5px solid var(--fuente-primaria, #74ff4e);
 }
 
@@ -63,7 +71,8 @@
   }
 
   .campo-formulario-input,
-  .campo-formulario-textarea {
+  .campo-formulario-textarea,
+  .campo-formulario-select {
     font-size: 0.95rem;
     padding: 0.5rem 0.7rem;
     width: 92%;
