@@ -64,6 +64,16 @@ export interface ConfiguracionSeccion {
   };
 }
 
+export interface SeoSection {
+  readonly appId: string;
+  readonly nombre: string;
+  readonly path: string;
+  readonly aliases: readonly string[];
+  readonly title: string;
+  readonly description: string;
+  readonly keywords: string;
+}
+
 // --- Forms ---
 
 export interface OpcionSeleccionFormulario {

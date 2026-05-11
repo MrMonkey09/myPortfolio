@@ -5,6 +5,17 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        educacion: path.resolve(__dirname, "educacion.html"),
+        habilidades: path.resolve(__dirname, "habilidades.html"),
+        contacto: path.resolve(__dirname, "contacto.html"),
+        servicios: path.resolve(__dirname, "servicios.html"),
+      },
+    },
+  },
   resolve: {
     alias: {
        
