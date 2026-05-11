@@ -74,6 +74,14 @@ export interface SeoSection {
   readonly keywords: string;
 }
 
+export interface AvatarProps {
+  readonly src: string;
+  readonly name1: string;
+  readonly name2: string;
+  readonly nameIcon: string;
+  readonly role: string;
+}
+
 // --- Forms ---
 
 export interface OpcionSeleccionFormulario {
