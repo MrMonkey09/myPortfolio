@@ -36,6 +36,8 @@
 | Integrar cotización con contacto/CRM | RFC-002 | RFC-003 | Payload de lead + CTA con contexto |
 | Revisión estratégica previa a sprint | RFC-001 | Decision Log + RFC-004 | Prioridades alineadas por fase |
 | Gestión de bloque Sprint 0 (B1..B5) | `docs/sprints/sprint-0.md` | Documento rector del eje (RFC/Decision Log) | Checklist detallado del bloque y estado al día |
+| Configurar o ajustar telemetría GA4 / embudos / goals | `docs/GA4-telemetria-guia.md` | `docs/sprints/sprint-4.md` | Eventos GA4 activos y embudos configurados en dashboard |
+| Registrar o ejecutar hipótesis A/B test | `docs/ab-tests.json` | `docs/GA4-telemetria-guia.md` | Hipótesis documentada y resultado analizable |
 
 ---
 
