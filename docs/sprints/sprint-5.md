@@ -12,6 +12,7 @@
 - **Artifact store:** `engram`
 - **Estrategia de entrega:** `single-pr` (cambio <400 líneas, sin riesgos)
 - **Trigger:** Auditoría de estado 2026-05-12 — desviación RFC-002 §4.5 (total_monthly hardcodeado en 0)
+- **Commit:** `0a89ee8` fix(cotizador): total_monthly calculation gap RFC-002 compliance
 
 ---
 
