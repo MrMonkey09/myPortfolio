@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 
 // --- Application / Navigation ---
 
@@ -9,7 +9,7 @@ export interface Aplicacion {
   readonly contenido: ReactNode;
 }
 
-// --- Timeline (Educación) ---
+// --- Timeline (EducaciÃ³n) ---
 
 export interface PuntoTiempoData {
   readonly id: number | string;
@@ -29,7 +29,7 @@ export interface Tarjeta {
   readonly titulo: string;
   readonly descripcion: string;
   readonly imagen: string;
-  /** Si existe, la tarjeta completa actúa como enlace (p. ej. contacto). */
+  /** Si existe, la tarjeta completa actÃºa como enlace (p. ej. contacto). */
   readonly enlace?: string;
 }
 
@@ -102,9 +102,9 @@ export interface CampoFormulario {
   readonly opciones?: readonly OpcionSeleccionFormulario[];
 }
 
-export type FormData = Record<string, string>;
+export type FormData = Readonly<Record<string, string>>;
 
-// --- Cotizador rápido (Sprint 1 P1) ---
+// --- Cotizador rÃ¡pido (Sprint 1 P1) ---
 
 export interface QuickQuoteAnswers {
   readonly pages_estimate: number;
@@ -116,9 +116,9 @@ export interface QuoteSimulateRequest {
   readonly context: {
     readonly schema_version: string;
     /**
-     * Origen de la cotización:
-     * - "quick": Cotización rápida (Sprint 1 P1)
-     * - "advanced": Cotización avanzada (modo detalle por módulos)
+     * Origen de la cotizaciÃ³n:
+     * - "quick": CotizaciÃ³n rÃ¡pida (Sprint 1 P1)
+     * - "advanced": CotizaciÃ³n avanzada (modo detalle por mÃ³dulos)
      * - "direct_contact": Contacto directo (flujo legacy sin pasar por simulate)
      *
      * Nota: origin=direct_contact viene del formulario legacy y NO pasa por
@@ -164,7 +164,7 @@ export interface QuoteSimulateResponse {
 
 export interface QuoteRef {
   readonly quote_id: string;
-  /** @see QuoteSimulateRequest.context.origin para valores válidos */
+  /** @see QuoteSimulateRequest.context.origin para valores vÃ¡lidos */
   readonly origin: "quick" | "advanced";
   readonly total_project: number;
   readonly total_monthly: number;
@@ -202,10 +202,10 @@ export interface ApiErrorEnvelope {
 
 /** Request para POST /api/quotes/lead
  *
- * Origenes válidos en quote_ref.origin:
- * - "quick": Desde cotización rápida
- * - "advanced": Desde cotización avanzada
- * - "direct_contact": Desde formulario de contacto legacy (sin cotización)
+ * Origenes vÃ¡lidos en quote_ref.origin:
+ * - "quick": Desde cotizaciÃ³n rÃ¡pida
+ * - "advanced": Desde cotizaciÃ³n avanzada
+ * - "direct_contact": Desde formulario de contacto legacy (sin cotizaciÃ³n)
  */
 export interface QuoteLeadRequest {
   readonly contact: {
@@ -234,4 +234,67 @@ export interface QuoteLeadResponse {
     readonly schema_version: string;
     readonly pricing_config_version: string;
   };
+}
+// --- Cotización Avanzada (Sprint 1 P2) ---
+
+export type AdvancedStatus = "idle" | "in_progress" | "validating" | "calculated" | "error" | "submitted";
+export type StepStatus = "locked" | "active" | "completed" | "warning" | "invalid";
+export type StepId = "contexto" | "requerimientos" | "modulos" | "ajustes" | "resumen";
+
+export interface ContextoData {
+  readonly projectType: "website" | "ecommerce" | "web_app";
+  readonly projectState: "new" | "remodelacion";
+  readonly country: string;
+  readonly priority: "low" | "medium" | "high";
+}
+
+export interface RequerimientosData {
+  readonly diseno: boolean;
+  readonly desarrollo: boolean;
+  readonly contenido: boolean;
+  readonly seo: boolean;
+  readonly analytics: boolean;
+}
+
+export interface ModuloLinea {
+  readonly module_id: string;
+  readonly module_name: string;
+  readonly category: string;
+  readonly include: "yes" | "optional" | "no";
+  readonly quantity: number;
+  readonly complexity: "low" | "medium" | "high";
+  readonly base_cost: number;
+}
+
+export interface AjustesComerciales {
+  readonly urgencyMultiplier: number; // 0.8 a 1.3
+  readonly contingency_pct: number; // 0 a 0.25
+  readonly margin_pct: number; // 0.15 a 0.40
+  readonly discount_pct: number; // 0 a 0.20
+  readonly apply_vat: boolean;
+  readonly vat_pct: number; // 0.19
+}
+
+export interface MonthlyService {
+  readonly service_id: string;
+  readonly service_name: string;
+  readonly plan_name: string;
+  readonly include: "yes" | "no";
+  readonly monthly_value: number;
+  readonly hours_included: number;
+  readonly sla: string;
+}
+
+export interface AdvancedFormState {
+  readonly currentStep: StepId;
+  readonly stepStatuses: Record<StepId, StepStatus>;
+  readonly globalStatus: AdvancedStatus;
+  readonly contexto: ContextoData;
+  readonly requerimientos: RequerimientosData;
+  readonly modulos: Readonly<ModuloLinea[]>;
+  readonly ajustes: AjustesComerciales;
+  readonly serviciosMensuales: Readonly<MonthlyService[]>;
+  readonly resultado: QuoteSimulateResponse | null;
+  readonly isStale: boolean;
+  readonly errorMessage: string | null;
 }
