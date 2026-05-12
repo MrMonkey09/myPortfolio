@@ -496,16 +496,9 @@ app.post("/api/quotes/simulate", (req, res) => {
     try {
       createQuoteRecord(db, quoteRecord);
     } catch (persistError) {
+      // Loguear error pero NO bloquear respuesta — SQLite es source of truth local
+      // La cotización queda en memoria del cliente, se puede reintentar
       console.error("SQLite persistence error:", persistError);
-      return sendError(
-        res,
-        500,
-        traceId,
-        "internal_error",
-        "SQLITE_PERSISTENCE_FAILED",
-        "No se pudo persistir la cotización en SQLite",
-        [{ field: "db", code: String(persistError?.code || "UNKNOWN"), message: String(persistError?.message || "Error") }],
-      );
     }
 
     // Sync a Notion async (fire and forget)

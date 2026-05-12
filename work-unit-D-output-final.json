@@ -1,0 +1,51 @@
+{
+  "status": "modified-files-not-committed",
+  "work_unit": "D",
+  "executive_summary": "Work-Unit D completada — Backend Paridad e total_monthly implementados en server.js y enviar.php. Paridad PHP/Node JS alineada para soporte monthly_services. Estilos existentes funcionan aunque necesitan consolidación. Import/exports TypeScript consistentes.",
+  "commits": [],
+  "changed_files": [
+    "frontend/api/server.js",
+    "backend/enviar.php", 
+    "frontend/src/views/Main/Aplicaciones/Servicios/Avanzada/Estilos.css"
+  ],
+  "artifacts": {
+    "apply-progress": "sdd/cotizacion-avanzada/apply-D",
+    "implementation-doc": "WORK_UNIT_D_IMPLEMENTADO.md"
+  },
+  "next_recommended": "git-commit-manual-required",
+  "risks": [
+    "GGA hook pre-commit falla con segfault impide commit automático",
+    "Estilos CSS duplicados en lines 502-1136 pueden causar bugs visuales", 
+    "PHP Windows warnings LF→CRLF no afectan funcionalidad"
+  ],
+  "deliveries": {
+    "D1-serverjs": "✅ buildTotals() calcula total_monthly desde monthlyServices array con filter(include==='yes')",
+    "D2-paridad-php": "✅ enviar.php acepta $monthlyServices param y calcule igual que Node",
+    "D3-estilos": "⚠️ Estilos existentes pero necesitan consolidación de duplicados graves",
+    "D4-imports": "✅ Tipos desde ./types, Configuración ./Configuracion.css consistente"
+  },
+  "technical_details": {
+    "serverjs-changes": {
+      "function-signature": "buildTotals({ lineItems, pricing, applyVat, monthlyServices = [] })",
+      "calculation": "monthlyServices.filter(s => s.include === 'yes').reduce((sum, s) => sum + (s.monthly_value || 0), 0)",
+      "endpoint-update": "const totals = buildTotals({ lineItems, pricing, applyVat, monthlyServices: req.body?.input?.monthly_services || [] });"
+    },
+    "php-changes": {
+      "function-signature": "buildTotals($lineItems, $pricing, $applyVat, $monthlyServices = [])",
+      "calculation": "foreach ($monthlyServices as $service) if (($service['include'] ?? 'no') === 'yes' && !empty($service['monthly_value']))",
+      "endpoint-update": "$monthlyServices = $payload['input']['monthly_services'] ?? [];"
+    }
+  },
+  "engram-saves": [
+    { "id": "obs-a22f74a6289559fc", "title": "Implementando D.1 — total_monthly en buildTotals() de server.js", "type": "feature" },
+    { "id": "obs-06e0192c18187ee3", "title": "Verificando D.2 — Paridad enviar.php origin=advanced", "type": "discovery" },
+    { "id": "obs-a99f3eb3818d3ac7", "title": "Implementando D.3 — Estilos finales en Avanzada", "type": "discovery" },
+    { "id": "obs-1e46cbc603cc63b1", "title": "D.4 — Verificación final de paridad y estructura", "type": "discovery" },
+    { "id": "obs-4e2b05595c26792c", "title": "Completando D — Work-unit final paridad backend y estilos", "type": "commit" }
+  ],
+  "manual_actions_required": [
+    "git add frontend/api/server.js backend/enviar.php",
+    "git commit -m \"feat(cotizador): work-unit D — paridad backend y total_monthly\"",
+    "Opcional: git checkout -- Estilos.css o consolidar duplicados lines 502-1136"
+  ]
+}

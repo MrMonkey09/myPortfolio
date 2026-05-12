@@ -648,7 +648,8 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Sync async a Notion via register_shutdown_function
-    register_shutdown_function('syncQuoteToNotionBackground', $record);
+    // PHP ejecuta la función al final del request, pasando $record como argumento
+    register_shutdown_function(function() use ($record) { syncQuoteToNotionBackground($record); });
 
     echo json_encode($response);
     exit();
