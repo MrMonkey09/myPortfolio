@@ -98,8 +98,6 @@ function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onConta
         )}
         <h5>Rango Estimado del Proyecto</h5>
         <div className="quick-quote-result__grid">
-        <h5>Rango Estimado del Proyecto</h5>
-        <div className="quick-quote-result__grid">
           <p>
             <span>Mínimo</span>
             <strong>{toCurrencyCLP(resultado.totals.estimated_min)}</strong>
