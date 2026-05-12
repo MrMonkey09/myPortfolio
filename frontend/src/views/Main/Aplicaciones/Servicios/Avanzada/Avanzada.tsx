@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useContactoNavegacion } from "@views/Main/ContactoNavegacionContext";
 import { simulateQuickQuote } from "@utilities/api";
 import { MODULOS_PREDEFINIDOS, SERVICIOS_MENSUALES_PREDEFINIDOS, CONFIGURACION_AVANZADA } from "./Configuracion";
@@ -18,9 +18,27 @@ import AvanzadaRequerimientos from "./AvanzadaRequerimientos";
 import AvanzadaModulos from "./AvanzadaModulos";
 import AvanzadaAjustes from "./AvanzadaAjustes";
 import AvanzadaResumen from "./AvanzadaResumen";
+import {
+  trackAdvancedStepViewed,
+  trackAdvancedStepCompleted,
+  trackAdvancedAbandoned,
+  getOrCreateTraceId,
+} from "@/hooks/useAnalytics";
 import "./Estilos.css";
 
 const STEPS: StepId[] = ["contexto", "requerimientos", "modulos", "ajustes", "resumen"];
+
+// Naming de pasos para tracker
+const stepNames: Record<StepId, string> = {
+  contexto: "contexto",
+  requerimientos: "requerimientos",
+  modulos: "modulos",
+  ajustes: "ajustes",
+  resumen: "resumen",
+};
+
+// Ref para rastrear tiempos de entrada/salida en cada paso (performance.now())
+const stepTimersRef = useRef<Map<number, number>>(new Map());
 
 const INITIAL_CONTEXT: ContextoData = {
   projectType: "website",
@@ -73,6 +91,14 @@ function Avanzada() {
     errorMessage: null,
   });
 
+  // Inicializar traceId para tracking
+  useEffect(() => {
+    getOrCreateTraceId();
+  }, []);
+
+  // Ref para almacenar duración del paso anterior antes de avanzar
+  const stepDurationRef = useRef<number>(0);
+
   // Pre-cargar contexto si viene de handoff (rápida → avanzada)
   useEffect(() => {
     if (avanzadaHandoffContext && !formState.resultado) {
@@ -85,11 +111,29 @@ function Avanzada() {
           country: avanzadaHandoffContext.context?.country || "CL",
           priority: "medium",
         },
-        resultado: null, // Requiere recalcular con nuevos datos
-        isStale: true,
-      }));
+      resultado: null, // Requiere recalcular con nuevos datos
+      isStale: true,
+    });
     }
-  }, [avanzadaHandoffContext]);
+    }, [avanza daHandoffContext]);
+
+    // Inicializar timer para el paso actual cuando cambia (usando performance.now())
+    useEffect(() => {
+      const stepIndex = STEPS.indexOf(formState.currentStep);
+      if (stepIndex >= 0) {
+        stepTimersRef.current.set(stepIndex, performance.now());
+      }
+
+      // Calcular tiempo en paso anterior y tracke que se visualizó este paso
+      const timeOnPrevStepMs = stepDurationRef.current;
+      if (timeOnPrevStepMs > 0) {
+        trackAdvancedStepViewed(
+          stepIndex + 1, // Step number is 1-indexed for analytics
+          stepNames[formState.currentStep],
+          timeOnPrevStepMs
+        );
+      }
+    }, [formState.currentStep]);
 
   function validateCurrentStep(step: StepId): boolean {
     switch (step) {
@@ -118,6 +162,21 @@ function Avanzada() {
         errorMessage: "Para continuar, completá los campos obligatorios del paso y corregí los errores marcados.",
       }));
       return;
+    }
+
+    // Calcular duración del paso actual antes de avanzar
+    const durationMs = stepTimersRef.current.get(currentIndex)
+      ? performance.now() - stepTimersRef.current.get(currentIndex)!
+      : 0;
+    stepDurationRef.current = durationMs;
+
+    // Trackear completación del paso actual (si no es el resumen, ya que se avanza desde ajustes)
+    if (currentIndex >= 0 && nextStep !== "resumen" && currentIndex < STEPS.length - 1) {
+      trackAdvancedStepCompleted(
+        currentIndex + 1, // Step number is 1-indexed for analytics
+        stepNames[formState.currentStep],
+        durationMs
+      );
     }
 
     setFormState(prev => {
