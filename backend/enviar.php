@@ -38,6 +38,71 @@ $notionToken = getenv('NOTION_TOKEN') ?: ($_ENV['NOTION_TOKEN'] ?? '');
 $notionDbId = getenv('NOTION_DB_ID') ?: ($_ENV['NOTION_DB_ID'] ?? '');
 
 // ============================================================================
+// INICIALIZACIÓN SQLITE (Work-Unit D: Paridad PHP)
+// ============================================================================
+
+$sqliteDbPath = __DIR__ . '/data/quotes.sqlite';
+$sqlitePdo = null;
+
+function initSqliteDb($dbPath) {
+    $dir = dirname($dbPath);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0755, true);
+    }
+    
+    $pdo = new PDO("sqlite:$dbPath");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Create tables if not exist
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS quotes (
+            quote_id TEXT PRIMARY KEY,
+            trace_id TEXT NOT NULL UNIQUE,
+            schema_version TEXT NOT NULL,
+            pricing_config_version TEXT NOT NULL,
+            origin TEXT NOT NULL,
+            project_type TEXT NOT NULL,
+            project_state TEXT NOT NULL,
+            currency TEXT NOT NULL,
+            input_json TEXT NOT NULL,
+            totals_json TEXT NOT NULL,
+            meta_json TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            sync_status TEXT NOT NULL DEFAULT 'pending',
+            sync_attempts INTEGER NOT NULL DEFAULT 0,
+            sync_last_error TEXT
+        )
+    ");
+    
+    return $pdo;
+}
+
+function createQuoteRecord($pdo, $record) {
+    $stmt = $pdo->prepare("
+        INSERT INTO quotes (
+            quote_id, trace_id, schema_version, pricing_config_version,
+            origin, project_type, project_state, currency,
+            input_json, totals_json, meta_json,
+            created_at, sync_status, sync_attempts, sync_last_error
+        ) VALUES (
+            :quote_id, :trace_id, :schema_version, :pricing_config_version,
+            :origin, :project_type, :project_state, :currency,
+            :input_json, :totals_json, :meta_json,
+            :created_at, :sync_status, :sync_attempts, :sync_last_error
+        )
+    ");
+    return $stmt->execute($record);
+}
+
+function updateSyncStatus($pdo, $quoteId, $status, $attempts, $error) {
+    $stmt = $pdo->prepare("
+        UPDATE quotes SET sync_status = ?, sync_attempts = ?, sync_last_error = ?
+        WHERE quote_id = ?
+    ");
+    return $stmt->execute([$status, $attempts, $error, $quoteId]);
+}
+
+// ============================================================================
 // CONFIGURACIÓN
 // ============================================================================
 
@@ -403,6 +468,70 @@ function persistLeadToNotion($token, $dbId, $leadId, $traceId, $payload) {
 }
 
 // ============================================================================
+// SYNC BACKGROUND - Work-Unit D: Paridad PHP
+// ============================================================================
+
+function syncQuoteToNotionBackground($record) {
+    global $notionToken, $notionDbId;
+    
+    if (empty($notionToken) || empty($notionDbId)) {
+        return;
+    }
+    
+    $retryBackoffMs = [1000, 3000, 7000];
+    $maxRetries = 3;
+    
+    for ($attempt = 0; $attempt < $maxRetries; $attempt++) {
+        $ch = curl_init("https://api.notion.com/v1/pages");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        
+        $totals = json_decode($record[':totals_json'], true);
+        $payload = [
+            'parent' => ['database_id' => $notionDbId],
+            'properties' => [
+                'Name' => ['title' => [['text' => ['content' => 'Quote ' . $record[':quote_id']]]]]
+            ],
+            'children' => [
+                [
+                    'object' => 'block',
+                    'type' => 'paragraph',
+                    'paragraph' => ['rich_text' => [['type' => 'text', 'text' => ['content' => json_encode([
+                        'quote_id' => $record[':quote_id'],
+                        'trace_id' => $record[':trace_id'],
+                        'total_project' => $totals['total_project'] ?? 0,
+                        'total_monthly' => $totals['total_monthly'] ?? 0,
+                    ], JSON_PRETTY_PRINT)]]]]]
+            ]
+        ];
+        
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bearer $notionToken",
+            "Notion-Version: 2022-06-28",
+            "Content-Type: application/json"
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode >= 200 && $httpCode < 300) {
+            return; // Success
+        }
+        
+        // Transient error - retry
+        if (($httpCode === 429 || $httpCode >= 500) && $attempt < $maxRetries - 1) {
+            usleep($retryBackoffMs[$attempt] * 1000);
+            continue;
+        }
+        
+        // Permanent error or max retries - log and exit
+        break;
+    }
+}
+
+// ============================================================================
 // AUTH CHECK
 // ============================================================================
 
@@ -480,6 +609,46 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'trace_id' => $traceId,
         ]
     ];
+
+    // Construir record para SQLite (Work-Unit D: Paridad PHP)
+    $record = [
+        ':quote_id' => $response['quote']['quote_id'],
+        ':trace_id' => $traceId,
+        ':schema_version' => $payload['context']['schema_version'] ?? '1.0.0',
+        ':pricing_config_version' => $pricingConfig['pricing_config_version'],
+        ':origin' => $payload['context']['origin'] ?? 'quick',
+        ':project_type' => $payload['context']['project_type'] ?? '',
+        ':project_state' => $payload['context']['project_state'] ?? '',
+        ':currency' => $payload['context']['currency'] ?? 'CLP',
+        ':input_json' => json_encode([
+            'line_items' => $validation['lineItems'],
+            'pricing' => $validation['pricing'],
+        ]),
+        ':totals_json' => json_encode($totals),
+        ':meta_json' => json_encode([
+            'schema_version' => $payload['context']['schema_version'] ?? '1.0.0',
+            'pricing_config_version' => $pricingConfig['pricing_config_version'],
+            'trace_id' => $traceId,
+        ]),
+        ':created_at' => gmdate('Y-m-d\TH:i:s\Z'),
+        ':sync_status' => 'pending',
+        ':sync_attempts' => 0,
+        ':sync_last_error' => null,
+    ];
+
+    // Persistir en SQLite (non-blocking)
+    try {
+        if (!$sqlitePdo) {
+            $sqlitePdo = initSqliteDb($sqliteDbPath);
+        }
+        createQuoteRecord($sqlitePdo, $record);
+    } catch (Exception $e) {
+        // Log error but don't block response
+        error_log("SQLite persistence error: " . $e->getMessage());
+    }
+
+    // Sync async a Notion via register_shutdown_function
+    register_shutdown_function('syncQuoteToNotionBackground', $record);
 
     echo json_encode($response);
     exit();
