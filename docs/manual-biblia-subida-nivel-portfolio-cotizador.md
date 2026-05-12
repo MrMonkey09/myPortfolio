@@ -1,7 +1,7 @@
 # Manual/Biblia Final — Subida de Nivel del Portfolio con Cotizador Web
 
-- **Versión:** 1.1
-- **Fecha:** 2026-05-11
+- **Versión:** 1.2
+- **Fecha:** 2026-05-12
 - **Estado:** Guía Maestra Activa
 - **Proyecto:** `myPortfolio`
 
@@ -139,6 +139,9 @@ Regla de consistencia:
 | `docs/sprints/sprint-1.md` | Implementación cotización avanzada core |
 | `docs/sprints/sprint-2.md` | Persistencia híbrida SQLite + Notion |
 | `docs/sprints/sprint-3.md` | Fase Estable: backup, retención, auditoría |
+| `docs/sprints/sprint-4.md` | Telemetría y optimización de conversión (GA4) |
+| `docs/GA4-telemetria-guia.md` | Guía de configuración GA4 y embudos |
+| `docs/ab-tests.json` | Registro de hipótesis A/B testing |
 
 ---
 
@@ -151,7 +154,7 @@ Regla de consistencia:
 5. RFC-004 para ajustes y restricciones técnicas.
 6. Decision Log para persistencia por fase.
 7. Matriz operativa para ejecución diaria.
-8. Sprint 0 para estado operativo, checklist detallado por bloque y próximos pasos.
+8. Sprint 0-4 para estado operativo, checklist detallado por bloque y próximos pasos.
 
 ---
 

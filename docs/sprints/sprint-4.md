@@ -4,8 +4,9 @@
 
 - **Proyecto:** `myPortfolio`
 - **Sprint:** `4` (madurez operativa)
-- **Estado:** `En Progreso`
+- **Estado:** `Cerrado`
 - **Fecha inicio:** `2026-05-12`
+- **Fecha cierre:** `2026-05-12`
 - **Framework:** `sdd-tdd`
 - **Modo de ejecución:** `automatic`
 - **Artifact store:** `engram`
@@ -147,6 +148,24 @@ Instrumentar telemetría completa del cotizador para medir embudo de conversión
 - **Cambio:** se corrigen typos encontrados en SDD verify: `avanza daHandoffContext` → `advancedHandoffContext` en Avanzada.tsx y duplicate JSX en AvanzadaResumen.tsx.
 - **Impacto:** lint pasa sin errores en archivos del Sprint 4.
 - **Commit:** `3ddccd8 fix(cotizador): corregir typos y duplicate JSX en Avanzada (Sprint 4 verification)`
+
+### 2026-05-12 — Sprint 4 cerrado (formal closure)
+
+- **Cambio:** se cierra formalmente Sprint 4 con DoD 9/9 completado y todas las work-units verificadas. Telemetría GA4 instrumentada en todos los flujos del cotizador (Quick Flow + Advanced Flow), documentación de configuración GA4 y embudos lista para ejecución, framework A/B con 2 hipótesis registradas.
+- **Impacto:** proyecto del cotizador queda al 100% según plan de la Biblia. Siguiente fase: configuración GA4 en dashboard + deploy cPanel + test E2E productivo.
+- **Criterio de cierre:** useAnalytics hook ✅, instrumentación Servicios.tsx ✅, Avanzada.tsx ✅, 5 step components ✅, GA4 guía ✅, ab-tests.json ✅, lint sin errores ✅, fixes aplicados ✅.
+
+---
+
+## Checklist de cierre post-Sprint 4
+
+| # | Tarea pendiente | Prioridad |
+|---|-----------------|-----------|
+| 1 | Actualizar mapa documental biblia (agregar sprint-4, GA4-telemetria-guia.md, ab-tests.json) | P1 |
+| 2 | Push a origin/dev | P1 |
+| 3 | Configurar GA4 goals/embudos en dashboard.ga4.google.com | P1 |
+| 4 | Deploy backend PHP a cPanel | P1 |
+| 5 | Test E2E en ambiente productivo | P1 |
 
 ### 2026-05-12 — Sprint 4 en progreso
 
