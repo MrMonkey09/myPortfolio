@@ -530,9 +530,8 @@ if ($path === '/api/quotes/lead' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($data['id'])) {
             setIdempotency($traceId, $quoteId, 'failed');
-            // Check if transient error
-            $httpCode = 0;
-            if (isset($data['code'])) {
+            // Check if transient error (rate limit 429 o similar)
+            if (isset($data['code']) && ($data['code'] === 'rate_limited' || strpos($response, '429') !== false)) {
                 sendError(409, $traceId, 'conflict_error', 'NOTION_TRANSIENT_FAILURE', 'No se pudo persistir el lead en Notion por una falla transitoria. Reintentá en unos segundos.');
             }
             sendError(500, $traceId, 'internal_error', 'NOTION_PERSISTENCE_FAILED', 'No se pudo persistir el lead');
