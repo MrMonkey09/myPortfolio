@@ -6,6 +6,7 @@ import { useContactoNavegacion } from "../../ContactoNavegacionContext";
 import ServiciosAvanzada from "./Avanzada/Avanzada.tsx";
 import "./Estilos.css";
 import type { QuoteHandoffContext, QuoteSimulateResponse } from "../../../../types";
+import { trackQuickStarted, trackQuickCalculated, trackContactSubmitted, trackAdvancedModeSwitch } from "@/hooks/useAnalytics";
 
 const QUICK_SCHEMA_VERSION = "1.0.0";
 const QUICK_PROJECT_TYPE = "website";
@@ -153,6 +154,9 @@ function Servicios() {
   async function handleQuickSimulate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setQuickStatus("validating");
+    
+    // Track cuando el usuario inicia la simulación rápida
+    trackQuickStarted();
 
     const validation = validateQuickForm();
     if (!validation.ok) {
@@ -193,6 +197,23 @@ function Servicios() {
         },
       });
 
+      // Mapear respuesta API a QuickResult para tracking
+      const result: {
+        success: boolean;
+        total_min?: number;
+        total_max?: number;
+        confidence_level?: "low" | "medium" | "high";
+        error_message?: string;
+      } = {
+        success: true,
+        total_min: response.totals.estimated_min,
+        total_max: response.totals.estimated_max,
+        confidence_level: response.totals.confidence_level,
+      };
+      
+      // Track cuando la API responde con éxito
+      trackQuickCalculated(result);
+
       setQuoteResult(response);
       setIsQuickResultStale(false);
       limpiarHandoffAvanzada();
@@ -202,6 +223,20 @@ function Servicios() {
         text: "Simulación lista. Revisá el rango estimado y, si querés, refinamos en la versión avanzada.",
       });
     } catch (error) {
+      const errorResult: {
+        success: boolean;
+        total_min?: number;
+        total_max?: number;
+        confidence_level?: "low" | "medium" | "high";
+        error_message?: string;
+      } = {
+        success: false,
+        error_message: error instanceof Error ? error.message : undefined,
+      };
+      
+      // Track cuando la API devuelve error
+      trackQuickCalculated(errorResult);
+
       setQuickStatus("error");
       setQuickMessage({
         tone: "error",
@@ -221,6 +256,9 @@ function Servicios() {
       });
       return;
     }
+
+    // Track cambio a modo avanzado desde Quick Flow
+    trackAdvancedModeSwitch();
 
     const contexto = buildQuoteHandoffContext(quoteResult, "quick", isQuickResultStale, {
       pages_estimate: Number(quickForm.pagesEstimate || 0),
@@ -244,11 +282,16 @@ function Servicios() {
       return;
     }
 
+    const total = quoteResult.totals.total_project;
+
     const contexto = buildQuoteHandoffContext(quoteResult, "quick", isQuickResultStale, {
       pages_estimate: Number(quickForm.pagesEstimate || 0),
       needs_ecommerce: quickForm.needsEcommerce,
       urgency: quickForm.urgency,
     });
+
+    // Track contacto desde Quick Flow con el total calculado
+    trackContactSubmitted("quick", total);
 
     irAContactoConContexto("Cotización rápida — seguimiento comercial", contexto);
   }
