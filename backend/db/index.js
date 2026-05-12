@@ -40,30 +40,52 @@ async function initBetterSqlite3() {
   // Enable WAL mode for better concurrency
   db.pragma("journal_mode = WAL");
   
-  // Create tables if not exist
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS quotes (
-      quote_id TEXT PRIMARY KEY,
-      trace_id TEXT NOT NULL UNIQUE,
-      schema_version TEXT NOT NULL,
-      pricing_config_version TEXT NOT NULL,
-      origin TEXT NOT NULL,
-      project_type TEXT NOT NULL,
-      project_state TEXT NOT NULL,
-      currency TEXT NOT NULL,
-      input_json TEXT NOT NULL,
-      totals_json TEXT NOT NULL,
-      meta_json TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      sync_status TEXT NOT NULL DEFAULT 'pending',
-      sync_attempts INTEGER NOT NULL DEFAULT 0,
-      sync_last_error TEXT
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_quotes_trace_id ON quotes(trace_id);
-    CREATE INDEX IF NOT EXISTS idx_quotes_sync_status ON quotes(sync_status);
-    CREATE INDEX IF NOT EXISTS idx_quotes_created_at ON quotes(created_at);
-  `);
+   // Create tables if not exist
+   db.exec(`
+     CREATE TABLE IF NOT EXISTS quotes (
+       quote_id TEXT PRIMARY KEY,
+       trace_id TEXT NOT NULL UNIQUE,
+       schema_version TEXT NOT NULL,
+       pricing_config_version TEXT NOT NULL,
+       origin TEXT NOT NULL,
+       project_type TEXT NOT NULL,
+       project_state TEXT NOT NULL,
+       currency TEXT NOT NULL,
+       input_json TEXT NOT NULL,
+       totals_json TEXT NOT NULL,
+       meta_json TEXT NOT NULL,
+       created_at TEXT NOT NULL,
+       sync_status TEXT NOT NULL DEFAULT 'pending',
+       sync_attempts INTEGER NOT NULL DEFAULT 0,
+       sync_last_error TEXT
+     );
+     
+     CREATE INDEX IF NOT EXISTS idx_quotes_trace_id ON quotes(trace_id);
+     CREATE INDEX IF NOT EXISTS idx_quotes_sync_status ON quotes(sync_status);
+     CREATE INDEX IF NOT EXISTS idx_quotes_created_at ON quotes(created_at);
+   `);
+
+   // Create archive table for retention policy (Work-Unit B)
+   db.exec(`
+     CREATE TABLE IF NOT EXISTS quotes_archive (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       quote_id TEXT PRIMARY KEY,
+       archive_date TEXT NOT NULL DEFAULT (datetime('now')),
+       original_created_at TEXT NOT NULL,
+       origin TEXT NOT NULL DEFAULT 'unknown',
+       project_type TEXT NOT NULL DEFAULT 'unknown',
+       total_project INTEGER,
+       total_monthly INTEGER,
+       confidence_level TEXT,
+       sync_status TEXT NOT NULL DEFAULT 'archived',
+       archived_reason TEXT
+     )
+   `);
+
+   db.exec(`
+     CREATE INDEX IF NOT EXISTS idx_archive_date ON quotes_archive(archive_date);
+     CREATE INDEX IF NOT EXISTS idx_archive_quote_id ON quotes_archive(quote_id);
+   `);
   
   dbType = "better-sqlite3";
   return db;
@@ -122,16 +144,34 @@ async function initSqlJs() {
       sync_attempts INTEGER NOT NULL DEFAULT 0,
       sync_last_error TEXT
     )
-  `);
-  
-  // Create indexes (sql.js doesn't support IF NOT EXISTS for indexes well)
-  try {
-    db.run("CREATE INDEX IF NOT EXISTS idx_quotes_trace_id ON quotes(trace_id)");
-    db.run("CREATE INDEX IF NOT EXISTS idx_quotes_sync_status ON quotes(sync_status)");
-    db.run("CREATE INDEX IF NOT EXISTS idx_quotes_created_at ON quotes(created_at)");
-  } catch {
-    // Indexes may already exist
-  }
+   `);
+
+   // Create archive table for retention policy (Work-Unit B)
+   db.run(`
+     CREATE TABLE IF NOT EXISTS quotes_archive (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       quote_id TEXT PRIMARY KEY,
+       archive_date TEXT NOT NULL DEFAULT (datetime('now')),
+       original_created_at TEXT NOT NULL,
+       origin TEXT NOT NULL DEFAULT 'unknown',
+       project_type TEXT NOT NULL DEFAULT 'unknown',
+       total_project INTEGER,
+       total_monthly INTEGER,
+       confidence_level TEXT,
+       sync_status TEXT NOT NULL DEFAULT 'archived'
+     )
+   `);
+
+   // Create indexes (sql.js doesn't support IF NOT EXISTS for indexes well)
+   try {
+     db.run("CREATE INDEX IF NOT EXISTS idx_quotes_trace_id ON quotes(trace_id)");
+     db.run("CREATE INDEX IF NOT EXISTS idx_quotes_sync_status ON quotes(sync_status)");
+     db.run("CREATE INDEX IF NOT EXISTS idx_quotes_created_at ON quotes(created_at)");
+     db.run("CREATE INDEX IF NOT EXISTS idx_archive_date ON quotes_archive(archive_date)");
+     db.run("CREATE INDEX IF NOT EXISTS idx_archive_quote_id ON quotes_archive(quote_id)");
+   } catch {
+     // Indexes may already exist
+   }
   
   dbType = "sql.js";
   return db;
