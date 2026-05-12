@@ -1,0 +1,42 @@
+RewriteEngine On
+
+# 1) Redirecciones canónicas sin .html
+RewriteRule ^educacion\.html$ /educacion [R=301,L]
+RewriteRule ^habilidades\.html$ /habilidades [R=301,L]
+RewriteRule ^contacto\.html$ /contacto [R=301,L]
+RewriteRule ^servicios\.html$ /servicios [R=301,L]
+
+# 2) Servir páginas estáticas para URLs limpias
+RewriteRule ^educacion/?$ /educacion.html [L]
+RewriteRule ^habilidades/?$ /habilidades.html [L]
+RewriteRule ^contacto/?$ /contacto.html [L]
+RewriteRule ^servicios/?$ /servicios.html [L]
+
+# 3) Cache-Control para assets con hash (Vite fingerprints)
+# These files have content hashes in names, safe to cache long-term
+<IfModule mod_headers.c>
+  # CSS and JS with hashes - cache for 1 year (immutable)
+  <FilesMatch "\.(css|js)\?hash=[a-f0-9]{8,}$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  
+  # Assets in general - cache for 1 year
+  <FilesMatch "\.(js|css|svg|png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "public, max-age=31536000"
+  </FilesMatch>
+  
+  # HTML files - no cache (must revalidate)
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+  
+  # XML and other metadata - short cache
+  <FilesMatch "\.(xml|json)$">
+    Header set Cache-Control "max-age=3600, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# 4) Fallback SPA para cualquier ruta no existente
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ /index.html [L]

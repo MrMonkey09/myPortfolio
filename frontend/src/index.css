@@ -1,0 +1,160 @@
+:root {
+  /* Colores */
+  --fondo: #0d0d0d;
+  --contenedor: #262626;
+  --extra: #616161bc;
+  --extra-2: #fde40069;
+  --fuente-secundaria: #e2e2e2;
+  --fuente-primaria: #74ff4e;
+  /* Cuerpo de texto (timeline, párrafos) */
+  --text: #e2e2e2;
+  /* Familia tipográfica del sitio (alias semántico) */
+  --fuente-principal: "Courier New", Courier, monospace;
+}
+
+/* Nota: El cursor personalizado se maneja via CursorPersonalizado.tsx */
+/* En dispositivos táctiles se restaura el cursor nativo */
+
+/* --- Estilos Globales de Scrollbar (Matrix Style) --- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(13, 13, 13, 0.5);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--fuente-primaria);
+  border-radius: 10px;
+  border: 2px solid rgba(13, 13, 13, 0.8);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a2ff8a;
+  box-shadow: 0 0 10px var(--fuente-primaria);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fuente-primaria) transparent;
+}
+
+/* --- Animaciones de Transición --- */
+@keyframes section-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-fade-in {
+  animation: section-fadeIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* --- Máscaras de Difuminado para Scroll Horizontal --- */
+.mask-horizontal {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+  font-family: var(--fuente-principal);
+
+  #root {
+    width: 100%;
+    min-height: 100%;
+    background-color: var(--fondo);
+    color: var(--fuente-primaria);
+    overflow: hidden;
+  }
+}
+
+.app-root {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  isolation: isolate;
+}
+
+.app-root__chrome {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.borde-x-defecto {
+  border: 1px solid black;
+}
+
+.centrar-x {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.centrar-xw {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.centrar-y {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.centrar-yw {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Responsividad */
+@media (max-width: 600px) {
+  #root {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+  }
+}

@@ -1,0 +1,30 @@
+#intereses {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 1rem;
+  margin: 0;
+}
+
+#intereses h3 {
+  margin: 0 0 1rem;
+  font-size: 1.35rem;
+  color: var(--fuente-secundaria);
+}
+
+#intereses h3 span {
+  color: var(--fuente-primaria);
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  #intereses {
+    padding: 0.5rem;
+  }
+
+  #intereses h3 {
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+}

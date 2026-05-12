@@ -1,0 +1,33 @@
+{
+  "ab_tests": [
+    {
+      "id": "AB-001",
+      "name": "CTA copy optimization",
+      "hypothesis": "Cambiar el copy del botón CTA de 'Contactar ahora' a '¿Hablamos? Agenda una llamada' incrementará los clics porque suena más personal y menos transaccional.",
+      "control": "Contactar ahora",
+      "variant": "¿Hablamos? Agenda una llamada",
+      "metric": "cotizador_quick_contact_click + cotizador_advanced_contact_submitted",
+      "target_lift": ">=10%",
+      "status": "registered",
+      "created_at": "2026-05-12",
+      "notes": "Requiere tráfico suficiente antes de запустить. Mínimo 1000 sesiones/mes."
+    },
+    {
+      "id": "AB-002",
+      "name": "Disclaimer position",
+      "hypothesis": "Hacer el disclaimer de estimación referencial sticky (flotante) en lugar de estático al final del resumen incrementará la confianza y la tasa de completación.",
+      "control": "Disclaimer estático al final del resumen",
+      "variant": "Disclaimer sticky/flotante",
+      "metric": "cotizador_advanced_step_completed (step 5) + cotizador_advanced_calculated",
+      "target_lift": ">=5%",
+      "status": "registered",
+      "created_at": "2026-05-12",
+      "notes": "Requiere test visual antes de запустить. Mínimo 500 sesiones advanced/mes."
+    }
+  ],
+  "meta": {
+    "version": "1.0.0",
+    "schema": "ab_test",
+    "last_updated": "2026-05-12"
+  }
+}

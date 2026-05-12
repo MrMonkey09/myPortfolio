@@ -1,0 +1,145 @@
+#Habilidades {
+  width: 100%;
+  margin-top: 5px;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.75rem;
+}
+
+#tarjetas-destacadas {
+  width: 100%;
+  flex-shrink: 0;
+  padding: 1.5rem;
+}
+
+.tarjetas-incrustadas {
+  width: 100%;
+  height: auto;
+  padding: 1rem;
+  display: flex;
+  flex-flow: column nowrap;
+
+  .titulo-seccion {
+    width: 100%;
+    margin-bottom: 1rem;
+    font-size: 1.8em;
+    color: white;
+  }
+
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    padding: 0;
+    height: 100%;
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding: 0px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--fuente-primaria) transparent;
+    list-style-type: none;
+
+    .tarjeta-incrustada {
+      .tarjeta-incrustada__media {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          width: 5rem;
+          height: 5rem;
+          padding: 5px;
+          background-color: gray;
+          border-radius: 15px;
+        }
+      }
+
+      .tarjeta-incrustada__body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .tarjeta-incrustada__titulo {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 0;
+        color: var(--fuente-secundaria);
+      }
+
+      .tarjeta-incrustada__desc {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        color: var(--fuente-secundaria);
+      }
+    }
+  }
+}
+
+/* Resposividad */
+
+/* Tablet */
+@media (max-width: 768px) {
+  #Habilidades {
+    gap: 1rem;
+    padding-inline: 0.4rem;
+  }
+
+  #tarjetas-destacadas {
+    height: auto;
+    padding: 0.75rem;
+
+    .tarjetas {
+      .tarjeta {
+        padding: 0;
+        flex-flow: row nowrap;
+        width: min(100%, 420px);
+
+        img {
+          height: 60%;
+          margin-right: 10px;
+        }
+      }
+    }
+  }
+
+  .tarjetas-incrustadas {
+    width: 100%;
+    padding: 0.75rem;
+    justify-content: flex-start;
+    align-items: stretch;
+
+    .titulo-seccion {
+      height: auto;
+      margin-bottom: 0.75rem;
+      padding-inline: 0.25rem;
+      font-size: 1.45rem;
+    }
+
+    .tarjetas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem;
+      justify-content: stretch;
+      align-items: stretch;
+
+      .tarjeta-incrustada {
+        width: 100%;
+        min-height: 0;
+        padding: 0.85rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .tarjetas-incrustadas {
+    .tarjetas {
+      grid-template-columns: 1fr;
+
+      .tarjeta-incrustada {
+        min-height: 90px;
+      }
+    }
+  }
+}

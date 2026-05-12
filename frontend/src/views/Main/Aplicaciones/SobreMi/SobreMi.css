@@ -1,0 +1,16 @@
+.sobre-mi-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 1.5rem;
+  min-height: 100%;
+}
+
+/* Responsividad general */
+@media (max-width: 768px) {
+  .sobre-mi-container {
+    padding: 5px;
+  }
+}

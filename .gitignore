@@ -1,25 +1,26 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+.env.deploy
+.env
+.env.*
+backend/.env
+frontend/.env.development
+frontend/.env.production
+backend/*.log
+backend/contactos_backup.json
 
-node_modules
-dist
-dist-ssr
-*.local
+# SQLite
+backend/data/*.sqlite
+backend/data/*.sqlite-wal
+backend/data/*.sqlite-shm
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-*.env
+# Backups
+backups/
+*.pre_restore_*
+*.backup
+
+# Backups
+backups/
+*.pre_restore_*
+*.backup
+
+
+# Backups (Sprint 3 backup automation script)

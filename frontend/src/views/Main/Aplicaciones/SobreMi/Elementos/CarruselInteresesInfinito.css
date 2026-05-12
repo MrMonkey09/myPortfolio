@@ -1,0 +1,121 @@
+.carrusel-intereses {
+  width: 100%;
+  /* Refuerza la máscara global .mask-horizontal (mismo gradiente que servicios). */
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.carrusel-intereses__viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: default;
+  outline: none;
+}
+
+.carrusel-intereses:hover .carrusel-intereses__viewport {
+  cursor: ew-resize;
+}
+
+.carrusel-intereses__viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.carrusel-intereses__viewport:focus-visible {
+  box-shadow: 0 0 0 2px rgba(116, 255, 78, 0.35);
+  border-radius: 12px;
+}
+
+.carrusel-intereses__track {
+  display: flex;
+  flex-flow: row nowrap;
+  width: max-content;
+  gap: 0;
+}
+
+.carrusel-intereses__segment {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+/* Espacio entre la última carta del 1.er bloque y la 1.ª del duplicado (periodo del bucle). */
+.carrusel-intereses__segment--primera {
+  padding-right: 1rem;
+}
+
+.carrusel-intereses__card {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: min(320px, 85vw);
+  min-height: 90px;
+  padding: 1rem;
+  background: var(--extra);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(116, 255, 78, 0.08);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+}
+
+.carrusel-intereses__card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(116, 255, 78, 0.22);
+}
+
+.carrusel-intereses__card img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.carrusel-intereses__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  padding: 0 0.75rem;
+  min-width: 0;
+}
+
+.carrusel-intereses__titulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fuente-primaria);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carrusel-intereses__desc {
+  font-size: 0.85rem;
+  line-height: 1.2;
+  opacity: 0.85;
+  margin: 0;
+  color: var(--fuente-secundaria);
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+  .carrusel-intereses__card {
+    width: min(300px, 88vw);
+    min-height: 80px;
+  }
+
+  .carrusel-intereses__titulo {
+    font-size: 0.95rem;
+  }
+
+  .carrusel-intereses__desc {
+    font-size: 0.8rem;
+  }
+}

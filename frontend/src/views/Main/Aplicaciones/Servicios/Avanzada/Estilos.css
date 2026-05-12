@@ -1,0 +1,975 @@
+/* ============================================
+   AVANZADA — Cotización Avanzada
+   Dark theme with neon green accents (#74ff4e)
+   Stepper navigation multi-step form
+   ============================================ */
+
+.avanzada {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ---- Stepper Navigation ---- */
+
+.avanzada__steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+  background: rgba(116, 255, 78, 0.03);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.avanzada__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: default;
+}
+
+.avanzada__step-number {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(116, 255, 78, 0.15);
+}
+
+.avanzada__step-label {
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--fuente-secundaria);
+  line-height: 1.2;
+  max-width: 44px;
+}
+
+/* Step variants */
+
+.avanzada__step--locked .avanzada__step-number {
+  border-color: rgba(116, 255, 78, 0.1);
+  background: transparent;
+}
+
+.avanzada__step--active .avanzada__step-number {
+  border-color: var(--fuente-primaria);
+  background: rgba(116, 255, 78, 0.12);
+  box-shadow: 0 0 16px rgba(116, 255, 78, 0.15);
+}
+
+.avanzada__step--completed .avanzada__step-number {
+  border-color: var(--fuente-primaria);
+  background: var(--fuente-primaria);
+  color: #0d0d0d;
+}
+
+.avanzada__step--warning .avanzada__step-number {
+  border-color: rgba(255, 190, 70, 0.5);
+  background: rgba(255, 139, 74, 0.12);
+  color: #fff;
+}
+
+/* ---- Step Form ---- */
+
+.avanzada__step-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.avanzada__step-form fieldset {
+  border: 1px solid rgba(116, 255, 78, 0.2);
+  border-radius: 10px;
+  padding: 1.15rem;
+  background: rgba(116, 255, 78, 0.03);
+}
+
+.avanzada__step-form legend {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--fuente-primaria);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.avanzada__step-form legend::before,
+.avanzada__step-form legend::after {
+  content: "";
+  width: 3px;
+  height: 16px;
+  background: var(--fuente-primaria);
+  flex-shrink: 0;
+}
+
+/* ---- Input/Select Styles ---- */
+
+.avanzada__step-selected {
+  border-color: rgba(116, 255, 78, 0.3);
+  background: rgba(116, 255, 78, 0.08);
+}
+
+.avanzada__step-highlight {
+  font-weight: 600;
+  color: var(--fuente-primaria);
+  border-color: var(--fuente-primaria);
+}
+
+/* ---- Radio/Checkbox Groups ---- */
+
+.form-option-group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form-option-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.avanzada__step-input-group,
+.radio-option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.form-option {
+  position: relative;
+  padding: 0.65rem;
+  border-radius: 9px;
+  background: rgba(116, 255, 78, 0.03);
+  border: 1px solid rgba(116, 255, 78, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.form-option:hover {
+  background: rgba(116, 255, 78, 0.08);
+  border-color: rgba(116, 255, 78, 0.3);
+}
+
+.form-option input[type="radio"],
+.input-checkbox {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 0.5rem);
+  height: calc(100% + 0.5rem);
+  opacity: 0;
+  cursor: pointer;
+}
+
+.form-option input[type="radio"]:checked,
+.input-checkbox:checked {
+  background: rgba(116, 255, 78, 0.12);
+  border-color: rgba(116, 255, 78, 0.3);
+}
+
+/* ---- Select styling for advanced quote ---- */
+
+.avanzada__step input[type="number"],
+.modulos__field select {
+  width: 100%;
+  max-width: 120px;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(116, 255, 78, 0.25);
+  background: rgba(12, 12, 12, 0.8);
+  color: #fff;
+  font-family: inherit;
+}
+
+.avanzada__step input[type="text"] {
+  width: 100%;
+  max-width: 150px;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(116, 255, 78, 0.25);
+  background: rgba(12, 12, 12, 0.8);
+  color: #fff;
+  font-family: inherit;
+}
+
+.avanzada__step-hint {
+  font-size: 0.7rem;
+  color: var(--fuente-secundaria);
+  letter-spacing: 0.05em;
+}
+
+/* ---- Step Counter / Status Display ---- */
+
+.avanzada__step-counter {
+  width: calc(100% - 1rem);
+  padding: 0.7rem 1rem;
+  border-radius: 9px;
+  background: rgba(116, 255, 78, 0.08);
+  color: var(--fuente-primaria);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: default;
+}
+
+.avanzada__step-counter.disabled {
+  opacity: 0.6;
+  color: var(--fuente-secundaria);
+}
+
+/* ---- Step Footer & CTAs ---- */
+
+.avanzada__step-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(116, 255, 78, 0.15);
+}
+
+.avanzada__step-footer button {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ---- Modules Table (Step 3) ---- */
+
+.modulos__name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--fuente-primaria);
+  font-size: 1.05rem;
+}
+
+.modulos__category {
+  padding: 0.25rem 0.6rem;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.modulos__category--diseno {
+  background: rgba(116, 255, 78, 0.12);
+  color: var(--fuente-primaria);
+}
+
+.modulos__category--desarrollo {
+  background: rgba(80, 145, 255, 0.12);
+  color: #5991ff;
+}
+
+.modulos__category--ecommerce {
+  background: rgba(255, 190, 70, 0.12);
+  color: #ffd98a;
+}
+
+.modulos__category--marketing {
+  background: rgba(255, 116, 75, 0.12);
+  color: #ff744b;
+}
+
+.modulos__actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.modulos__badge--default {
+  background: rgba(104, 104, 104, 0.1);
+  color: #a8a8a8;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.modulos__badge--yes {
+  background: rgba(116, 255, 78, 0.2);
+  color: var(--fuente-primaria);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+}
+
+.modulos__badge--optional {
+  background: rgba(255, 190, 70, 0.1);
+  color: var(--fuente-primaria);
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.modulos__modulo-costo-total {
+  width: calc(100% - 2rem);
+  background: rgba(116, 255, 78, 0.1);
+  color: var(--fuente-primaria);
+  padding: 0.7rem;
+  border-radius: 9px;
+  font-weight: 700;
+}
+
+/* ---- Adjusts (Step 4) ---- */
+
+.avanzada__step-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.radios__option {
+  position: relative;
+  padding: 0.6rem;
+  border-radius: 9px;
+  background: rgba(116, 255, 78, 0.03);
+  border: 1px solid rgba(116, 255, 78, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.radios__option:hover {
+  background: rgba(116, 255, 78, 0.08);
+}
+
+.avanzada__step-radio-group input[type="radio"] {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 0.5rem);
+  height: calc(100% + 0.5rem);
+  opacity: 0;
+}
+
+.radios__option input[type="radio"]:checked ~ .radios_option-label {
+  background: rgba(116, 255, 78, 0.12);
+  border-color: var(--fuente-primaria);
+}
+
+/* Badges for urgency levels */
+
+.radios__badges {
+  gap: 0.5rem;
+  display: flex;
+  margin-top: 0.5rem;
+}
+
+.radios__badge {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 9px;
+  font-weight: 600;
+}
+
+.radios__badge--low {
+  background: rgba(104, 104, 104, 0.3);
+  color: #a8a8a8;
+}
+
+.radios__badge--medium {
+  background: rgba(156, 192, 255, 0.1);
+  color: #5991ff;
+}
+
+.radios__badge--high {
+  background: rgba(255, 190, 70, 0.15);
+  color: var(--fuente-primaria);
+}
+
+.radios__badge--yes {
+  background: rgba(116, 255, 78, 0.15);
+  color: var(--fuente-primaria);
+}
+
+.radios__badge--no {
+  background: rgba(104, 104, 104, 0.3);
+  color: #a8a8a8;
+  font-style: italic;
+}
+
+/* Adjusts sliders styling */
+
+.input-slider-container {
+  margin-top: 0.5rem;
+}
+
+.radios__preview {
+  background: rgba(116, 255, 78, 0.05);
+  border: 1px solid rgba(116, 255, 78, 0.2);
+  border-radius: 9px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.radios__preview h5 {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  color: var(--fuente-primaria);
+}
+
+.radios__preview-grid {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.radios__preview-item {
+  font-size: 0.72rem;
+  padding: 0.35rem 0.5rem;
+  background: rgba(80, 145, 255, 0.08);
+  border: 1px solid rgba(80, 145, 255, 0.2);
+  border-radius: 6px;
+}
+
+/* ---- Summary (Step 5) ---- */
+
+.resumen-container {
+  padding: 1rem 0;
+}
+
+.resumen-header h2 {
+  color: #fff;
+  margin: 0 0 1rem;
+  font-size: 1.4rem;
+}
+
+.resumen-total {
+  color: var(--fuente-primaria);
+  text-shadow: 0 0 8px rgba(116, 255, 78, 0.3);
+}
+
+.resumen-disclaimer {
+  font-size: 0.82rem;
+  color: #f1f1f1;
+  opacity: 0.85;
+  margin-top: 0.5rem;
+}
+
+.resumen-confianza {
+  margin-top: 0.8rem;
+  font-size: 0.82rem;
+  color: var(--fuente-secundaria);
+}
+
+.resumen-disclaimer-addition {
+  margin-top: 1.5rem;
+  font-size: 0.82rem;
+  color: var(--fuente-secundaria);
+  opacity: 0.8;
+  padding: 0.7rem;
+  background: rgba(255, 190, 70, 0.08);
+  border: 1px solid rgba(255, 190, 70, 0.2);
+  border-radius: 9px;
+}
+
+.resumen__mensuals {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.resumen__mensuals li {
+  background: rgba(80, 145, 255, 0.08);
+  border: 1px solid rgba(80, 145, 255, 0.2);
+  color: #b4d1ff;
+  padding: 0.5rem 0.7rem;
+  border-radius: 9px;
+  font-size: 0.8rem;
+}
+
+.resumen__mensuals--empty {
+  color: var(--fuente-secundaria);
+  opacity: 0.75;
+  padding: 0.3rem 0;
+  width: calc(100% - 2rem);
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 768px) {
+  .avanzada {
+    padding: 0.5rem;
+  }
+
+  .avanzada__steps {
+    gap: 0.4rem;
+    padding: 1.25rem 0.5rem;
+  }
+
+  .radios__label {
+    font-size: 0.7rem;
+    padding: 0.6rem;
+    min-width: auto;
+  }
+
+  .avanzada__summary {
+    margin-bottom: 1rem;
+  }
+
+  .form-option-name {
+    font-size: 0.75rem;
+  }
+}
+
+/* ---- Stepper Navigation ---- */
+
+.avanzava__steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+  background: rgba(116, 255, 78, 0.03);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.avanzada__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: default;
+}
+
+.avanzada__step-number {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(116, 255, 78, 0.15);
+}
+
+.avanzada__step-label {
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--fuente-secundaria);
+  line-height: 1.2;
+  max-width: 44px;
+}
+
+/* Step variants */
+
+.avanzada__step--locked .avanzada__step-number {
+  border-color: rgba(116, 255, 78, 0.1);
+  background: transparent;
+}
+
+.avanzada__step--active .avanzava__step-number {
+  border-color: var(--fuente-primaria);
+  background: rgba(116, 255, 78, 0.12);
+  box-shadow: 0 0 16px rgba(116, 255, 78, 0.15);
+}
+
+.avanzada__step--completed .avanzada__step-number {
+  border-color: var(--fuente-primaria);
+  background: var(--fuente-primaria);
+  color: #0d0d0d;
+}
+
+.avanzava__step--warning .avanzada__step-number {
+  border-color: rgba(255, 190, 70, 0.5);
+  background: rgba(255, 139, 74, 0.12);
+  color: #fff;
+}
+
+/* ---- Step Form ---- */
+
+.avanza__step-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.avanzada__step-form fieldset {
+  border: 1px solid rgba(116, 255, 78, 0.2);
+  border-radius: 10px;
+  padding: 1.15rem;
+  background: rgba(116, 255, 78, 0.03);
+}
+
+.avanzada__step-form legend {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--fuente-primaria);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.avanzada__step-form legend::before,
+.avanza__step-form legend::after {
+  content: """ "";
+  width: 3px;
+  height: 16px;
+  background: var(--fuente-primaria);
+  flex-shrink: 0;
+}
+
+/* ---- Input/Select Styles ---- */
+
+.avanzada__step-selected {
+  border-color: rgba(116, 255, 78, 0.3);
+  background: rgba(116, 255, 78, 0.08);
+}
+
+.avanda__step-highlight {
+  font-weight: 600;
+  color: var(--fuente-primaria);
+  border-color: var(--fuente-primaria);
+}
+
+/* ---- Radio/Checkbox Groups ---- */
+
+.form-option-group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.avanzada__step-input-group,
+.radio-option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.form-option {
+  position: relative;
+  padding: 0.65rem;
+  border-radius: 9px;
+  background: rgba(116, 255, 78, 0.03);
+  border: 1px solid rgba(116, 255, 78, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.form-option:hover {
+  background: rgba(116, 255, 78, 0.08);
+  border-color: rgba(116, 255, 78, 0.3);
+}
+
+.form-option input[type="radio"],
+.input-checkbox {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 0.5rem);
+  height: calc(100% + 0.5rem);
+  opacity: 0;
+  cursor: pointer;
+}
+
+.form-option:hover input[type="radio"]:checked ~ .form-checkbox-label,
+.input-checkbox:checked ~ .form-label {
+  background: rgba(116, 255, 78, 0.12);
+  border-color: var(--fuente-primaria);
+}
+
+.form-option input[type="radio"]:checked,
+.input-checkbox:checked {
+  background: rgba(116, 255, 78, 0.12);
+  border-color: rgba(116, 255, 78, 0.3);
+}
+
+/* ---- Select styling for advanced quote ---- */
+
+.avanza__step input[type="number"],
+.modulos__field select {
+  width: 100%;
+  max-width: 120px;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(116, 255, 78, 0.25);
+  background: rgba(12, 12, 12, 0.8);
+  color: #fff;
+  font-family: inherit;
+}
+
+.avanza__step input[type="text"] {
+  width: 100%;
+  max-width: 150px;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(116, 255, 78, 0.25);
+  background: rgba(12, 12, 12, 0.8);
+  color: #fff;
+  font-family: inherit;
+}
+
+.avanzada__step-hint {
+  font-size: 0.7rem;
+  color: var(--fuente-secundaria);
+  letter-spacing: 0.05em;
+}
+
+/* ---- Step Counter / Status Display ---- */
+
+.avanza__step-counter {
+  width: calc(100% - 1rem);
+  padding: 0.7rem 1rem;
+  border-radius: 9px;
+  background: rgba(116, 255, 78, 0.08);
+  color: var(--fuente-primaria);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: default;
+}
+
+.avanzava__step-counter.disabled {
+  opacity: 0.6;
+  color: var(--fuente-secundaria);
+}
+
+/* ---- Step Footer & CTAs ---- */
+
+.avanza__step-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(116, 255, 78, 0.15);
+}
+
+.avanza__step-footer button {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ---- Modules Table (Step 3) ---- */
+
+.modulos__name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--fuente-primaria);
+  font-size: 1.05rem;
+}
+
+.modulo__category {
+  padding: 0.25rem 0.6rem;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.modulo__category--diseno {
+  background: rgba(116, 255, 78, 0.12);
+  color: var(--fuente-primaria);
+}
+
+.modulos__category--desarrollo {
+  background: rgba(80, 145, 255, 0.12);
+  color: #5991ff;
+}
+
+.modulo__category--ecommerce {
+  background: rgba(255, 190, 70, 0.12);
+  color: #ffd98a;
+}
+
+.modulos__category--marketing {
+  background: rgba(255, 116, 75, 0.12);
+  color: #ff744b;
+}
+
+.modulo__actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.modulos__badge--default {
+  background: rgba(104, 104, 104, 0.1);
+  color: #a8a8a8;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.modulos__badge--yes {
+  background: rgba(116, 255, 78, 0.2);
+  color: var(--fuente-primaria);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+}
+
+.modulos__badge--optional {
+  background: rgba(255, 190, 70, 0.1);
+  color: var(--fuente-primaria);
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.modulos__modulo-costo-total {
+  width: calc(100% - 2rem);
+  background: rgba(116, 255, 78, 0.1);
+  color: var(--fuente-primaria);
+  padding: 0.7rem;
+  border-radius: 9px;
+  font-weight: 700;
+}
+
+/* ---- Adjusts (Step 4) ---- */
+
+.avanza__step-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.radios__option {
+  position: relative;
+  padding: 0.6rem;
+  border-radius: 9px;
+  background: rgba(116, 255, 78, 0.03);
+  border: 1px solid rgba(116, 255, 78, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-radios-option:hover {
+  background: rgba(116, 255, 78, 0.08);
+}
+
+.avanza__step-radio-group input[type="radio"] {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 0.5rem);
+  height: calc(100% + 0.5rem);
+  opacity: 0;
+}
+
+.radios__option input[type="radio"]:checked ~ .radios_option-label {
+  background: rgba(116, 255, 78, 0.12);
+  border-color: var(--fuente-primaria);
+}
+
+/* Badges for urgency levels */
+
+.radios__badges {
+  gap: 0.5rem;
+  display: flex;
+  margin-top: 0.5rem;
+}
+
+.radios__badge {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 9px;
+  font-weight: 600;
+}
+
+.radios__badge--low {
+background: rgba(104, 104, 104, 0.3);
+color: #a8a8a8;
+}
+
+.radios__badge--medium {
+  background: rgba(156, 192, 255, 0.1);
+  color: #5991ff;
+}
+
+.radios__badge--high {
+  background: rgba(255, 190, 70, 0.15);
+  color: var(--fuente-primaria);
+}
+
+.radios__badge--yes {
+  background: rgba(116, 255, 78, 0.15);
+  color: var(--fuente-primaria);
+}
+
+/* ---- Summary (Step 5) ---- */
+
+.resumen-container {
+  padding: 1rem 0;
+}
+
+.resumen-header h2 {
+  color: #fff;
+  margin: 0 0 1rem;
+  font-size: 1.4rem;
+}
+
+.resumen-total {
+  color: var(--fuente-primaria);
+  text-shadow: 0 0 8px rgba(116, 255, 78, 0.3);
+}
+
+.resumen-disclaimer {
+  font-size: 0.82rem;
+  color: #f1f1f1;
+  opacity: 0.85;
+  margin-top: 0.5rem;
+}
+
+.resumen__mensuals {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.resumen__mensuals li {
+  background: rgba(80, 145, 255, 0.08);
+  border: 1px solid rgba(80, 145, 255, 0.2);
+  color: #b4d1ff;
+  padding: 0.5rem 0.7rem;
+  border-radius: 9px;
+  font-size: 0.8rem;
+}
+
+.resumen__mensuals--empty {
+  color: var(--fuente-secundaria);
+  opacity: 0.75;
+  padding: 0.3rem 0;
+  width: calc(100% - 2rem);
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 768px) {
+  .avanzaa__step-name {
+    display: none;
+  }
+
+  .avanza__steps {
+    gap: 0.4rem;
+    padding: 1.25rem 0.5rem;
+  }
+
+  .radio--option-label {
+    font-size: 0.7rem;
+    padding: 0.6rem;
+    min-width: auto;
+  }
+
+  .avanza__summary {
+    margin-bottom: 1rem;
+  }
+}

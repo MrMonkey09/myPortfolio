@@ -1,0 +1,121 @@
+#avatar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.avatar-picture {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.avatar-picture img {
+  width: 80%;
+  max-width: 180px;
+  height: auto;
+  border-radius: 20px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  transition: transform 0.3s ease;
+}
+
+.avatar-picture img:hover {
+  transform: scale(1.05);
+}
+
+.avatar-title {
+  width: 100%;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0.5rem 0;
+  color: #fff;
+}
+
+.avatar-title span {
+  color: var(--fuente-primaria);
+}
+
+.avatar-role {
+  width: 100%;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--fuente-secundaria);
+  opacity: 0.8;
+}
+
+/* Responsividad Simplificada */
+
+/* Mobile & Tablet Sidebar Menu */
+@media (max-width: 768px) {
+  #avatar {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+  }
+
+  .avatar-picture {
+    width: 80px;
+    height: 80px;
+    aspect-ratio: auto;
+  }
+
+  .avatar-picture img {
+    width: 100%;
+    max-width: none;
+    border-radius: 12px;
+  }
+
+  .avatar-content-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .avatar-title {
+    font-size: 1.4rem;
+    margin: 0;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .avatar-role {
+    font-size: 0.95rem;
+    text-align: left;
+    width: auto;
+  }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 400px) {
+  #avatar {
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .avatar-picture {
+    width: 60px;
+    height: 60px;
+  }
+
+  .avatar-title {
+    font-size: 1.2rem;
+  }
+
+  .avatar-role {
+    font-size: 0.85rem;
+  }
+}

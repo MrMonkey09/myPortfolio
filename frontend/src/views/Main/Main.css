@@ -1,0 +1,147 @@
+/* Contenedor principal para el layout */
+.main-layout {
+  display: flex;
+  flex-flow: row nowrap;
+  width: 100%;
+  max-width: 100%;
+  height: 100vh;
+  gap: 1.5rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: transparent; /* Allow index.css background GIF to show through */
+  overflow: hidden;
+}
+
+/* Estilo para el subcontenedor */
+.sub-contenedor {
+  width: 100%;
+  height: 100%;
+  background: rgba(38, 38, 38, 0.85); /* Semi-transparent to show GIF */
+  backdrop-filter: blur(4px); /* Optional: adds a nice glass effect */
+  border-radius: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: start;
+  align-items: stretch; /* Prevents centered children from clipping on the left if they overflow */
+}
+
+/* Estilos para la versión móvil */
+.menu-mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  background: linear-gradient(
+    145deg,
+    rgba(38, 38, 38, 0.92),
+    rgba(38, 38, 38, 0.65)
+  );
+  color: var(--fuente-primaria);
+  border: 1px solid rgba(116, 255, 78, 0.45);
+  border-radius: 50%;
+  width: 46px;
+  height: 46px;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px rgba(116, 255, 78, 0.12) inset,
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 14px rgba(116, 255, 78, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-mobile-toggle:hover {
+  border-color: rgba(116, 255, 78, 0.8);
+  box-shadow:
+    0 0 0 1px rgba(116, 255, 78, 0.2) inset,
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(116, 255, 78, 0.38);
+}
+
+.menu-mobile-toggle.open {
+  transform: translateX(-50%) rotate(180deg);
+}
+
+.arrow-icon {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-top: 2.5px solid var(--fuente-primaria);
+  border-right: 2.5px solid var(--fuente-primaria);
+  transform: rotate(135deg); /* Cambiado a 135deg para apuntar hacia abajo */
+  margin-top: -6px; /* Ajuste para centrar visualmente la flecha */
+  filter: drop-shadow(0 0 6px rgba(116, 255, 78, 0.7));
+}
+
+.overlay-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  transition: opacity 0.3s ease;
+}
+
+.overlay-menu-none {
+  display: none;
+}
+
+.loading-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  padding: 2rem;
+  color: var(--fuente-secundaria);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 768px) {
+  .menu-mobile-toggle {
+    display: flex;
+  }
+
+  .main-layout {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+  }
+
+  .barra-lateral {
+    background: linear-gradient(
+      180deg,
+      rgba(20, 20, 20, 0.96),
+      rgba(38, 38, 38, 0.86)
+    );
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(116, 255, 78, 0.18);
+    border-top: 0;
+    box-shadow:
+      0 14px 30px rgba(0, 0, 0, 0.55),
+      0 0 20px rgba(116, 255, 78, 0.12);
+  }
+
+  .sub-contenedor {
+    padding-top: 8px; /* Espacio para el botón móvil */
+  }
+
+  /* Ajustamos la posición cuando el menú está abierto */
+  .menu-mobile-toggle.open .arrow-icon {
+    transform: rotate(-45deg); /* Gira para apuntar hacia arriba */
+    margin-top: 6px; /* Ajuste cuando está abierto */
+  }
+}

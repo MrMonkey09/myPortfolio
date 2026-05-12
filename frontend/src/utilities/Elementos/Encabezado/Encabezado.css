@@ -1,0 +1,133 @@
+#encabezado {
+  position: relative;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  padding: 20px 0;
+  margin-bottom: 20px;
+}
+
+#encabezado #saludo {
+  width: 90%;
+  color: var(--extra);
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0 12px;
+  margin-top: 40px;
+}
+
+#encabezado #saludo svg {
+  width: 25px;
+  height: 25px;
+  fill: var(--extra);
+}
+
+#encabezado #saludo h4 {
+  font-size: 1.5rem;
+  margin: 10px 0;
+}
+
+#encabezado #nombre {
+  font-size: 2.2rem;
+  color: var(--fuente-secundaria);
+  text-align: center;
+  margin: 15px 0;
+  padding: 0 15px;
+  width: 100%;
+}
+
+#encabezado #nombre .cambio-color {
+  color: var(--fuente-primaria);
+}
+
+#encabezado #datos {
+  display: none; /* Hidden globally to avoid redundancy with Sidebar contact info */
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 1rem 2rem;
+  margin-top: 1.5rem;
+}
+
+#encabezado .dato-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  color: var(--fuente-secundaria);
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50px;
+  border: 1px solid rgba(116, 255, 78, 0.1);
+  transition: all 0.3s ease;
+}
+
+#encabezado .dato-item:hover {
+  background: rgba(116, 255, 78, 0.1);
+  border-color: var(--fuente-primaria);
+  transform: translateY(-2px);
+}
+
+#encabezado .dato-item i {
+  color: var(--fuente-primaria);
+  font-size: 1.1rem;
+}
+
+#encabezado #borde-punteado {
+  border-top: 5px dotted var(--fuente-primaria);
+  border-left: 5px dotted var(--fuente-primaria);
+  width: 5rem;
+  height: 5rem;
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  border-radius: 8px 0 0 0;
+}
+/* Responsividad */
+@media (max-width: 768px) {
+  #encabezado {
+    padding: 10px 0;
+  }
+
+  #encabezado #borde-punteado {
+    top: 10px;
+    left: 10px;
+    width: 3rem;
+    height: 3rem;
+  }
+
+  #encabezado #saludo {
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+    width: 95%;
+  }
+
+  #encabezado #saludo svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+  }
+
+  #encabezado #saludo h4 {
+    font-size: 1.2rem;
+    text-align: center;
+  }
+
+  #encabezado #nombre {
+    font-size: 1.6rem;
+    margin: 10px 0;
+    padding: 0 10px;
+  }
+
+  #encabezado #datos {
+    display: none;
+  }
+}

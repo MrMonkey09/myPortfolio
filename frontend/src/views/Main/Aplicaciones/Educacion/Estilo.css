@@ -1,0 +1,204 @@
+#timeLine {
+  list-style-type: none;
+  position: relative;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  .timeLineItem {
+    position: relative;
+    padding-left: 3rem;
+    border-left: 4px solid var(--fuente-primaria);
+    width: 100%;
+    max-width: 1000px;
+    margin-left: 1rem;
+    padding-bottom: 4rem;
+
+    .timeLineItemContent {
+      background-color: var(--contenedor);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(116, 255, 78, 0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+      .header {
+        display: flex;
+        flex-flow: row wrap;
+        gap: 0.625rem;
+        width: 100%;
+
+        .header-left {
+          flex: 1;
+          min-width: 60%;
+
+          .title {
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+            word-break: break-word;
+          }
+
+          .info {
+            display: flex;
+            align-items: center;
+            gap: 0.3125rem;
+            font-size: 1rem;
+            color: var(--fuente-secundaria);
+
+            .fa-icon {
+              font-size: 1rem;
+              margin-right: 0.3125rem;
+            }
+          }
+        }
+
+        .header-right {
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          flex-flow: column nowrap;
+          background-color: var(--contenedor);
+          border-radius: 0.25rem;
+          padding: 0.3125rem;
+          flex-shrink: 0;
+
+          img {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.3125rem;
+            object-fit: contain;
+          }
+
+          span {
+            font-size: 0.875rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+      }
+
+      .main {
+        margin-top: 0.625rem;
+
+        .text {
+          font-size: 1rem;
+          line-height: 1.5;
+          color: var(--text);
+          margin: 0 0.625rem;
+
+          p {
+            margin: 0;
+            word-break: break-word;
+            white-space: pre-wrap;
+          }
+        }
+
+        .tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.3125rem;
+          margin-top: 0.625rem;
+
+          .badge {
+            background-color: var(--extra-2);
+            color: #fff;
+            padding: 0.3125rem 0.625rem;
+            border-radius: 0.1875rem;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3125rem;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: calc(-1.25rem - 2px); /* Perfectly centered on the 4px border */
+      top: 0;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background-color: #ffffff;
+      border: 3px solid var(--fuente-primaria);
+      z-index: 1;
+      box-shadow: 0 0 10px rgba(116, 255, 78, 0.3);
+    }
+
+    .timeLineItemLogo {
+      position: absolute;
+      left: calc(-1.25rem - 2px);
+      top: 0;
+      width: 2.5rem;
+      height: 2.5rem;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+
+      img {
+        width: 1.6rem; 
+        height: 1.6rem;
+        object-fit: contain;
+      }
+    }
+  }
+}
+
+#educacion {
+  width: 100%;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 700px) {
+  #timeLine {
+    width: 100%;
+    padding-left: 1rem;
+    margin-right: 1.4rem;
+
+    .timeLineItem {
+      width: 100%;
+      margin-left: 1.5rem;
+      padding-left: 1.5rem;
+      padding-bottom: 2rem;
+
+      &::before {
+        left: -1.1rem;
+        width: 2rem;
+        height: 2rem;
+      }
+    }
+
+    .timeLineItemContent {
+      .header {
+        .title {
+          font-size: 1.125rem;
+        }
+
+        .info {
+          font-size: 0.875rem;
+        }
+      }
+
+      .main {
+        .text {
+          font-size: 0.9rem;
+          margin: 0 0.3125rem;
+        }
+
+        .tags .badge {
+          font-size: 0.675rem;
+          padding: 0.1875rem 0.5rem;
+        }
+      }
+    }
+  }
+}
