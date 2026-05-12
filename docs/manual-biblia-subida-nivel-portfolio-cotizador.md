@@ -136,6 +136,9 @@ Regla de consistencia:
 | `docs/decision-log-cotizador.md` | Decisiones por fase y transición |
 | `docs/matriz-operativa-cotizador.md` | Qué documento manda según tipo de tarea |
 | `docs/sprints/sprint-0.md` | Plan operativo pre-implementación y bitácora viva de avance |
+| `docs/sprints/sprint-1.md` | Implementación cotización avanzada core |
+| `docs/sprints/sprint-2.md` | Persistencia híbrida SQLite + Notion |
+| `docs/sprints/sprint-3.md` | Fase Estable: backup, retención, auditoría |
 
 ---
 
