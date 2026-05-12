@@ -18,28 +18,43 @@ function isTransientError(error) {
 }
 
 function extractNotionPayload(quoteRecord) {
-  // Parse JSON fields
-  const totals = JSON.parse(quoteRecord.totals_json);
-  const context = JSON.parse(quoteRecord.input_json);
-  
+  // Parse solo los campos necesarios para visualización comercial (Decision Log §7.3)
+  let totals = {};
+  try {
+    totals = JSON.parse(quoteRecord.totals_json || "{}");
+  } catch {
+    // ignore parse errors
+  }
+
   return {
+    // Identificación
     quote_id: quoteRecord.quote_id,
     trace_id: quoteRecord.trace_id,
     created_at: quoteRecord.created_at,
+    
+    // Versionado
     schema_version: quoteRecord.schema_version,
     pricing_config_version: quoteRecord.pricing_config_version,
+    
+    // Datos comerciales (SOLO datos clave)
     origin: quoteRecord.origin,
     project_type: quoteRecord.project_type,
-    total_project: totals.total_project,
-    total_monthly: totals.total_monthly,
-    estimated_min: totals.estimated_min,
-    estimated_max: totals.estimated_max,
-    confidence_level: totals.confidence_level,
+    project_state: quoteRecord.project_state,
+    currency: quoteRecord.currency,
+    
+    // Métricas clave
+    total_project: totals.total_project || 0,
+    total_monthly: totals.total_monthly || 0,
+    estimated_min: totals.estimated_min || 0,
+    estimated_max: totals.estimated_max || 0,
+    confidence_level: totals.confidence_level || "unknown",
   };
 }
 
 async function syncQuoteToNotion(quoteRecord) {
   const quoteId = quoteRecord.quote_id;
+  console.log(`[SYNC] Starting sync for quote ${quoteId}...`);
+  
   const payload = extractNotionPayload(quoteRecord);
   
   // Get Notion client
@@ -66,8 +81,10 @@ async function syncQuoteToNotion(quoteRecord) {
         title: [{ text: { content: titleValue.slice(0, 2000) } }],
       },
     },
-    children: blocks.slice(0, 40),
+    children: blocks.slice(0, 20), // Reducido de 40 a 20 bloques máximos (seguro, límite real es 100)
   });
+  
+  console.log(`[SYNC] Success: created Notion page ${page.id} for quote ${quoteId}`);
   
   // Update sync status to synced
   await updateSyncStatus(quoteId, { status: "synced", attempts: 0, error: null });
