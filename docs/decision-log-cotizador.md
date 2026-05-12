@@ -137,10 +137,10 @@ Cuando exista divergencia entre stores:
 
 ## MVP -> Escalamiento
 
-- [ ] Definir esquema SQLite de `QuoteRecord` v1.
-- [ ] Definir `pricing_config_version` persistente.
-- [ ] Implementar sync SQLite -> Notion.
-- [ ] Implementar observabilidad de sync (estado + reintentos + error code).
+- [x] Definir esquema SQLite de `QuoteRecord` v1.
+- [x] Definir `pricing_config_version` persistente.
+- [x] Implementar sync SQLite -> Notion.
+- [x] Implementar observabilidad de sync (estado + reintentos + error code).
 
 ## Escalamiento -> Estable
 
