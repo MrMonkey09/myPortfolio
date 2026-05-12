@@ -3,7 +3,14 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import { Client as NotionClient } from "@notionhq/client";
 
+// Inicializar DB al cargar el módulo
+import { getDatabase } from "../backend/db/index.js";
+import { createQuoteRecord } from "../backend/db/quotesRepository.js";
+import { syncWithRetry } from "../backend/sync/notionSync.js";
+
 dotenv.config();
+
+const db = getDatabase();
 
 const app = express();
 const PORT = Number(process.env.PORT || 3002);
@@ -456,6 +463,55 @@ app.post("/api/quotes/simulate", (req, res) => {
         "No se pudo resolver confidence_level",
       );
     }
+
+    // Construir record para persistencia en SQLite y sync con Notion
+    const quoteRecord = {
+      quote_id: quote.quote_id,
+      trace_id: traceId,
+      schema_version: req.body.context.schema_version,
+      pricing_config_version: PRICING_CONFIG.pricing_config_version,
+      origin: req.body.context.origin,
+      project_type: req.body.context.project_type,
+      project_state: req.body.context.project_state,
+      currency: req.body.context.currency,
+      input_json: JSON.stringify({
+        requirements_checklist: req.body.input?.requirements_checklist,
+        line_items: lineItems,
+        monthly_services: req.body.input?.monthly_services,
+        pricing: pricing,
+      }),
+      totals_json: JSON.stringify(totals),
+      meta_json: JSON.stringify({
+        schema_version: req.body.context.schema_version,
+        pricing_config_version: PRICING_CONFIG.pricing_config_version,
+        trace_id: traceId,
+      }),
+      created_at: new Date().toISOString(),
+      sync_status: "pending",
+      sync_attempts: 0,
+      sync_last_error: null,
+    };
+
+    // Persistir en SQLite (sync, no bloqueante para la respuesta)
+    try {
+      createQuoteRecord(db, quoteRecord);
+    } catch (persistError) {
+      console.error("SQLite persistence error:", persistError);
+      return sendError(
+        res,
+        500,
+        traceId,
+        "internal_error",
+        "SQLITE_PERSISTENCE_FAILED",
+        "No se pudo persistir la cotización en SQLite",
+        [{ field: "db", code: String(persistError?.code || "UNKNOWN"), message: String(persistError?.message || "Error") }],
+      );
+    }
+
+    // Sync a Notion async (fire and forget)
+    syncWithRetry(quoteRecord).catch((syncError) => {
+      console.error("Notion sync error:", syncError);
+    });
 
     return res.status(200).json({
       quote: {
