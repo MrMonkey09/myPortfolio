@@ -144,10 +144,10 @@ Cuando exista divergencia entre stores:
 
 ## Escalamiento -> Estable
 
-- [ ] Validar restauración desde backups.
-- [ ] Auditar paridad histórica de cotizaciones.
-- [ ] Definir política de retención y archivado.
-- [ ] Definir continuidad de Notion (obligatoria u opcional).
+- [x] Validar restauración desde backups.
+- [x] Auditar paridad histórica de cotizaciones.
+- [x] Definir política de retención y archivado.
+- [x] Definir continuidad de Notion (obligatoria u opcional).
 
 ---
 
