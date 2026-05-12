@@ -1,0 +1,12 @@
+{
+  "name": "myportfolio",
+  "version": "1.0.0",
+  "description": "Portfolio profesional con cotizador web",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && bun run web:dev",
+    "build": "cd frontend && bun run web:build",
+    "lint": "cd frontend && bun run lint",
+    "api:dev": "cd frontend && bun run api:dev"
+  }
+}

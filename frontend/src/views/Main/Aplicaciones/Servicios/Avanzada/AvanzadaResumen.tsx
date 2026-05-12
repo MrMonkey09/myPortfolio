@@ -1,18 +1,17 @@
-import type { QuoteSimulateResponse, MonthlyService } from "@/types/index.js";
-import Configuracion from "./Configuracion.js";
+import type { QuoteSimulateResponse } from "@/types/index.js";
 import "./Estilos.css";
 import { trackAdvancedStepViewed, trackAdvancedCalculated, trackContactSubmitted } from "@/hooks/useAnalytics";
 import { useEffect } from "react";
 
 interface Props {
   readonly resultado: QuoteSimulateResponse;
-  readonly serviciosMensuales: readonly MonthlyService[];
+  readonly serviciosMensuales: readonly import("@/types/index.js").MonthlyService[];
   readonly onRecalculate: () => void;
   readonly onContact: () => void;
   readonly isStale: boolean;
 }
 
-function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onContact, isStale }: Props) {
+function AvanzadaResumen({ resultado, onContact, isStale }: Props) {
   // Track paso 5 (resumen) al montar
   useEffect(() => {
     trackAdvancedStepViewed(5, 'resumen');
@@ -28,6 +27,7 @@ function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onConta
         confidence_level: resultado.totals.confidence_level,
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resultado?.totals?.total_project]);
 
   // Track CTA contacto
@@ -35,11 +35,6 @@ function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onConta
     event.preventDefault();
     trackContactSubmitted('advanced', resultado.totals?.total_project, false);
     onContact();
-  }
-
-  function handleRecalculate(event: React.FormEvent) {
-    event.preventDefault();
-    onRecalculate();
   }
 
   function toCurrencyCLP(value: number): string {
@@ -67,11 +62,6 @@ function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onConta
         ))}
       </ul>
     );
-  }
-
-  function handleRecalculate(event: React.FormEvent) {
-    event.preventDefault();
-    onRecalculate();
   }
 
   function handleContactNow(event: React.FormEvent) {

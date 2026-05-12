@@ -235,6 +235,7 @@ interface UseAnalyticsReturn {
 function useAnalytics(): UseAnalyticsReturn {
   return {
     traceId: moduleState.trace_id,
+    getOrCreateTraceId,
     trackQuickStarted,
     trackQuickCalculated,
     trackQuickContactClick,

@@ -45,7 +45,9 @@ function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
 
     const validation = validateContexto();
     if (!validation.ok) {
-      status === "active" ? (window.dispatchEvent(new CustomEvent("setStepStatus", { detail: { step: "contexto", status: "invalid" } })) : null);
+      if (status === "active") {
+        window.dispatchEvent(new CustomEvent("setStepStatus", { detail: { step: "contexto", status: "invalid" } }));
+      }
       return;
     }
 

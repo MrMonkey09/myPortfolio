@@ -8,15 +8,14 @@
  * - Cálculo de cotizaciones con múltiples variables
  */
 
-// Importar tipos directamente sin alias no configurado
-import type { AdvancedStatus, StepStatus, StepId, ContextoData, RequerimientosData, ModuloLinea, AjustesComerciales, MonthlyService, AdvancedFormState } from "../../../types/index.js";
-
 // Exportar configuración
 export { CONFIGURACION_AVANZADA } from "./Configuracion.js";
 export { MODULOS_PREDEFINIDOS } from "./Configuracion.js";
 export { SERVICIOS_MENSUALES_PREDEFINIDOS } from "./Configuracion.js";
 
-// Componentes principales (se crearán en fases siguientes)
+// Componentes principales
 export { default as CotizadorAvanzado } from "./Avanzada.js";
-export { MODULOS_PREDEFINIDOS, SERVICIOS_MENSUALES_PREDEFINIDOS } from "./Configuracion";
+export { CONFIGURACION_AVANZADA } from "./Configuracion.js";
+export { MODULOS_PREDEFINIDOS } from "./Configuracion.js";
+export { SERVICIOS_MENSUALES_PREDEFINIDOS } from "./Configuracion.js";
 

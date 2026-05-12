@@ -1,6 +1,6 @@
 import type { AjustesComerciales, MonthlyService } from "@/types/index.js";
-import Configuracion from "./Configuracion.js";
-import { trackAdvancedStepViewed, trackAdvancedCalculated, trackContactSubmitted } from "@/hooks/useAnalytics";
+import { CONFIGURACION_AVANZADA } from "./Configuracion.js";
+import { trackAdvancedStepViewed } from "@/hooks/useAnalytics";
 import { useEffect } from "react";
 
 interface Props {
@@ -20,7 +20,7 @@ function AvanzadaAjustes({ value, onChange, serviciosMensuales, onChangeServicio
   // Calcular total mensual de servicios seleccionados
   const totalMensual = serviciosMensuales.reduce((sum, s) => sum + (s.include === "yes" ? s.monthly_value : 0), 0);
 
-  function setUrgency(newMultiplier: number, newLabel: string) {
+  function setUrgency(newMultiplier: number) {
     // Clamp to valid range [0.8, 1.3]
     const clamped = Math.max(0.8, Math.min(1.3, newMultiplier));
     onChange({ ...value, urgencyMultiplier: clamped });
@@ -114,8 +114,7 @@ function AvanzadaAjustes({ value, onChange, serviciosMensuales, onChangeServicio
       value.urgencyMultiplier === 1.0 ? "Media (1.0x)" : 
       value.urgencyMultiplier === 1.25 ? "Alta (1.25x)" : `Personalizada (${value.urgencyMultiplier.toFixed(2)})`;
     
-    const vatLabel = value.apply_vat ? `IVA: ${(value.vat_pct || defaultVatPct * 100).toFixed(0)}%` : "IVa: -";
-    const marginRange = `${getMarginSliderValue()}%-40%`;
+    const vatLabel = value.apply_vat ? `IVA: ${(value.vat_pct || defaultVatPct * 100).toFixed(0)}%` : "IVA: -";
 
     return (
       <div className={`ajustes__preview ${status === "completed" ? "ajustes__preview-completed" : ""}`}>
@@ -153,7 +152,7 @@ function AvanzadaAjustes({ value, onChange, serviciosMensuales, onChangeServicio
                 name="urgencia"
                 value={key}
                 checked={value.urgencyMultiplier === parseFloat(key)}
-                onChange={() => setUrgency(CONFIGURACION_AVANZADA.urgencia[key as "low" | "medium" | "high"].multiplier, config.label)}
+                onChange={() => setUrgency(CONFIGURACION_AVANZADA.urgencia[key as "low" | "medium" | "high"].multiplier)}
               />
               <span className="radios__label">
                 {key}: {config.multiplier.toFixed(2)}x ({config.label})
@@ -169,7 +168,7 @@ function AvanzadaAjustes({ value, onChange, serviciosMensuales, onChangeServicio
           max={1.3}
           step={0.05}
           value={value.urgencyMultiplier}
-          onChange={(e) => setUrgency(parseFloat(e.target.value), "Personalizado")}
+          onChange={(e) => setUrgency(parseFloat(e.target.value))}
           style={{ width: "100%", marginTop: "0.75rem" }}
         />
 
@@ -206,8 +205,10 @@ function AvanzadaAjustes({ value, onChange, serviciosMensuales, onChangeServicio
         {/* Slider labels */}
         <div className={`radios__badges`} style={{ display: "none", marginTop: "0.5rem" }}>
           {getContingenceSliderValue() <= 10 && 
-            <span className="radios__badge radios__badge--low">Baja ({getContingenceSliderValue()}%{<})` : ""}
-        </fieldset>
+            <span className="radios__badge radios__badge--low">Baja ({getContingenceSliderValue()}%)</span>
+          }
+        </div>
+      </fieldset>
 
       {/* Margen Slider */}
       <fieldset>

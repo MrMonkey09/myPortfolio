@@ -16,14 +16,13 @@ export default defineConfig({
       },
     },
   },
-  resolve: {
+resolve: {
     alias: {
-       
+      "@": path.resolve(__dirname, "./src/"),
       "@utilities": path.resolve(__dirname, "./src/utilities/"),
-       
       "@views": path.resolve(__dirname, "./src/views/"),
-       
       "@assets": path.resolve(__dirname, "./src/assets/"),
+      "@hooks": path.resolve(__dirname, "./src/hooks/"),
     },
   },
 });

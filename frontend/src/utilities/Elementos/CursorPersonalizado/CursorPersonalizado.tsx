@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./CursorPersonalizado.css";
 
 type CursorState = "default" | "hover" | "scroll" | "click";

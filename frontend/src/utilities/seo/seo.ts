@@ -70,7 +70,7 @@ function normalizePath(pathname: string): string {
 }
 
 function setMetaByName(name: string, content: string): void {
-  const meta = document.querySelector(`meta[name=\"${name}\"]`);
+  const meta = document.querySelector(`meta[name="${name}"]`);
   if (meta) {
     meta.setAttribute("content", content);
     return;
@@ -83,7 +83,7 @@ function setMetaByName(name: string, content: string): void {
 }
 
 function setMetaByProperty(property: string, content: string): void {
-  const meta = document.querySelector(`meta[property=\"${property}\"]`);
+  const meta = document.querySelector(`meta[property="${property}"]`);
   if (meta) {
     meta.setAttribute("content", content);
     return;

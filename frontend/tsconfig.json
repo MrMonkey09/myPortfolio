@@ -11,9 +11,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "paths": {
+      "@/*": ["./src/*"],
       "@utilities/*": ["./src/utilities/*"],
       "@views/*": ["./src/views/*"],
-      "@assets/*": ["./src/assets/*"]
+      "@assets/*": ["./src/assets/*"],
+      "@hooks/*": ["./src/hooks/*"]
     }
   },
   "include": ["src"],

@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import { Client as NotionClient } from "@notionhq/client";
 
 // DB se inicializa async con fallback (better-sqlite3 -> sql.js)
-import { initializeDatabase, getDatabase } from "../backend/db/index.js";
+import { initializeDatabase } from "../backend/db/index.js";
 import { createQuoteRecord } from "../backend/db/quotesRepository.js";
 import { syncWithRetry } from "../backend/sync/notionSync.js";
 
@@ -541,7 +541,7 @@ app.post("/api/quotes/simulate", (req, res) => {
         trace_id: traceId,
       },
     });
-  } catch (_error) {
+  } catch {
     return sendError(
       res,
       500,
@@ -657,16 +657,18 @@ app.post("/api/quotes/lead", async (req, res) => {
 
     setIdempotencyEntry(idempotencyKey, { status: "done", response });
     return res.status(201).json(response);
-  } catch (_error) {
+} catch {
     return sendError(
       res,
       500,
       traceId,
       "internal_error",
-      "UNEXPECTED_ERROR",
-      "Ocurrió un error inesperado al registrar el lead",
+      "No se pudo obtener información de la base de datos",
+      [],
     );
   }
+
+  // POST /api/quotes/lead
 });
 
 app.use((req, res) => {

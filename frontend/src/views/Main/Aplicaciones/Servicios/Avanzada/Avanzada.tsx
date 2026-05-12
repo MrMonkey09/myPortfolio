@@ -1,17 +1,15 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useContactoNavegacion } from "@views/Main/ContactoNavegacionContext";
 import { simulateQuickQuote } from "@utilities/api";
 import { MODULOS_PREDEFINIDOS, SERVICIOS_MENSUALES_PREDEFINIDOS, CONFIGURACION_AVANZADA } from "./Configuracion";
 import type {
   AdvancedFormState,
   StepId,
-  StepStatus,
   ContextoData,
   RequerimientosData,
   ModuloLinea,
   AjustesComerciales,
   MonthlyService,
-  QuoteSimulateResponse,
 } from "@types";
 import AvanzadaContexto from "./AvanzadaContexto";
 import AvanzadaRequerimientos from "./AvanzadaRequerimientos";
@@ -21,9 +19,8 @@ import AvanzadaResumen from "./AvanzadaResumen";
 import {
   trackAdvancedStepViewed,
   trackAdvancedStepCompleted,
-  trackAdvancedAbandoned,
-  getOrCreateTraceId,
 } from "@/hooks/useAnalytics";
+import useAnalytics from "@/hooks/useAnalytics";
 import "./Estilos.css";
 
 const STEPS: StepId[] = ["contexto", "requerimientos", "modulos", "ajustes", "resumen"];
@@ -38,7 +35,6 @@ const stepNames: Record<StepId, string> = {
 };
 
 // Ref para rastrear tiempos de entrada/salida en cada paso (performance.now())
-const stepTimersRef = useRef<Map<number, number>>(new Map());
 
 const INITIAL_CONTEXT: ContextoData = {
   projectType: "website",
@@ -91,13 +87,18 @@ function Avanzada() {
     errorMessage: null,
   });
 
+  const { getOrCreateTraceId } = useAnalytics();
+
   // Inicializar traceId para tracking
   useEffect(() => {
     getOrCreateTraceId();
-  }, []);
+  }, [getOrCreateTraceId]);
 
   // Ref para almacenar duración del paso anterior antes de avanzar
   const stepDurationRef = useRef<number>(0);
+
+  // Ref para rastrear tiempos de entrada/salida en cada paso (performance.now())
+  const stepTimersRef = useRef<Map<number, number>>(new Map());
 
   // Pre-cargar contexto si viene de handoff (rápida → avanzada)
   useEffect(() => {
@@ -113,7 +114,7 @@ function Avanzada() {
         },
       resultado: null, // Requiere recalcular con nuevos datos
       isStale: true,
-    });
+    }));
     }
     }, [advancedHandoffContext]);
 
@@ -272,12 +273,7 @@ function Avanzada() {
         },
       };
 
-      const resultado = await simulateQuickQuote(payload);
-
-      // Calcular total_monthly si hay servicios seleccionados
-      const totalMensual = formState.serviciosMensuales
-        .filter(s => s.include === "yes")
-        .reduce((sum, s) => sum + s.monthly_value, 0);
+const resultado = await simulateQuickQuote(payload);
 
       setFormState(prev => ({
         ...prev,

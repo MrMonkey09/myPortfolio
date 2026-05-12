@@ -1,5 +1,4 @@
 import type { ModuloLinea } from "@/types/index.js";
-import Configuracion from "./Configuracion.js";
 import "./Estilos.css";
 import { trackAdvancedStepViewed } from "@/hooks/useAnalytics";
 import { useEffect } from "react";
@@ -85,7 +84,7 @@ function AvanzadaModulos({ modulos, onChange, onNext, status }: Props) {
   function getIncludeBadge(module: ModuloLinea): React.ReactNode {
     switch (module.include) {
       case "no": return <span className="modulos__badge--default">-</span>;
-      case "yes":
+      case "yes": {
         const total = module.quantity * module.base_cost;
         const complexityLabel = module.complexity === "medium" ? "media" : 
           module.complexity === "high" ? "alta" : "baja";
@@ -94,21 +93,20 @@ function AvanzadaModulos({ modulos, onChange, onNext, status }: Props) {
             ✓ {module.quantity}x ({complexityLabel}) / {total.toLocaleString()} CLP
           </span>
         );
-      case "optional": 
+      }
+      case "optional": {
         const total = module.quantity * module.base_cost;
         return (
           <span className="modulos__badge--optional">
             ? {module.quantity}x / {total.toLocaleString()} CLP
           </span>
         );
+      }
     }
   }
 
   // Calcular costo de cada módulo incluido
-  function getModuleCost(module: ModuloLinea): number {
-    if (module.include !== "yes") return 0;
-    return module.quantity * module.base_cost;
-  }
+  // (información disponible en breakdown de la respuesta)
 
   return (
     <form className="avanzada__step-form" onSubmit={handleSubmit} noValidate>
