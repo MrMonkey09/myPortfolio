@@ -17,4 +17,6 @@ export { MODULOS_PREDEFINIDOS } from "./Configuracion.js";
 export { SERVICIOS_MENSUALES_PREDEFINIDOS } from "./Configuracion.js";
 
 // Componentes principales (se crearán en fases siguientes)
-// export { CotizadorAvanzado, PasoContexto, PasoRequerimientos, ... }
+export { default as CotizadorAvanzado } from "./Avanzada.js";
+export { MODULOS_PREDEFINIDOS, SERVICIOS_MENSUALES_PREDEFINIDOS } from "./Configuracion";
+

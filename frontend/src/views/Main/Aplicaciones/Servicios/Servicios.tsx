@@ -3,6 +3,7 @@ import Encabezado from "@utilities/Elementos/Encabezado/Encabezado";
 import { simulateQuickQuote } from "@utilities/api";
 import Configuracion from "./Configuracion";
 import { useContactoNavegacion } from "../../ContactoNavegacionContext";
+import ServiciosAvanzada from "./Avanzada/Avanzada.tsx";
 import "./Estilos.css";
 import type { QuoteHandoffContext, QuoteSimulateResponse } from "../../../../types";
 
@@ -431,9 +432,7 @@ function Servicios() {
             )}
 
             {avanzadaHandoffContext && (
-              <div className="quick-quote__message quick-quote__message--info" role="status">
-                Avanzada pre-cargada con <strong>{avanzadaHandoffContext.quote_ref.quote_id}</strong> ({isQuickResultStale ? "requiere recalcular" : "lista para continuar"}).
-              </div>
+              <ServiciosAvanzada />
             )}
           </section>
         </div>

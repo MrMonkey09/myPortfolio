@@ -1,15 +1,20 @@
-import type { AjustesComerciales } from "@/types/index.js";
+import type { AjustesComerciales, MonthlyService } from "@/types/index.js";
 import Configuracion from "./Configuracion.js";
 import "./Estilos.css";
 
 interface Props {
   readonly value: AjustesComerciales;
   readonly onChange: (ajustes: AjustesComerciales) => void;
+  readonly serviciosMensuales: readonly MonthlyService[];
+  readonly onChangeServicios: (servicios: MonthlyService[]) => void;
   readonly onNext: () => void;
   readonly status: "active" | "completed" | "invalid" | "warning";
 }
 
-function AvanzadaAjustes({ value, onChange, onNext, status }: Props) {
+function AvanzadaAjustes({ value, onChange, serviciosMensuales, onChangeServicios, onNext, status }: Props) {
+  // Calcular total mensual de servicios seleccionados
+  const totalMensual = serviciosMensuales.reduce((sum, s) => sum + (s.include === "yes" ? s.monthly_value : 0), 0);
+
   function setUrgency(newMultiplier: number, newLabel: string) {
     // Clamp to valid range [0.8, 1.3]
     const clamped = Math.max(0.8, Math.min(1.3, newMultiplier));
@@ -38,6 +43,12 @@ function AvanzadaAjustes({ value, onChange, onNext, status }: Props) {
       apply_vat: newVal,
       vat_pct: value.vat_pct || CONFIGURACION_AVANZADA.urgencia.low.multiplier // default placeholder
     });
+  }
+
+  function toggleServicio(serviceId: string, currentInclude: "yes" | "no") {
+    onChangeServicios(serviciosMensuales.map(s => 
+      s.service_id === serviceId ? { ...s, include: currentInclude === "yes" ? "no" : "yes" } : s
+    ));
   }
 
   function validateAjustes(): { ok: boolean; error?: string } {
@@ -262,6 +273,43 @@ function AvanzadaAjustes({ value, onChange, onNext, status }: Props) {
           ) : (
             <span className="radios__badge radios__badge--no">IVA: -</span>
           )}
+        </div>
+      </fieldset>
+
+      {/* Servicios Mensuales Selectables */}
+      <fieldset style={{ marginTop: "2rem" }}>
+        <legend>Servicios Mensuales Opcionales</legend>
+        
+        {!serviciosMensuales.length ? (
+          <p className="quick-quote__field">No hay servicios mensuales disponibles.</p>
+        ) : (
+          <div className={`avanzada__mensuales-list ${status === "completed" ? "avanzada__mensuales-completed" : ""}`} style={{ marginTop: "1rem" }}>
+            {serviciosMensuales.map((service) => (
+              <label 
+                key={service.service_id} 
+                className={`avanzada__mensual-item ${service.include === "yes" ? "avanzada__mensual--selected" : ""}`}
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 1rem", marginBottom: "0.5rem", borderRadius: "8px", border: "1px solid #e0e0e0" }}
+              >
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontWeight: 600 }}>{service.service_name}: {service.plan_name}</span>
+                  <small style={{ color: "#666" }}>{service.hours_included}h/mes - {service.sla}</small>
+                </div>
+                <div>
+                  <strong>${(service.monthly_value / 1000).toFixed(1)}k</strong>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={service.include === "yes"}
+                  onChange={() => toggleServicio(service.service_id, service.include)}
+                  style={{ marginLeft: "1rem", width: "22px", height: "22px", cursor: "pointer" }}
+                />
+              </label>
+            ))}
+          </div>
+        )}
+
+        <div className="quick-quote__total-mensual" style={{ marginTop: "0.75rem", fontWeight: 700 }}>
+          Total Mensual: ${(totalMensual / 1000).toFixed(1)}k
         </div>
       </fieldset>
 

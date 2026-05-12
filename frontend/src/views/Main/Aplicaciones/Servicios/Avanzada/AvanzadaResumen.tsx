@@ -7,9 +7,10 @@ interface Props {
   readonly serviciosMensuales: readonly MonthlyService[];
   readonly onRecalculate: () => void;
   readonly onContact: () => void;
+  readonly isStale: boolean;
 }
 
-function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onContact }: Props) {
+function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onContact, isStale }: Props) {
   function toCurrencyCLP(value: number): string {
     return new Intl.NumberFormat("es-CL", {
       style: "currency",
@@ -20,14 +21,14 @@ function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onConta
 
   // Mostrar servicios mensuales incluidos
   function renderMensualesServices(): React.ReactNode {
-    const services = serviciosMensuales.filter(s => s.include === "yes");
+    const services = ServiciosMensuales.filter(s => s.include === "yes");
     
     if (services.length === 0) {
       return <p className="resumen__mensual--empty">No hay servicios mensuales seleccionados</p>;
     }
 
     return (
-      <ul className={`resumen__mensuals ${status === "completed" ? "resumen__mensuals-completed" : ""}`}>
+      <ul className={`resumen__mensuals resumen-completed`}>
         {services.map((service) => (
           <li key={service.service_id} title={`${service.service_name}: ${service.plan_name} - ${service.sla}`}>
             {service.service_name}: {service.plan_name} ({service.hours_included}h, {service.sla})
@@ -48,17 +49,24 @@ function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onConta
   }
 
   return (
-    <section className={`avanzada__step-form resumen-container ${status === "completed" ? "resumen-completed" : ""}`}>
+    <section className={`avanzada__step-form resumen-container ${isStale ? "resumen-stale" : ""}`}>
       {/* Header del resumen */}
       <header className="resumen-header">
-        <h2>Cotización Avanzada - Resultado</h2>
+        <h2>Cotización Avanzada - Resultado {isStale ? "(Desactualizado)" : ""}</h2>
         {resultado.quote.disclaimer && (
           <div className="resumen-disclaimer">{resultado.quote.disclaimer}</div>
         )}
       </header>
 
       {/* Rango estimado */}
-      <article className={`quick-quote-result avanzada__summary ${status === "completed" ? "avanzada__summary-completed" : ""}`}>
+      <article className={`quick-quote-result avanzada__summary ${isStale ? "avanzada__summary-stale" : ""}`}>
+        {isStale && (
+          <div className="resumen-stale-banner" role="alert">
+            ⚠️ ESTE RESULTADO ESTÁ DESACTUALIZADO • Recalcula con los cambios actuales para obtener la cotización más precisa
+          </div>
+        )}
+        <h5>Rango Estimado del Proyecto</h5>
+        <div className="quick-quote-result__grid">
         <h5>Rango Estimado del Proyecto</h5>
         <div className="quick-quote-result__grid">
           <p>
@@ -99,26 +107,26 @@ function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onConta
         <div className="quick-quote-result__cta" style={{display: "flex", flexDirection: "column", gap: "0.75rem"}}>
           <button 
             type="button" 
-            onClick={handleRecalculate} 
-            disabled={Boolean(resultado) && status === "validating"}
+            onClick={onRecalculate} 
+            disabled={Boolean(resultado) && isStale}
             style={{textDecoration: "underline", fontWeight: 600}}
           >
-            🔄 Recalcular Cotización
+            🔄 Recalcular Cotización {isStale && "(Obligatorio)"}
           </button>
           <button 
             type="submit" 
-            onClick={handleContactNow}
-            disabled={status === "validating"}
-            style={{fontWeight: 700, padding: "0.85rem 1.25rem"}}
+            onClick={onContact}
+            disabled={isStale}
+            style={{fontWeight: 700, padding: "0.85rem 1.25rem", backgroundColor: isStale ? "#e0e0e0" : "var(--primary)", color: isStale ? "#999" : "white"}}
           >
-            📧 Contactar ahora ↗
+            📧 Contactar ahora {isStale && "(Necesita recalcular)"} ↗
           </button>
         </div>
       </article>
 
-      {/* Servicios mensuales */}
-      <section className={`resumen-container ${status === "completed" ? "resumen-container-completed" : ""}`}>
-        <h5 style={{marginTop: "1.25rem"}}>
+      {/* Visualizador de servicios mensuales */}
+      <section className={`resumen-container ${isStale ? "resumen-stale" : ""}`}>
+        <h5 style={{marginTop: "1.25rem", fontWeight: 700}}>
           {resultado.quote_ref && resultado.quote_ref.total_monthly > 0 
             ? "Servicios Mensuales incluidos:" 
             : "Sin servicios mensuales"}
@@ -133,15 +141,8 @@ function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onConta
         </p>
       )}
 
-      <footer className="avanzada__step-footer" style={{marginTop: "2rem", paddingTop: "1.5rem", borderTop: "none"}}>
-        <button 
-          type="button" 
-          onClick={onRecalculate}
-          disabled={status === "validating"}
-          style={{display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 700}}
-        >
-          🔄 Recalcular Cotización
-        </button>
+      <footer className="avanzada__step-footer" style={{marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid #e0e0e0"}}>
+        {/* Botón recalcular ya está en el header */}
       </footer>
     </section>
   );
