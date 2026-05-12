@@ -4,23 +4,29 @@ import "./FormularioContacto.css";
 import type { CampoFormulario, FormData } from "../../../types";
 
 const CAMPO_SERVICIO = "Servicio de interés";
+const CAMPO_MENSAJE = "Mensaje";
 
 interface FormularioContactoProps {
   readonly Conf: Record<string, CampoFormulario>;
   readonly enviarFormulario: (data: FormData) => void;
   /** Texto del plan elegido en catálogo; vacío si el usuario entró por el menú. */
   readonly presetServicioDesdeCatalogo?: string;
+  readonly presetMensaje?: string;
+  readonly isSubmitting?: boolean;
 }
 
 function FormularioContacto({
   Conf,
   enviarFormulario,
   presetServicioDesdeCatalogo = "",
+  presetMensaje = "",
+  isSubmitting = false,
 }: Readonly<FormularioContactoProps>) {
   const [formData, setFormData] = useState<FormData>(() =>
-    presetServicioDesdeCatalogo
-      ? { [CAMPO_SERVICIO]: presetServicioDesdeCatalogo }
-      : {}
+    ({
+      ...(presetServicioDesdeCatalogo ? { [CAMPO_SERVICIO]: presetServicioDesdeCatalogo } : {}),
+      ...(presetMensaje ? { [CAMPO_MENSAJE]: presetMensaje } : {}),
+    })
   );
 
   useEffect(() => {
@@ -36,6 +42,14 @@ function FormularioContacto({
       return { ...prev, [CAMPO_SERVICIO]: presetServicioDesdeCatalogo };
     });
   }, [presetServicioDesdeCatalogo]);
+
+  useEffect(() => {
+    if (!presetMensaje) return;
+    setFormData((prev) => {
+      if (prev[CAMPO_MENSAJE]) return prev;
+      return { ...prev, [CAMPO_MENSAJE]: presetMensaje };
+    });
+  }, [presetMensaje]);
 
   const handleChange = (campo: string, valor: string) => {
     setFormData((prev) => ({
@@ -67,8 +81,8 @@ function FormularioContacto({
           </div>
         );
       })}
-      <button type="submit" className="boton-enviar">
-        Enviar Mensaje
+      <button type="submit" className="boton-enviar" disabled={isSubmitting}>
+        {isSubmitting ? "Enviando..." : "Enviar Mensaje"}
       </button>
     </form>
   );
