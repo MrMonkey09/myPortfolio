@@ -1,6 +1,7 @@
 import type { AjustesComerciales, MonthlyService } from "@/types/index.js";
 import Configuracion from "./Configuracion.js";
-import "./Estilos.css";
+import { trackAdvancedStepViewed, trackAdvancedCalculated, trackContactSubmitted } from "@/hooks/useAnalytics";
+import { useEffect } from "react";
 
 interface Props {
   readonly value: AjustesComerciales;
@@ -12,6 +13,10 @@ interface Props {
 }
 
 function AvanzadaAjustes({ value, onChange, serviciosMensuales, onChangeServicios, onNext, status }: Props) {
+  // Tracke paso al montar componente
+  useEffect(() => {
+    trackAdvancedStepViewed(4, 'ajustes');
+  }, []);
   // Calcular total mensual de servicios seleccionados
   const totalMensual = serviciosMensuales.reduce((sum, s) => sum + (s.include === "yes" ? s.monthly_value : 0), 0);
 

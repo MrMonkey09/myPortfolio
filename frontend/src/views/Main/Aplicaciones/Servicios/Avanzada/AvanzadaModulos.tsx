@@ -1,6 +1,8 @@
 import type { ModuloLinea } from "@/types/index.js";
 import Configuracion from "./Configuracion.js";
 import "./Estilos.css";
+import { trackAdvancedStepViewed } from "@/hooks/useAnalytics";
+import { useEffect } from "react";
 
 interface Props {
   readonly modulos: readonly ModuloLinea[];
@@ -10,6 +12,10 @@ interface Props {
 }
 
 function AvanzadaModulos({ modulos, onChange, onNext, status }: Props) {
+  // Tracke paso al montar componente
+  useEffect(() => {
+    trackAdvancedStepViewed(3, 'modulos');
+  }, []);
   function updateInclude(moduleId: string, newValue: "yes" | "optional" | "no") {
     onChange(modulos.map(m => 
       m.module_id === moduleId ? { ...m, include: newValue } : m

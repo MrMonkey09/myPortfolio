@@ -1,5 +1,7 @@
 import type { RequerimientosData } from "@/types/index.js";
 import "./Estilos.css";
+import { trackAdvancedStepViewed } from "@/hooks/useAnalytics";
+import { useEffect } from "react";
 
 interface Props {
   readonly value: RequerimientosData;
@@ -9,6 +11,10 @@ interface Props {
 }
 
 function AvanzadaRequerimientos({ value, onChange, onNext, status }: Props) {
+  // Tracke paso al montar componente
+  useEffect(() => {
+    trackAdvancedStepViewed(2, 'requerimientos');
+  }, []);
   function handleChange(key: keyof RequerimientosData, newValue: boolean) {
     onChange({ ...value, [key]: newValue });
   }

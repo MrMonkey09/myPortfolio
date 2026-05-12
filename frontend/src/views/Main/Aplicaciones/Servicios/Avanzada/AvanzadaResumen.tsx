@@ -1,6 +1,8 @@
 import type { QuoteSimulateResponse, MonthlyService } from "@/types/index.js";
 import Configuracion from "./Configuracion.js";
 import "./Estilos.css";
+import { trackAdvancedStepViewed, trackAdvancedCalculated, trackContactSubmitted } from "@/hooks/useAnalytics";
+import { useEffect } from "react";
 
 interface Props {
   readonly resultado: QuoteSimulateResponse;
@@ -11,6 +13,35 @@ interface Props {
 }
 
 function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onContact, isStale }: Props) {
+  // Track paso 5 (resumen) al montar
+  useEffect(() => {
+    trackAdvancedStepViewed(5, 'resumen');
+  }, []);
+
+  // Track cálculo completado (resumen renderizado con datos)
+  useEffect(() => {
+    if (resultado?.totals) {
+      trackAdvancedCalculated({
+        success: true,
+        total_project: resultado.totals.total_project,
+        total_monthly: resultado.totals.total_monthly ?? resultado.totals.total_project / 12,
+        confidence_level: resultado.totals.confidence_level,
+      });
+    }
+  }, [resultado?.totals?.total_project]);
+
+  // Track CTA contacto
+  function handleContactNow(event: React.FormEvent) {
+    event.preventDefault();
+    trackContactSubmitted('advanced', resultado.totals?.total_project, false);
+    onContact();
+  }
+
+  function handleRecalculate(event: React.FormEvent) {
+    event.preventDefault();
+    onRecalculate();
+  }
+
   function toCurrencyCLP(value: number): string {
     return new Intl.NumberFormat("es-CL", {
       style: "currency",
@@ -115,7 +146,7 @@ function AvanzadaResumen({ resultado, serviciosMensuales, onRecalculate, onConta
           </button>
           <button 
             type="submit" 
-            onClick={onContact}
+            onClick={handleContactNow}
             disabled={isStale}
             style={{fontWeight: 700, padding: "0.85rem 1.25rem", backgroundColor: isStale ? "#e0e0e0" : "var(--primary)", color: isStale ? "#999" : "white"}}
           >

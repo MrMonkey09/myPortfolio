@@ -1,5 +1,7 @@
 import type { ContextoData } from "@/types/index.js";
 import "./Estilos.css";
+import { trackAdvancedStepViewed } from "@/hooks/useAnalytics";
+import { useEffect } from "react";
 
 interface Props {
   readonly value: ContextoData;
@@ -9,6 +11,11 @@ interface Props {
 }
 
 function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
+  // Tracke paso al montar componente
+  useEffect(() => {
+    trackAdvancedStepViewed(1, 'contexto');
+  }, []);
+
   function handleProjectTypeChange(newValue: "website" | "ecommerce" | "web_app") {
     onChange({ ...value, projectType: newValue });
   }
