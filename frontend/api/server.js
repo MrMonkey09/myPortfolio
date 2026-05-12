@@ -2,11 +2,17 @@ import express from "express";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import { Client as NotionClient } from "@notionhq/client";
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // DB se inicializa async con fallback (better-sqlite3 -> sql.js)
-import { initializeDatabase } from "../backend/db/index.js";
-import { createQuoteRecord } from "../backend/db/quotesRepository.js";
-import { syncWithRetry } from "../backend/sync/notionSync.js";
+// backend/ está en nivel superior: ../../backend/
+import { initializeDatabase } from "../../backend/db/index.js";
+import { createQuoteRecord } from "../../backend/db/quotesRepository.js";
+import { syncWithRetry } from "../../backend/sync/notionSync.js";
 
 dotenv.config();
 
@@ -373,7 +379,7 @@ function validateSimulatePayload(payload) {
   return { details, lineItems, pricing };
 }
 
-function buildTotals({ lineItems, pricing, applyVat }) {
+function buildTotals({ lineItems, pricing, applyVat, monthlyServices = [] }) {
   const directCost = lineItems
     .filter((item) => item.include === "yes")
     .reduce((acc, item) => {
@@ -391,6 +397,10 @@ function buildTotals({ lineItems, pricing, applyVat }) {
   const vatValue = applyVat ? totalNet * pricing.vat_pct : 0;
   const totalProject = totalNet + vatValue;
 
+  const totalMonthly = monthlyServices
+    .filter((s) => s.include === "yes")
+    .reduce((sum, s) => sum + toNumber(s.monthly_value, 0), 0);
+
   const estimatedMin = totalProject * 0.9;
   const estimatedMax = totalProject * 1.15;
 
@@ -404,7 +414,7 @@ function buildTotals({ lineItems, pricing, applyVat }) {
     total_net: Math.round(totalNet),
     vat_value: Math.round(vatValue),
     total_project: Math.round(totalProject),
-    total_monthly: 0,
+    total_monthly: Math.round(totalMonthly),
     estimated_min: Math.round(estimatedMin),
     estimated_max: Math.round(estimatedMax),
   };
@@ -435,7 +445,12 @@ app.post("/api/quotes/simulate", (req, res) => {
     // Normalize apply_vat to boolean (fix for string "false" being truthy)
     const applyVatInput = req.body?.input?.apply_vat;
     const applyVat = applyVatInput === undefined ? PRICING_CONFIG.apply_vat : normalizeBool(applyVatInput, PRICING_CONFIG.apply_vat);
-    const totals = buildTotals({ lineItems, pricing, applyVat });
+    const totals = buildTotals({
+      lineItems,
+      pricing,
+      applyVat,
+      monthlyServices: req.body.input?.monthly_services || [],
+    });
 
     if (applyVat === false && totals.vat_value !== 0) {
       return sendError(
@@ -541,14 +556,15 @@ app.post("/api/quotes/simulate", (req, res) => {
         trace_id: traceId,
       },
     });
-  } catch {
+  } catch (err) {
+    console.error("[SIMULATE-ERROR]", err);
     return sendError(
       res,
       500,
       traceId,
       "internal_error",
-      "UNEXPECTED_ERROR",
-      "Ocurrió un error inesperado al simular la cotización",
+      "No se pudo obtener información de la base de datos",
+      [{ field: "internal", code: "UNEXPECTED_ERROR", message: String(err.message) }],
     );
   }
 });

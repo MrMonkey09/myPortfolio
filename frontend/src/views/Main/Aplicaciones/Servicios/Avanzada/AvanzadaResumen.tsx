@@ -23,7 +23,7 @@ function AvanzadaResumen({ resultado, onContact, isStale }: Props) {
       trackAdvancedCalculated({
         success: true,
         total_project: resultado.totals.total_project,
-        total_monthly: resultado.totals.total_monthly ?? resultado.totals.total_project / 12,
+        total_monthly: resultado.totals.total_monthly,
         confidence_level: resultado.totals.confidence_level,
       });
     }

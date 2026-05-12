@@ -353,7 +353,7 @@ function validateLeadPayload($payload) {
 // BUILD TOTALS - RFC-002 + RFC-004 Patch
 // ============================================================================
 
-function buildTotals($lineItems, $pricing, $applyVat) {
+function buildTotals($lineItems, $pricing, $applyVat, $monthlyServices = []) {
     $directCost = 0;
     foreach ($lineItems as $item) {
         if (($item['include'] ?? '') === 'yes') {
@@ -371,6 +371,14 @@ function buildTotals($lineItems, $pricing, $applyVat) {
     $vatValue = $applyVat ? $totalNet * $pricing['vat_pct'] : 0;
     $totalProject = $totalNet + $vatValue;
 
+    // Calcular total_monthly desde servicios mensuales con include="yes"
+    $totalMonthly = 0;
+    foreach ($monthlyServices as $s) {
+        if (($s['include'] ?? '') === 'yes') {
+            $totalMonthly += toNumber($s['monthly_value'] ?? 0);
+        }
+    }
+
     // RFC-004: estimated range
     $estimatedMin = $totalProject * 0.9;
     $estimatedMax = $totalProject * 1.15;
@@ -385,7 +393,7 @@ function buildTotals($lineItems, $pricing, $applyVat) {
         'total_net' => round($totalNet),
         'vat_value' => round($vatValue),
         'total_project' => round($totalProject),
-        'total_monthly' => 0,
+        'total_monthly' => round($totalMonthly),
         'estimated_min' => round($estimatedMin),
         'estimated_max' => round($estimatedMax),
     ];
@@ -579,7 +587,12 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     // Normalize apply_vat to boolean (fix for string "false" being truthy in PHP)
     $applyVatInput = $payload['input']['apply_vat'] ?? $pricingConfig['apply_vat'];
     $applyVat = normalizeBool($applyVatInput, $pricingConfig['apply_vat']);
-    $totals = buildTotals($validation['lineItems'], $validation['pricing'], $applyVat);
+    $totals = buildTotals(
+        $validation['lineItems'],
+        $pricing,
+        $applyVat,
+        $input['monthly_services'] ?? []
+    );
 
     // Domain validations
     if ($applyVat === false && $totals['vat_value'] !== 0) {

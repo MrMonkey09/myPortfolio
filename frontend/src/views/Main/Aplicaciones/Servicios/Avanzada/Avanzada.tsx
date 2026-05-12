@@ -263,6 +263,7 @@ function Avanzada() {
         input: {
           requirements_checklist: formState.requerimientos,
           line_items: lineItems,
+          monthly_services: formState.serviciosMensuales,
           pricing: {
             contingency_pct: formState.ajustes.contingency_pct,
             margin_pct: formState.ajustes.margin_pct,

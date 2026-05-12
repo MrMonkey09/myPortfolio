@@ -152,6 +152,7 @@ export interface QuoteSimulateResponse {
     readonly estimated_min: number;
     readonly estimated_max: number;
     readonly total_project: number;
+    readonly total_monthly: number;
     readonly confidence_level: "low" | "medium" | "high";
     readonly disclaimer: string;
   };

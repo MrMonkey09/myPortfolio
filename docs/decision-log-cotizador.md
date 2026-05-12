@@ -146,8 +146,8 @@ Cuando exista divergencia entre stores:
 
 - [x] Validar restauración desde backups.
 - [x] Auditar paridad histórica de cotizaciones.
-- [x] Definir política de retención y archivado.
-- [x] Definir continuidad de Notion (obligatoria u opcional).
+- [x] Definir política de retención y archivado. ✅ 2026-05-12 (Sprint 5)
+- [x] Definir continuidad de Notion (obligatoria u opcional). ✅ 2026-05-12 (Sprint 5)
 
 ---
 
@@ -155,7 +155,9 @@ Cuando exista divergencia entre stores:
 
 ### 7.1 Política de retención de datos
 
-**Recomendación**: Retención de 12 meses para cotizaciones activas, 36 meses para leads conversionados.
+**Estado:** ✅ **Aprobado 2026-05-12** (Sprint 5 cierre)
+
+**Decisión:**
 
 | Tipo | Retención | Archivado |
 |---|---|---|
@@ -166,7 +168,9 @@ Cuando exista divergencia entre stores:
 
 ### 7.2 Frecuencia y estrategia de backup en cPanel
 
-**Recomendación**: Backup automático diario con retención de 7 días + backup manual semanal.
+**Estado:** ✅ **Aprobado 2026-05-12** (Sprint 5 cierre)
+
+**Decisión:**
 
 | Tipo | Frecuencia | Retención | Ubicación |
 |---|---|---|---|
@@ -181,7 +185,9 @@ Cuando exista divergencia entre stores:
 
 ### 7.3 Nivel de detalle enviado a Notion en modo híbrido
 
-**Recomendación actual**: Enviar payload resumido optimizado para visualización comercial.
+**Estado:** ✅ **Aprobado 2026-05-12** (Sprint 5 cierre)
+
+**Decisión:**
 
 ```json
 {
