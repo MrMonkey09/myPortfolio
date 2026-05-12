@@ -1,0 +1,263 @@
+{
+  "$schema_version": "1.0.0",
+  "$created_at": "2026-05-12T06:53:08.000Z",
+  "last_updated": "2026-05-12T06:53:08.000Z",
+  "total_tests_registered": 2,
+  "active_running_tests_count": 2,
+  
+  "tests": [
+    {
+      "id": "AB-001",
+      "name": "CTA Copy del Botón de Contacto — Versión conversacional vs directa (Copywriting optimization)",
+
+      "hypothesis": {
+        "text": "Changing CTA button text from 'Contactar ahora' to '¿Hablamos? Agenda una llamada' will increase contact button click-through rate among users who reached final summary/calculation stage by at least ≥10% relative to control version, p-value ≤ 0.05",
+        "statistical_significance_threshold": {
+          "p_value_maximum_acceptable": 0.05,
+          "minimum_lift_percentage_required": 0.10,
+          "minimum_sample_size_per_variant_week": 45 (based on Chi-square goodness-of-fit power analysis)
+        }
+      },
+
+      "control_definition": {
+        "description": "Current production version as of Sprint 4 implementation date",
+        "button_text_exact_match": "Contactar ahora", 
+        "location_in_ui": "Bottom of resumen calculation display section (after quote total shown)",
+        "element_type": "Primary action button / submit button"
+      },
+
+      "variant_proposal_definition": {
+        "description": "Proposed new variant to A/B test against control",
+        "button_text_exact_match": "¿Hablamos? Agenda una llamada", 
+        "tone_characteristics": {
+          "more_conversational": true,
+          "question_structure_used_to_engage": true,
+          "clear_call-to-action_presented_with_verb_agenda_llamada": true
+        },
+        "location_in_ui_same_as_control": true
+      },
+
+      "measurement_contract": {
+        "primary_ga4_events_to_track": [
+          {
+            "event_name": "cotizador_quick_contact_click",
+            "capture_conditions": {
+              "mode": ["advanced", "quick"],
+              "quote_total_greater_than": 0,
+              "has_message_param_true_or_exists": true
+            }
+          },
+          {
+            "event_name": "cotizador_advanced_contact_submitted", 
+            "capture_conditions": {
+              "success": true,
+              "source_origin": "advanced"
+            }
+          }
+        ],
+
+        "success_metrics_definition": [
+          {
+            "metric_name": "contact_click_conversion_rate_overall",
+            "calculation_formula": "(ab_variant_total_contact_clicks / ab_variant_user_reaching_cotizador_started) - (control_variant_total_contact_clicks / control_variant_user_reaching_cotizador_startup)", 
+            "success_threshold_minimum_percentage_points": 10,
+            "statistical_test_method": "Chi-square test for 2x2 contingency tables comparing click/no-click counts per group"
+          },
+          {
+            "metric_name": "revenue_implied_from_clicks",
+            "calculation_formula": "Sum of quote_total parameter values (in USD) for contact_click events from variant users / Number of contact_click events from variant users", 
+            "success_condition": "Higher average revenue per click AND higher total click count compared to control, both statistically significant at p≤0.05"
+          }
+        ]
+      },
+
+      "experimentation_configuration": {
+        "traffic_split_percentage_control_to_variant_initially": 0.5, 
+        "user_assignment_mechanism": "User_id hash or localStorage cookie persistence per session",
+        "minimum_duration_required_weeks_before_conclusion": 3,
+        "sample_size_calculation_basis": "Power analysis assuming effect size = 0.1 (Cohen's h), alpha = 0.05, power = 0.8"
+      },
+
+      "implementation_status": {
+        "ready_to_deploy_in_production": false,
+        "requires_manual_deployment_steps": true, 
+        "tracking_code_placement_required_in_files": [
+          "frontend/src/hooks/useAnalytics.ts (add A/B variant detection logic)",
+          "frontend/components/Servicios.tsx (modify contact button rendering per assigned variant)"
+        ]
+      },
+
+      "expected_outcomes_analysis": {
+        "best_case_scenario_description": {
+          "outcome_if_variant_wins_significantly": "Statistical test results show p-value ≤0.05 AND lift ≥10% (preferably ≥20-30%), contact_click_count increases by 95+ clicks over control period", 
+          "recommended_next_action": "Consider rolling out variant to 100% of traffic permanently with confidence that new wording improves conversion metrics measurably without risking baseline performance degradation"
+        },
+
+        "worst_case_scenario_description": {
+          "outcome_if_variant_underperforms_significantly": "Statistically significant negative impact observed (p-value ≤0.05 AND contact_click_percentage_decrease ≥5%), variant performs worse than control despite more conversational framing",
+          "recommended_next_action_if_worst_case_occurs": "Immediately revert to control version, document reasons for poor performance in notes section below for future iteration analysis"
+        },
+
+        "neutral_or_inconclusive_outcome": "p-value >0.05 (insufficient evidence to reject null hypothesis) OR lift falls between -5% and +10% with confidence interval overlapping zero", "recommended_action_if_neutral": "Maintain current production version as no statistically significant improvement demonstrated; consider A/B test for different variable in subsequent iteration cycle"
+      },
+
+      "tracking_data_structure_example_for_analytics_events": {
+        "ab_test_identification_parameters_in_ga4_events": {
+          "ab_test_id_parameter_value": "AB-001",
+          "ab_variant_assigned_to_user_value": "control" OR "variant", 
+          "user_id_param_unique_identifier_per_session_or_persistent_cookie_id"
+        }
+
+      },
+
+      "documentation_references_for_context": [
+        {
+          "file_path": "sdd/sprint-4-telemetría/spec.md", 
+          "section_relevant_to_this_test": "Work-Unit D — Test A/B Framework Preparation (A.1 Schema definition, B.2 Initial Tests registration table)"
+        },
+        {
+          "file_path": "docs/GA4-telemetry-guide.md", 
+          "chapter_reference": "Quick Reference → AB Testing Section"
+        }
+      ]
+    },
+
+    {
+      "id": "AB-002",
+      "name": "Disclaimer Placement UX — Flotante/Sticky vs al final del resumen (Interface layout optimization)",
+
+      "hypothesis": {
+        "text": "Displaying disclaimer text in a floating/sticky sidebar panel during resumen calculation viewing will increase advanced flow completion rate through Step 5 → contact submission transition by at least ≥5% relative to control version, accounting for improved visibility without disrupting content consumption",
+        "statistical_significance_threshold": {
+          "minimum_lift_percentage_required": 0.05,
+          "p_value_maximum_acceptable": 0.05, 
+          "minimum_sample_size_per_variant_week": 45
+        }
+      },
+
+      "control_definition": {
+        "description": "Current production disclaimer UI layout as of Sprint 4 implementation",
+        "display_location_current_production": "Bottom portion of resumen final quote display section (requires scroll down to read)",
+        "readability_characteristics_current_ui": "User must scroll through entire quote to find/discover disclaimer text → potential point of missed information for users focused on quote total"
+      },
+
+      "variant_proposal_definition": {
+        "description": "Alternative floating/sticky side panel implementation",
+        "display_location_new_variant_concept": "Side panel visible throughout resumen calculation stage, not blocking main quote content but ensuring constant visibility without requiring scroll interaction", 
+        "visibility_behavior": "Sticky during scroll: remains partially visible regardless of viewport position within resumen step"
+      },
+
+      "measurement_contract": {
+        "ga4_events_to_measure_conversion_rate_improvement": [
+          {
+            "event_name_for_tracking_final_flow_completion": "cotizador_advanced_calculated", 
+            "capture_conditions": {
+              "success_param_true_only": true, 
+              "step_name_equals_resumen_calculation_step": true
+            }
+          },
+          {
+            "event_following_calculation_event": "cotizador_advanced_contact_submitted",
+            "expected_success_rate_improvement_target_percentage_points_over_control_minimum": 5
+          }
+        ],
+
+        "success_metrics_definition": [
+          {
+            "metric_name_to_analyze_ux_improvement_from_sticky_disclaimer_placement": "advanced_flow_final_calculation_completion_rate",
+            "calculation_definition": "(ab_variant_count_reaching_step_5_resumen_after_disclaimer_visible_during_viewing / ab_variant_count_started_advanced_flow) - (control_variant_same_ratio)", 
+            "success_threshold_percentage_minimum_lift_over_control": 0.05 or 5 points percentage absolute increase required for statistical significance to declare experiment success"
+          }, {
+            "metric_name_for_contextual_understanding_of_impact": "overall_advanced_flow_abandon_rate_comparison_across_both_groups",
+            "calculation_formula_purpose": "Secondary check confirming variant is not merely shifting abandon point from Step 4 → Resumen view but actually improving final conversion to contact_submit", 
+            "statistical_significance_check_required_against_control_group_average": true, 
+            "alpha_level_for_testing": 0.05
+          }
+        ]
+      },
+
+      "experimentation_configuration_parameters": {
+        "initial_50_50_traffic_split_between_variants": true, 
+        "user_assignment_methodology_same_process": "User_id hash or localStorage cookie based assignment with persistence",
+        "minimum_test_duration_weeks_to_collect_sufficient_sample_data": 3,
+        "statistical_power_analysis_basis_parameters": {
+          "expected_effect_size_h_assumed_for_power_analysis_calculation": "0.1 (Cohen's h)",
+          "alpha_significance_level": 0.05, 
+          "desired_statistical_power": 0.80 for detecting ≥5% relative improvement with confidence >95%
+        }
+      },
+
+      "implementation_readiness_status": {
+        "ready_to_deploy_in_production": false,
+        "requires_manual_deployment_steps_confirmed_true": true, 
+        "frontend_code_modifications_required_in_files_list": [
+          "Frontend/views/Main/Aplicaciones/Servicios/Avanzada/AvanzadaResumen.tsx (modify disclaimer render logic from bottom static positioning to sticky side panel)", 
+          "Frontend/src/hooks/useAnalytics.ts (add variant detection and tracking event tagging for AB-002)"
+        ],
+        "UI_components_to_create_if_not_exists": [
+          {
+            "component_name": "StickyDisclaimerPanel", 
+            "location_in_resumen_step": "Right side / bottom-right floating panel overlay not blocking main quote readability area"
+          }
+        ]
+      },
+
+      "expected_outcomes_scenarios_analysis": {
+        "if_variant_wins_significantly_p_value_less_than_or_equal_0.05_and_lift_at_least_5_percent": "Statistically significant positive outcome confirmed: floating/sticky disclaimer improves user comprehension/visibility during calculation review → adopt variant as permanent production version", 
+        "recommendations_if_variant_wins": [
+          "Roll out to all users 100%", 
+          "Document rationale for future reference and potential application in similar UI elements requiring visibility without disruption of primary content flow"
+        ]
+      },
+
+      "if_variant_underperforms_negative_impact_or_no_improvement_observed": {
+        "outcomes_scenarios": [
+          "Negative impact detected (statistically significant decrease in Step 5→6 conversion rate)",
+          "Statistically inconclusive / no observable improvement in either direction (p-value > 0.05 or confidence intervals cross zero)"
+        ],
+
+        "recommended_actions_if_negative_inconclusive_or_poor_results": [
+          "Revert to control version immediately if negative impact confirmed statistically significant", 
+          "Maintain current static bottom positioning if no improvement detected and UX team consensus says side panel approach adds visual complexity without clear value"
+        ]
+      },
+
+      "tracking_data_format_example": {
+        "ab_variant_assignment_in_tracking_events": {
+          "test_id_parameter": "AB-002", 
+          "ab_variant_assigned_value_for_given_user_session": "variant (if side panel sticky)" OR "control (if static bottom placement)",
+          "user_id_identifier_unique_per_testing_period": true
+        }
+      },
+
+      "design_considerations_documented": {
+        "potential_downsides_of_sticky_side_panel_approach_identified_during_planning_phase": [
+          "May add visual clutter to clean resumen layout", 
+          "Could distract users focused on processing quote totals rather than seeing disclaimer information"
+        ],
+
+        "benefits_of_current_static_approach_that_must_be_preserved_if_variant_underperforms_or_reverted": [
+          "Cleaner UI design with minimal distractions during calculation display stage", 
+          "Lower cognitive load for users focused on reviewing quote details without scrolling through long-form content"
+        ]
+      }
+    }
+  ],
+
+  "meta_information_about_registry": {
+    "total_tests_registered_so_far_in_sprint_4_timeline": 2,
+    "running_active_without_conclusion": 2,
+    "concluded_with_result": 0,
+    "paused_or_discontinued": 0
+  },
+
+  "guidance_documents_and_resources": [
+    {
+      "file_path": "sdd/sprint-4-telemetría/spec.md", 
+      "section_covered_by_this_documentation": "Work-Unit D — Test A/B Framework Preparation (ABTest interface schema definition, Initial Tests table specifications)"},
+    {
+      "file_path": "docs/GA4-telemetry-guide.md", 
+      "relevant_chapters_for_a_b_testing_process_access_and_tracking": "Full document contains business-facing explanation of funnel tracking and metrics to report in weekly exports"
+    }
+  ]
+}
