@@ -62,17 +62,68 @@ async function deployBackend() {
     console.log(`📂 Subiendo Backend PHP a ${remoteDir}...`);
     await client.ensureDir(remoteDir);
     await client.cd(remoteDir);
-    
-    // Subir sistema PHP
+
     const backendPath = path.join(__dirname, "..", "backend");
-    await client.uploadFrom(path.join(backendPath, "enviar.php"), `${remoteDir}/enviar.php`);
-    
-    console.log("ℹ️ Recuerda que debes subir tu propio archivo .env al servidor para producción manualmente (por seguridad).");
+
+    // Subir archivos PHP core
+    const phpFiles = ["enviar.php", "router.php"];
+    for (const file of phpFiles) {
+      const src = path.join(backendPath, file);
+      await client.uploadFrom(src, `${remoteDir}/${file}`);
+      console.log(`  ✅ ${file}`);
+    }
+
+    // Subir .env (solo si existe localmente; en prod debe existir en servidor)
+    const envPath = path.join(backendPath, ".env");
+    const fs = await import("fs");
+    if (fs.existsSync(envPath)) {
+      await client.uploadFrom(envPath, `${remoteDir}/.env`);
+      console.log("  ✅ .env (credenciales)");
+    } else {
+      console.log(
+        "  ⚠️  .env no existe localmente. Asegurate de subirlo manualmente al servidor (por seguridad)."
+      );
+    }
+
     console.log("✅ Backend PHP desplegado exitosamente.");
   } catch (err) {
     console.error("❌ Error en despliegue de Backend:", err);
   }
   client.close();
+}
+
+async function checkHealth() {
+  const backendUrl =
+    process.env.FTP_BACKEND_URL?.replace(/\/$/, "") ||
+    `https://${(process.env.FTP_HOST || "").replace(/^ftp\./, "")}`;
+
+  console.log(`\n🏥 Verificando backend en:\n   ${backendUrl}/api/quotes/simulate`);
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(`${backendUrl}/api/quotes/simulate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ context: { schema_version: "", origin: "", project_type: "", project_state: "", currency: "" }, input: {} }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    // 400 = endpoint exists but validation failed (expected)
+    if (response.status === 400 || response.status === 401) {
+      console.log("✅ Backend reachable and responding.");
+    } else if (response.status >= 200 && response.status < 500) {
+      console.log(`✅ Backend responding (HTTP ${response.status}).`);
+    } else {
+      console.log(`⚠️  Backend responded with HTTP ${response.status}.`);
+    }
+  } catch (err) {
+    console.log(`⚠️  Health check failed: ${err.message}`);
+    console.log("   Verificá manualmente que el backend esté respondiendo.");
+  }
 }
 
 const target = process.argv[2];
@@ -81,8 +132,10 @@ console.log("🧭 FTP_FRONTEND_DIR:", normalizeRemoteDir(process.env.FTP_FRONTEN
 console.log("🧭 FTP_BACKEND_DIR:", normalizeRemoteDir(process.env.FTP_BACKEND_DIR, "/api"));
 
 if (target === "frontend") deployFrontend();
-else if (target === "backend") deployBackend();
+else if (target === "backend") deployBackend().then(checkHealth);
+else if (target === "check") checkHealth();
 else {
-  console.log("Uso: node deploy.js [frontend|backend]");
-  deployFrontend().then(() => deployBackend());
+  const frontend = await deployFrontend();
+  const backend = await deployBackend();
+  await checkHealth();
 }
