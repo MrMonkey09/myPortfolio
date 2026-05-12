@@ -11,3 +11,16 @@ backend/contactos_backup.json
 backend/data/*.sqlite
 backend/data/*.sqlite-wal
 backend/data/*.sqlite-shm
+
+# Backups
+backups/
+*.pre_restore_*
+*.backup
+
+# Backups
+backups/
+*.pre_restore_*
+*.backup
+
+
+# Backups (Sprint 3 backup automation script)
