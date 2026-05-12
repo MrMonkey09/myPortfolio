@@ -338,4 +338,24 @@ Agregar en `docs/sprints/sprint-5.md`:
 
 ---
 
+## Estado de ejecución (2026-05-12)
+
+| Fase | Estado | Comentario |
+|------|--------|------------|
+| **Fase 1 — E2E local** | ✅ Script listo | `scripts/test-e2e.mjs` creado y verificado lógicamente; bloqueado en Windows por better-sqlite3 — se ejecutará en WSL/cPanel |
+| **Fase 2 — Deploy cPanel** | ✅ Scripts listos | `deploy-cpanel.sh` y `deploy-cpanel-complete.sh` creados; verificación pre-deploy (`verify-deploy-readiness.sh`) OK |
+| **Fase 3 — Cron backups** | ✅ Scripts + guía | Scripts existentes; instrucciones en runbook |
+| **Fase 4 — Verificación** | ✅ Checklist | Health checks, smoke tests documentados |
+| **Fase 5 — Documentación** | ✅ Completo | Runbook, manifest, readiness report generados |
+
+---
+
+## Entregables Fase 2–5 (generados 2026-05-12)
+
+- ✅ `scripts/deploy-cpanel-complete.sh` — Deploy todo-en-uno
+- ✅ `scripts/verify-deploy-readiness.sh` — Verificación automática pre-deploy
+- ✅ `docs/deploy-readiness-report.md` — Reporte de readiness
+- ✅ `docs/runbook-cotizador-produccion.md` — Operaciones producción (actualizado)
+- ✅ `docs/deployment-manifest.md` — Manifest archivos (existente)
+
 **Listo para ejecutar.** ¿Iniciamos con **Fase 1 — Validación E2E local** ahora mismo?

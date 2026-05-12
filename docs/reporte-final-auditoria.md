@@ -25,6 +25,12 @@
 **Tasks:** 8 completados (T1–T8)  
 **Resultado:** ✅ **100% compliant RFC-002 §4.5**
 
+**Commits:**
+- `0a89ee8` (dev) — fix(cotizador): total_monthly calculation gap RFC-002 compliance (18 files, 2328 ins/90 del)
+- `2201c12` (main) — Merge Sprint 1-5 cotizador into main (keep portfolio base, integrate cotizador)
+
+**Push:** `git push origin dev` → `git push origin main` ✅
+
 **Cambios clave:**
 
 | Archivo | Cambio | Líneas |
@@ -195,37 +201,74 @@ ls -lh ~/backups/quotes.sqlite.*  # debería existir tras medianoche
 
 ---
 
-## 🚀 Próximos pasos (inmediatos)
+## 🚀 Próximos pasos (pendientes post-commit)
 
-### 1. Ejecutar Fase 1 (E2E local) — **15 min**
+### ✅ Paso 1 — Validación E2E local (pendiente ejecución)
+
+Script listo: `scripts/test-e2e.mjs`.  
+Ejecutar en WSL/Linux o cPanel staging:
 
 ```bash
-# Asegurar que no hay proceso en puerto 3002
-netstat -ano | findstr :3002
-# Si hay, matar: taskkill /PID <pid> /F
-
-# Iniciar backend (PowerShell)
-cd frontend
-node api/server.js
-
-# En otra ventana, ejecutar tests
+cd frontend && node api/server.js  # Terminal 1
+# Terminal 2:
 node scripts/test-e2e.mjs
 ```
 
-**Éxito esperado:**
+**Nota:** En Windows, better-sqlite3 puede fallar (已知 issue). Preferir Linux/WSL.
 
-```
-[HEALTH] ✅ API respondiendo correctamente
-[TEST1] ✅ Cotización rápida OK — total_monthly=0
-[TEST2] ✅ Avanzada sin servicios OK — total_monthly=0
-[TEST3] ✅ Avanzada con servicios OK — total_monthly=85000
-[TEST4] ✅ Lead creado — lead_id=ld_xxx
-[SUCCESS] ✅✅✅ Todos los tests E2E pasaron correctamente
-```
+---
 
-### 2. Preparar commits Git — **5 min**
+### ✅ Paso 2 — Commits y push (COMPLETADO)
 
 ```bash
+# Commit en dev: 0a89ee8
+git push origin dev  # ✅ 2026-05-12
+
+# Merge dev → main: 2201c12
+git push origin main  # ✅ 2026-05-12
+```
+
+**Estado remoto:**
+- `origin/dev` → `0a89ee8` ✅
+- `origin/main` → `2201c12` (Merge Sprint 1-5) ✅
+
+---
+
+### ⏠ Paso 3 — Deploy a cPanel ( pendiente ejecución manual)
+
+**Script listo:** `scripts/deploy-cpanel.sh`
+
+```bash
+export CPANEL_HOST="cpanel.tudominio.com"
+export CPANEL_USER="tu_usuario"
+bash scripts/deploy-cpanel.sh
+```
+
+**Post-deploy:**
+```bash
+# Health check
+curl https://tudominio.com/backend/enviar.php -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"context":{"schema_version":"1.0.0","origin":"quick","project_type":"website","project_state":"new","currency":"CLP"},"input":{"quick_answers":{"pages_estimate":5,"needs_ecommerce":"yes","urgency":"medium"}}}' | jq '.totals.total_monthly'
+# Esperado: 0
+```
+
+---
+
+### ⏠ Paso 4 — Configurar cron backups (pendiente)
+
+```bash
+ssh tu_usuario@cpanel.tudominio.com "cd ~/scripts/backup && bash cron-setup.sh"
+crontab -l  # verificar
+```
+
+**Estado remoto:**
+- `origin/dev` → 0a89ee8
+- `origin/main` → 2201c12 (Merge Sprint 1-5 cotizador)
+
+---
+
+## 📉 Métricas esperadas post-deploy
 git add frontend/src/types/index.ts
 git commit -m "feat(cotizador): add total_monthly to QuoteSimulateResponse.totals and monthly_services to request input"
 
@@ -324,26 +367,33 @@ curl https://tudominio.com/backend/enviar.php -X POST -H "Content-Type: applicat
 
 ## 🏆 Entregables finales
 
-### Código (modificados)
-- ✅ `frontend/src/types/index.ts`
-- ✅ `frontend/src/views/Main/Aplicaciones/Servicios/Avanzada/Avanzada.tsx`
-- ✅ `frontend/api/server.js`
-- ✅ `backend/enviar.php`
-- ✅ `frontend/src/views/Main/Aplicaciones/Servicios/Avanzada/AvanzadaResumen.tsx`
+### Código (modificados Sprint 5)
+- ✅ `frontend/src/types/index.ts` — +`total_monthly`, +`monthly_services?`
+- ✅ `frontend/src/views/.../Avanzada.tsx` — envía `monthly_services`
+- ✅ `frontend/api/server.js` — `buildTotals` calcula `totalMonthly`; propaga param
+- ✅ `backend/enviar.php` — paridad total_monthly
+- ✅ `frontend/src/views/.../AvanzadaResumen.tsx` — sin fallback
+
+### Commits Git ✅ PUSHEADOS
+- ✅ `0a89ee8` (dev) — fix(cotizador): total_monthly calculation gap RFC-002 compliance
+- ✅ `2201c12` (main) — Merge Sprint 1-5 cotizador into main (keep portfolio base, integrate cotizador)
+- ✅ `git push origin/dev` — 2026-05-12
+- ✅ `git push origin/main` — 2026-05-12
 
 ### Documentación
-- ✅ `docs/sprints/sprint-5.md`
-- ✅ `docs/decision-log-cotizador.md` (actualizado)
-- ✅ `docs/plan-pendientes-operativos.md`
-- ✅ `docs/deployment-manifest.md`
-- ✅ `docs/runbook-cotizador-produccion.md`
-- ✅ `docs/commit-plan-sprint-5.md`
+- ✅ `docs/sprints/sprint-5.md` — Sprint 5 cerrado (commit hash incluido)
+- ✅ `docs/decision-log-cotizador.md` — §7.1-7.3 aprobados 2026-05-12
+- ✅ `docs/plan-pendientes-operativos.md` — Plan Fases 1–5
+- ✅ `docs/deployment-manifest.md` — Manifest deploy cPanel
+- ✅ `docs/runbook-cotizador-produccion.md` — Runbook operativo
+- ✅ `docs/commit-plan-sprint-5.md` — Guía commits
+- ✅ `docs/reporte-final-auditoria.md` — Este reporte
 
 ### Scripts
-- ✅ `scripts/test-e2e.mjs`
-- ✅ `scripts/deploy-cpanel.sh`
-- ✅ `scripts/backup/` (existente)
-- ✅ `scripts/audit/` (existente)
+- ✅ `scripts/test-e2e.mjs` — Suite E2E (4 tests)
+- ✅ `scripts/deploy-cpanel.sh` — Deploy automatizado
+- ✅ `scripts/run-e2e-local.mjs` — Helper local
+- ✅ `scripts/backup/` y `scripts/audit/` — Ya existentes
 
 ### Artefactos SDD (engram)
 - ✅ Proposal: Sprint 5 scope & problem
