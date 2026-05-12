@@ -3,14 +3,25 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import { Client as NotionClient } from "@notionhq/client";
 
-// Inicializar DB al cargar el módulo
-import { getDatabase } from "../backend/db/index.js";
+// DB se inicializa async con fallback (better-sqlite3 -> sql.js)
+import { initializeDatabase, getDatabase } from "../backend/db/index.js";
 import { createQuoteRecord } from "../backend/db/quotesRepository.js";
 import { syncWithRetry } from "../backend/sync/notionSync.js";
 
 dotenv.config();
 
-const db = getDatabase();
+// Inicializar DB async al cargar el módulo (con fallback a sql.js si better-sqlite3 no disponible)
+let db = null;
+
+initializeDatabase()
+  .then((database) => {
+    db = database;
+    console.log("[API] Database initialized successfully");
+  })
+  .catch((err) => {
+    console.error("[API] Database initialization failed:", err.message);
+    // API continuará sin persistencia local — no bloqueamos startup
+  });
 
 const app = express();
 const PORT = Number(process.env.PORT || 3002);
@@ -492,13 +503,17 @@ app.post("/api/quotes/simulate", (req, res) => {
       sync_last_error: null,
     };
 
-    // Persistir en SQLite (sync, no bloqueante para la respuesta)
-    try {
-      createQuoteRecord(db, quoteRecord);
-    } catch (persistError) {
-      // Loguear error pero NO bloquear respuesta — SQLite es source of truth local
-      // La cotización queda en memoria del cliente, se puede reintentar
-      console.error("SQLite persistence error:", persistError);
+    // Persistir en SQLite (si DB está disponible, sino continuar sin persistencia)
+    if (db) {
+      try {
+        createQuoteRecord(db, quoteRecord);
+      } catch (persistError) {
+        // Loguear error pero NO bloquear respuesta — SQLite es source of truth local
+        // La cotización queda en memoria del cliente, se puede reintentar
+        console.error("SQLite persistence error:", persistError);
+      }
+    } else {
+      console.warn("[API] DB not ready yet — skipping local persistence");
     }
 
     // Sync a Notion async (fire and forget)
