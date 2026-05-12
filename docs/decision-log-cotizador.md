@@ -153,10 +153,79 @@ Cuando exista divergencia entre stores:
 
 ## 7. Decisiones abiertas (pendientes de cierre)
 
-1. Política exacta de retención de datos por cotización.
-2. Frecuencia y estrategia de backup en cPanel.
-3. Nivel de detalle enviado a Notion en modo híbrido.
-4. Umbral de métricas para gatillar transición de fase.
+### 7.1 Política de retención de datos
+
+**Recomendación**: Retención de 12 meses para cotizaciones activas, 36 meses para leads conversionados.
+
+| Tipo | Retención | Archivado |
+|---|---|---|
+| Cotizaciones (sync_status=synced) | 12 meses | Archivar en tabla `quotes_archive` |
+| Cotizaciones (sync_status=failed) | 6 meses | Eliminar tras revisión manual |
+| Leads conversionados | 36 meses | Mantener indefinitely |
+| Cotizaciones stale (>6 meses sin contacto) | 6 meses | Marcar `archived=true` |
+
+### 7.2 Frecuencia y estrategia de backup en cPanel
+
+**Recomendación**: Backup automático diario con retención de 7 días + backup manual semanal.
+
+| Tipo | Frecuencia | Retención | Ubicación |
+|---|---|---|---|
+| SQLite (quotes.sqlite) | Diario automático | 7 días rolling | `backend/data/` + cloud storage |
+| Notion (leads) | Export semanal | Indefinido | Notion native backup |
+| Config (.env) | Manual | Por deploy | Version control (secrets excluded) |
+
+**Implementación cPanel**:
+- Usar `cron` con script que copie `quotes.sqlite` a `~/backups/`
+- Subir a Google Drive/Dropbox con `rclone` o similar
+- Mantener al menos 3 copies en diferentes ubicaciones
+
+### 7.3 Nivel de detalle enviado a Notion en modo híbrido
+
+**Recomendación actual**: Enviar payload resumido optimizado para visualización comercial.
+
+```json
+{
+  "quote_id": "qt_...",
+  "trace_id": "trc_...",
+  "created_at": "2026-05-11T...",
+  "schema_version": "1.0.0",
+  "pricing_config_version": "2026.05.11",
+  "origin": "advanced",
+  "project_type": "website",
+  "project_state": "new",
+  "total_project": 407836,
+  "total_monthly": 85000,
+  "estimated_min": 367051,
+  "estimated_max": 469011,
+  "confidence_level": "high",
+  "currency": "CLP"
+}
+```
+
+**NO enviado a Notion** (solo en SQLite):
+- `input_json` (detalle de módulos, pricing override)
+- `totals_json` completo (ya está el resumen)
+- `meta_json` (schema versions)
+
+### 7.4 Umbral de métricas para gatillar transición de fase
+
+**Recomendación**: Transicionar a Fase Estable cuando se cumplan 3 de 5 criterios.
+
+| Métrica | Umbral | Indicador |
+|---|---|---|
+| Volumen de cotizaciones | >50/mes | Monitorear `countQuotesByStatus('synced')` |
+| Tasa de sync fallidos | <5% | `countQuotesByStatus('failed') / total < 0.05` |
+| Leads conversionados | >10/mes | Tracking CRM externo |
+| Estabilidad operativa | 30 días sin incidentes críticos | Logs |
+| Backups verificados | 3 restauraciones manuales exitosas | Procedimiento documentado |
+
+### 7.5 Decisiones cerradas en Sprint 2
+
+| Decisión | Resolución | Fecha |
+|---|---|---|
+| Driver SQLite: better-sqlite3 vs sql.js | Fallback strategy: intentar better-sqlite3, fallback a sql.js (WASM) | 2026-05-11 |
+| Persistencia asíncrona | SQLite primero, Notion async — nunca bloquear respuesta API | 2026-05-11 |
+| Paridad PHP/Express | Implementar mismo flujo en enviar.php con PDO SQLite | 2026-05-11 |
 
 ---
 
@@ -165,3 +234,5 @@ Cuando exista divergencia entre stores:
 | Fecha | Cambio | Autor |
 |---|---|---|
 | 2026-05-11 | Versión inicial del decision log por fases de persistencia | Equipo A&V Devs / Mr Monkey |
+| 2026-05-11 | Agregar fallback sql.js para cPanel (Sprint 2) | SDD Orchestrator |
+| 2026-05-11 | Definir decisiones abiertas §7.1-7.4 con recomendaciones | SDD Orchestrator |
