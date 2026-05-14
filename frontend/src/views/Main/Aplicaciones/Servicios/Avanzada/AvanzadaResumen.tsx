@@ -47,7 +47,7 @@ function AvanzadaResumen({ resultado, onContact, isStale }: Props) {
 
   // Mostrar servicios mensuales incluidos
   function renderMensualesServices(): React.ReactNode {
-    const services = ServiciosMensuales.filter(s => s.include === "yes");
+    const services = serviciosMensuales.filter(s => s.include === "yes");
     
     if (services.length === 0) {
       return <p className="resumen__mensual--empty">No hay servicios mensuales seleccionados</p>;
@@ -104,9 +104,9 @@ function AvanzadaResumen({ resultado, onContact, isStale }: Props) {
             <span>Total Proyecto (estimado)</span>
             <strong className="resumen-total">{toCurrencyCLP(resultado.totals.total_project)}</strong>
           </p>
-          <p title="Mensual aproximado, sin considerar servicios mensuales seleccionados">
+          <p title={resultado.totals.total_monthly > 0 ? "Servicios mensuales recurrentes" : "Sin servicios mensuales"}>
             <span>Total Mensual (+ IVA aprox.)</span>
-            <strong>{toCurrencyCLP(Math.max(0, Math.round(resultado.totals.total_project / 12)))}</strong>
+            <strong>{toCurrencyCLP(resultado.totals.total_monthly)}</strong>
           </p>
         </div>
 
@@ -146,7 +146,7 @@ function AvanzadaResumen({ resultado, onContact, isStale }: Props) {
       {/* Visualizador de servicios mensuales */}
       <section className={`resumen-container ${isStale ? "resumen-stale" : ""}`}>
         <h5 style={{marginTop: "1.25rem", fontWeight: 700}}>
-          {resultado.quote_ref && resultado.quote_ref.total_monthly > 0 
+          {resultado.totals.total_monthly > 0 
             ? "Servicios Mensuales incluidos:" 
             : "Sin servicios mensuales"}
         </h5>

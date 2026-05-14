@@ -490,9 +490,11 @@ app.post("/api/quotes/simulate", (req, res) => {
       );
     }
 
+    const newQuoteId = `qt_${crypto.randomUUID().replace(/-/g, "")}`;
+
     // Construir record para persistencia en SQLite y sync con Notion
     const quoteRecord = {
-      quote_id: quote.quote_id,
+      quote_id: newQuoteId,
       trace_id: traceId,
       schema_version: req.body.context.schema_version,
       pricing_config_version: PRICING_CONFIG.pricing_config_version,
@@ -538,7 +540,7 @@ app.post("/api/quotes/simulate", (req, res) => {
 
     return res.status(200).json({
       quote: {
-        quote_id: `qt_${crypto.randomUUID().replace(/-/g, "")}`,
+        quote_id: newQuoteId,
         status: "simulated",
         created_at: new Date().toISOString(),
         confidence_level: confidenceLevel,
