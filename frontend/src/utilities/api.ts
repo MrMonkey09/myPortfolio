@@ -35,7 +35,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const url = `${BASE_URL}${endpoint}`;
   const defaultHeaders = {
     "Content-Type": "application/json",
-    // "x-api-key": "TU_API_KEY", // Descomenta y agrega tu API key si tu endpoint es privado
+    "x-api-key": import.meta.env.VITE_API_KEY || "",
   };
   options.headers = {
     ...defaultHeaders,
@@ -74,6 +74,7 @@ export async function simulateQuickQuote(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": import.meta.env.VITE_API_KEY || "",
     },
     body: JSON.stringify(payload),
   });
@@ -96,6 +97,7 @@ export async function submitQuoteLead(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": import.meta.env.VITE_API_KEY || "",
       ...(traceId ? { "x-trace-id": traceId } : {}),
     },
     body: JSON.stringify(payload),
