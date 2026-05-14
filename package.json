@@ -4,10 +4,10 @@
   "description": "Portfolio profesional con cotizador web",
   "private": true,
   "scripts": {
-    "dev": "cd frontend && bun run web:dev",
-    "build": "cd frontend && bun run web:build",
-    "lint": "cd frontend && bun run lint",
-    "api:dev": "cd frontend && bun run api:dev",
+    "dev": "cd frontend && npm run web:dev",
+    "build": "cd frontend && npm run web:build",
+    "lint": "cd frontend && npm run lint",
+    "api:dev": "cd frontend && npm run api:dev",
     "test:api": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest frontend/api --forceExit",
     "install:all": "npm install && cd frontend && npm install"
   },
