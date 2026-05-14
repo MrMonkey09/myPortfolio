@@ -101,7 +101,7 @@ RewriteRule ^enviar\.php(/.*)? envio\.php [L]
 # Cloudflare proxies may add .html extensions dynamically
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ enviar.php?_fallback=${REQUEST_URI} [L,QSA]
+RewriteRule ^(.*)$ enviar.php?_fallback=%{REQUEST_URI} [L,QSA]
 
 # =============================================================================
 # SECURITY: Prevent directory traversal and other attacks
@@ -254,5 +254,3 @@ if (!config.user || !config.password || process.argv.length < 3) {
     process.exit(1);
   }
 }
-f u n c t i o n   n o r m a l i z e R e m o t e D i r ( v a l u e ,   f a l l b a c k )   {  
- 
