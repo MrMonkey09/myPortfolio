@@ -136,7 +136,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
             <select
               id="modulo_0"
               value={modulos[0].include}
-              onChange={(e) => updateInclude("modulo_0", e.target.value as "yes" | "optional" | "no")}
+              onChange={(e) => updateInclude(modulos[0].module_id, e.target.value as "yes" | "optional" | "no")}
               disabled={status === "completed"}
             >
               <option value="yes">Incluir</option>
@@ -152,7 +152,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
               type="number" 
               min={1}
               value={modulos[0].quantity}
-              onChange={(e) => updateQuantity("modulo_0", Number(e.target.value))}
+              onChange={(e) => updateQuantity(modulos[0].module_id, Number(e.target.value))}
               disabled={status === "completed" || (modulos[0].include !== "yes")}
             />
           </label>
@@ -161,7 +161,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
           <div className={`quick-quote__field ${getBaseCostTotal() < modulos[0].base_cost && modulos[0].include === "yes" && modulos[0].quantity === 1 ? "disabled active" : ""}`}>
             <select 
               value={modulos[0].complexity}
-              onChange={(e) => updateComplexity("modulo_0", e.target.value as "low" | "medium" | "high")}
+              onChange={(e) => updateComplexity(modulos[0].module_id, e.target.value as "low" | "medium" | "high")}
               disabled={status === "completed"}
             >
               <option value="low">Baja</option>
@@ -184,7 +184,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
         <div className="modulos__actions">
           <select 
             value={modulos[1].include}
-            onChange={(e) => updateInclude("modulo_1", e.target.value as "yes" | "optional" | "no")}
+            onChange={(e) => updateInclude(modulos[1].module_id, e.target.value as "yes" | "optional" | "no")}
             disabled={status === "completed"}
           >
             <option value="yes">Incluir</option>
@@ -198,7 +198,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
               type="number" 
               min={1}
               value={modulos[1].quantity}
-              onChange={(e) => updateQuantity("modulo_1", Number(e.target.value))}
+              onChange={(e) => updateQuantity(modulos[1].module_id, Number(e.target.value))}
               disabled={status === "completed" || modulos[1].include !== "yes"}
             />
           </label>
@@ -206,7 +206,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
           <div className={`quick-quote__field ${getBaseCostTotal() < modulos[1].base_cost && modulos[1].include === "yes" && modulos[1].quantity === 1 ? "disabled active" : ""}`}>
             <select 
               value={modulos[1].complexity}
-              onChange={(e) => updateComplexity("modulo_1", e.target.value as "low" | "medium" | "high")}
+              onChange={(e) => updateComplexity(modulos[1].module_id, e.target.value as "low" | "medium" | "high")}
               disabled={status === "completed"}
             >
               <option value="low">Baja</option>
@@ -228,7 +228,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
         <div className="modulos__actions">
           <select 
             value={modulos[2].include}
-            onChange={(e) => updateInclude("modulo_2", e.target.value as "yes" | "optional" | "no")}
+            onChange={(e) => updateInclude(modulos[2].module_id, e.target.value as "yes" | "optional" | "no")}
             disabled={status === "completed"}
           >
             <option value="yes">Incluir</option>
@@ -242,7 +242,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
               type="number" 
               min={1}
               value={modulos[2].quantity}
-              onChange={(e) => updateQuantity("modulo_2", Number(e.target.value))}
+              onChange={(e) => updateQuantity(modulos[2].module_id, Number(e.target.value))}
               disabled={status === "completed" || modulos[2].include !== "yes"}
             />
           </label>
@@ -250,7 +250,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
           <div className={`quick-quote__field ${getBaseCostTotal() < modulos[2].base_cost && modulos[2].include === "yes" && modulos[2].quantity === 1 ? "disabled active" : ""}`}>
             <select 
               value={modulos[2].complexity}
-              onChange={(e) => updateComplexity("modulo_2", e.target.value as "low" | "medium" | "high")}
+              onChange={(e) => updateComplexity(modulos[2].module_id, e.target.value as "low" | "medium" | "high")}
               disabled={status === "completed"}
             >
               <option value="low">Baja</option>
@@ -272,7 +272,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
         <div className="modulos__actions">
           <select 
             value={modulos[3].include}
-            onChange={(e) => updateInclude("modulo_3", e.target.value as "yes" | "optional" | "no")}
+            onChange={(e) => updateInclude(modulos[3].module_id, e.target.value as "yes" | "optional" | "no")}
             disabled={status === "completed"}
           >
             <option value="yes">Incluir</option>
@@ -286,7 +286,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
               type="number" 
               min={1}
               value={modulos[3].quantity}
-              onChange={(e) => updateQuantity("modulo_3", Number(e.target.value))}
+              onChange={(e) => updateQuantity(modulos[3].module_id, Number(e.target.value))}
               disabled={status === "completed" || modulos[3].include !== "yes"}
             />
           </label>
@@ -294,7 +294,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
           <div className={`quick-quote__field ${getBaseCostTotal() < modulos[3].base_cost && modulos[3].include === "yes" && modulos[3].quantity === 1 ? "disabled active" : ""}`}>
             <select 
               value={modulos[3].complexity}
-              onChange={(e) => updateComplexity("modulo_3", e.target.value as "low" | "medium" | "high")}
+              onChange={(e) => updateComplexity(modulos[3].module_id, e.target.value as "low" | "medium" | "high")}
               disabled={status === "completed"}
             >
               <option value="low">Baja</option>
@@ -316,7 +316,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
         <div className="modulos__actions">
           <select 
             value={modulos[4].include}
-            onChange={(e) => updateInclude("modulo_4", e.target.value as "yes" | "optional" | "no")}
+            onChange={(e) => updateInclude(modulos[4].module_id, e.target.value as "yes" | "optional" | "no")}
             disabled={status === "completed"}
           >
             <option value="yes">Incluir</option>
@@ -330,7 +330,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
               type="number" 
               min={1}
               value={modulos[4].quantity}
-              onChange={(e) => updateQuantity("modulo_4", Number(e.target.value))}
+              onChange={(e) => updateQuantity(modulos[4].module_id, Number(e.target.value))}
               disabled={status === "completed" || modulos[4].include !== "yes"}
             />
           </label>
@@ -338,7 +338,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
           <div className={`quick-quote__field ${getBaseCostTotal() < modulos[4].base_cost && modulos[4].include === "yes" && modulos[4].quantity === 1 ? "disabled active" : ""}`}>
             <select 
               value={modulos[4].complexity}
-              onChange={(e) => updateComplexity("modulo_4", e.target.value as "low" | "medium" | "high")}
+              onChange={(e) => updateComplexity(modulos[4].module_id, e.target.value as "low" | "medium" | "high")}
               disabled={status === "completed"}
             >
               <option value="low">Baja</option>
