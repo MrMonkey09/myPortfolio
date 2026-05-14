@@ -1,26 +1,54 @@
-.env.deploy
+# Env files
 .env
 .env.*
 backend/.env
-frontend/.env.development
-frontend/.env.production
-backend/*.log
-backend/contactos_backup.json
+frontend/.env.*
+!.env.example
 
-# SQLite
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# SQLite & Data
 backend/data/*.sqlite
 backend/data/*.sqlite-wal
 backend/data/*.sqlite-shm
+backend/contactos_backup.json
 
 # Backups
 backups/
 *.pre_restore_*
 *.backup
 
-# Backups
-backups/
-*.pre_restore_*
-*.backup
+# Logs
+*.log
+backend/*.log
 
+# IDE & Tools
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+.DS_Store
 
-# Backups (Sprint 3 backup automation script)
+# Scratch & Temporary
+scratch/
+frontend/api/debug_env.js
+frontend/api/test_notion_connection.js
+.htaccess.txt
+
+# Artifacts
+.atl/
+.gemini/
