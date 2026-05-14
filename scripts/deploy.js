@@ -34,11 +34,13 @@ async function deployFrontend() {
       execSync("npm run web:build", { cwd: path.join(__dirname, "..", "frontend"), stdio: "inherit" });
     }
 
-    console.log(`📡 Conectando a FTP: ${config.host} (User: ${config.user})`);
+    console.log(`📡 Conectando a FTP: ${config.host}:${config.port} (User: ${config.user}, Secure: ${config.secure})`);
+    
+    // Configurar un timeout más largo y capturar errores detallados
     await client.access({
       ...config,
       secureOptions: {
-        rejectUnauthorized: false, // Útil para certificados self-signed en cPanel
+        rejectUnauthorized: false,
       },
     });
 
@@ -65,7 +67,7 @@ async function deployBackend() {
   const client = new ftp.Client();
   client.ftp.verbose = true;
   try {
-    console.log(`📡 Conectando a FTP: ${config.host} (User: ${config.user})`);
+    console.log(`📡 Conectando a FTP: ${config.host}:${config.port} (User: ${config.user}, Secure: ${config.secure})`);
     await client.access({
       ...config,
       secureOptions: {
