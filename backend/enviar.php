@@ -706,10 +706,6 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-    echo json_encode($response);
-    exit();
-}
-
 // POST /api/quotes/lead
 if ($path === '/api/quotes/lead' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $traceId = $_SERVER['HTTP_X_TRACE_ID'] ?? makeTraceId();
