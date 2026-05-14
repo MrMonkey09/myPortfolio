@@ -66,6 +66,7 @@ function initSqliteDb($dbPath) {
             currency TEXT NOT NULL,
             input_json TEXT NOT NULL,
             totals_json TEXT NOT NULL,
+            contact_json TEXT,
             meta_json TEXT NOT NULL,
             created_at TEXT NOT NULL,
             sync_status TEXT NOT NULL DEFAULT 'pending',
@@ -73,6 +74,13 @@ function initSqliteDb($dbPath) {
             sync_last_error TEXT
         )
     ");
+    
+    // Schema evolution: ensure contact_json exists (Work-Unit D Patch)
+    try {
+        $pdo->exec("ALTER TABLE quotes ADD COLUMN contact_json TEXT");
+    } catch (Exception $e) {
+        // Column might already exist, ignore
+    }
     
     return $pdo;
 }
@@ -82,12 +90,12 @@ function createQuoteRecord($pdo, $record) {
         INSERT INTO quotes (
             quote_id, trace_id, schema_version, pricing_config_version,
             origin, project_type, project_state, currency,
-            input_json, totals_json, meta_json,
+            input_json, totals_json, contact_json, meta_json,
             created_at, sync_status, sync_attempts, sync_last_error
         ) VALUES (
             :quote_id, :trace_id, :schema_version, :pricing_config_version,
             :origin, :project_type, :project_state, :currency,
-            :input_json, :totals_json, :meta_json,
+            :input_json, :totals_json, :contact_json, :meta_json,
             :created_at, :sync_status, :sync_attempts, :sync_last_error
         )
     ");
@@ -489,17 +497,41 @@ function syncQuoteToNotionBackground($record) {
     $retryBackoffMs = [1000, 3000, 7000];
     $maxRetries = 3;
     
+    // Extraer contacto si existe
+    $contact = !empty($record[':contact_json']) ? json_decode($record[':contact_json'], true) : null;
+    $totals = json_decode($record[':totals_json'], true);
+    
     for ($attempt = 0; $attempt < $maxRetries; $attempt++) {
         $ch = curl_init("https://api.notion.com/v1/pages");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         
-        $totals = json_decode($record[':totals_json'], true);
+        $titlePrefix = $contact ? "Lead: " . ($contact['nombre'] ?? $contact['name'] ?? 'Sin nombre') : "Quote";
+        $title = $titlePrefix . " | " . $record[':quote_id'];
+
+        $properties = [
+            'Name' => ['title' => [['text' => ['content' => substr($title, 0, 2000)]]]]
+        ];
+
+        // Mapear campos de contacto si están disponibles
+        if ($contact) {
+            $email = $contact['email'] ?? null;
+            $phone = $contact['telefono'] ?? $contact['phone'] ?? null;
+            
+            if ($email) {
+                $properties['Correo electrónico'] = ['email' => $email];
+            }
+            if ($phone) {
+                $properties['Teléfono'] = ['phone_number' => $phone];
+            }
+            
+            // Si es un lead de simulación, marcar origen
+            $properties['Servicio de interés'] = ['select' => ['name' => normalizeService($record[':project_type'])]];
+        }
+
         $payload = [
             'parent' => ['database_id' => $notionDbId],
-            'properties' => [
-                'Name' => ['title' => [['text' => ['content' => 'Quote ' . $record[':quote_id']]]]]
-            ],
+            'properties' => $properties,
             'children' => [
                 [
                     'object' => 'block',
@@ -507,8 +539,10 @@ function syncQuoteToNotionBackground($record) {
                     'paragraph' => ['rich_text' => [['type' => 'text', 'text' => ['content' => json_encode([
                         'quote_id' => $record[':quote_id'],
                         'trace_id' => $record[':trace_id'],
+                        'origin' => $record[':origin'],
                         'total_project' => $totals['total_project'] ?? 0,
                         'total_monthly' => $totals['total_monthly'] ?? 0,
+                        'contact' => $contact
                     ], JSON_PRETTY_PRINT)]]]]]
             ]
         ];
@@ -534,7 +568,6 @@ function syncQuoteToNotionBackground($record) {
             continue;
         }
         
-        // Permanent error or max retries - log and exit
         break;
     }
 }
@@ -589,9 +622,9 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $applyVat = normalizeBool($applyVatInput, $pricingConfig['apply_vat']);
     $totals = buildTotals(
         $validation['lineItems'],
-        $pricing,
+        $validation['pricing'],
         $applyVat,
-        $input['monthly_services'] ?? []
+        $payload['input']['monthly_services'] ?? []
     );
 
     // Domain validations
@@ -623,7 +656,10 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         ]
     ];
 
-    // Construir record para SQLite (Work-Unit D: Paridad PHP)
+    // Extraer contacto si viene en el payload (Work-Unit D Patch)
+    $contact = $payload['contact'] ?? null;
+
+    // Construir record para SQLite
     $record = [
         ':quote_id' => $response['quote']['quote_id'],
         ':trace_id' => $traceId,
@@ -638,6 +674,7 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'pricing' => $validation['pricing'],
         ]),
         ':totals_json' => json_encode($totals),
+        ':contact_json' => $contact ? json_encode($contact) : null,
         ':meta_json' => json_encode([
             'schema_version' => $payload['context']['schema_version'] ?? '1.0.0',
             'pricing_config_version' => $pricingConfig['pricing_config_version'],
@@ -656,13 +693,18 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         createQuoteRecord($sqlitePdo, $record);
     } catch (Exception $e) {
-        // Log error but don't block response
         error_log("SQLite persistence error: " . $e->getMessage());
     }
 
-    // Sync async a Notion via register_shutdown_function
-    // PHP ejecuta la función al final del request, pasando $record como argumento
-    register_shutdown_function(function() use ($record) { syncQuoteToNotionBackground($record); });
+    // Solo sincronizar a Notion si es una persistencia explícita o tiene contacto
+    $shouldPersist = normalizeBool($payload['persist'] ?? false, false);
+    if ($shouldPersist || $contact) {
+        register_shutdown_function(function() use ($record) { syncQuoteToNotionBackground($record); });
+    }
+
+    echo json_encode($response);
+    exit();
+}
 
     echo json_encode($response);
     exit();
