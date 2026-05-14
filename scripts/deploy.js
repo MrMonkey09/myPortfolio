@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, "..", ".env.deploy"), override: true });
+dotenv.config({ path: path.join(__dirname, "..", ".env.deploy"), override: false });
 
 function normalizeRemoteDir(value, fallback) {
   const raw = (value || "").trim().replace(/^['"]|['"]$/g, "");
@@ -26,8 +26,12 @@ async function deployFrontend() {
   const client = new ftp.Client();
   client.ftp.verbose = true;
   try {
-    console.log("🚀 Construyendo Frontend...");
-    execSync("npm run web:build", { cwd: path.join(__dirname, "..", "frontend"), stdio: "inherit" });
+    if (process.env.SKIP_BUILD === "true") {
+      console.log("⏭️ Saltando build (SKIP_BUILD=true).");
+    } else {
+      console.log("🚀 Construyendo Frontend...");
+      execSync("npm run web:build", { cwd: path.join(__dirname, "..", "frontend"), stdio: "inherit" });
+    }
 
     console.log(`📡 Conectando a FTP: ${config.host}`);
     await client.access(config);

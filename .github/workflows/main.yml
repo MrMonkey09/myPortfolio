@@ -91,6 +91,7 @@ jobs:
       - name: Run Deploy Script
         run: node scripts/deploy.js
         env:
+          SKIP_BUILD: "false"
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
