@@ -26,15 +26,20 @@ async function deployFrontend() {
   const client = new ftp.Client();
   client.ftp.verbose = true;
   try {
-    if (process.env.SKIP_BUILD === "true") {
-      console.log("⏭️ Saltando build (SKIP_BUILD=true).");
+    if (process.env.SKIP_BUILD === "true" || process.env.CI === "true") {
+      console.log("⏭️ Saltando build (SKIP_BUILD=true o CI detected).");
     } else {
       console.log("🚀 Construyendo Frontend...");
       execSync("npm run web:build", { cwd: path.join(__dirname, "..", "frontend"), stdio: "inherit" });
     }
 
-    console.log(`📡 Conectando a FTP: ${config.host}`);
-    await client.access(config);
+    console.log(`📡 Conectando a FTP: ${config.host} (User: ${config.user})`);
+    await client.access({
+      ...config,
+      secureOptions: {
+        rejectUnauthorized: false, // Útil para certificados self-signed en cPanel
+      },
+    });
 
     const remoteDir = normalizeRemoteDir(process.env.FTP_FRONTEND_DIR, "/public_html");
     console.log(`📂 Subiendo Frontend a ${remoteDir}...`);
@@ -59,8 +64,13 @@ async function deployBackend() {
   const client = new ftp.Client();
   client.ftp.verbose = true;
   try {
-    console.log(`📡 Conectando a FTP: ${config.host}`);
-    await client.access(config);
+    console.log(`📡 Conectando a FTP: ${config.host} (User: ${config.user})`);
+    await client.access({
+      ...config,
+      secureOptions: {
+        rejectUnauthorized: false,
+      },
+    });
 
     const remoteDir = normalizeRemoteDir(process.env.FTP_BACKEND_DIR, "/api");
     console.log(`📂 Subiendo Backend PHP a ${remoteDir}...`);
