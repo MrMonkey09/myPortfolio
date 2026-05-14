@@ -4,13 +4,13 @@ import { trackAdvancedStepViewed } from "@/hooks/useAnalytics";
 import { useEffect } from "react";
 
 interface Props {
-  readonly modulos: readonly ModuloLinea[];
+  readonly value: readonly ModuloLinea[];
   readonly onChange: (modulos: readonly ModuloLinea[]) => void;
   readonly onNext: () => void;
   readonly status: "active" | "completed" | "invalid" | "warning";
 }
 
-function AvanzadaModulos({ modulos, onChange, onNext, status }: Props) {
+function AvanzadaModulos({ value: modulos, onChange, onNext, status }: Props) {
   // Tracke paso al montar componente
   useEffect(() => {
     trackAdvancedStepViewed(3, 'modulos');
