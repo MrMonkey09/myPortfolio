@@ -7,10 +7,11 @@ interface Props {
   readonly value: ContextoData;
   readonly onChange: (data: ContextoData) => void;
   readonly onNext: () => void;
+  readonly onBack?: () => void;
   readonly status: "active" | "completed" | "invalid" | "warning";
 }
 
-function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
+function AvanzadaContexto({ value, onChange, onNext, onBack, status }: Props) {
   // Tracke paso al montar componente
   useEffect(() => {
     trackAdvancedStepViewed(1, 'contexto');
@@ -20,7 +21,7 @@ function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
     onChange({ ...value, projectType: newValue });
   }
 
-  function handleProjectStateChange(newValue: "new" | "remodelacion") {
+  function handleProjectStateChange(newValue: "new" | "remodel") {
     onChange({ ...value, projectState: newValue });
   }
 
@@ -33,7 +34,7 @@ function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
       return { ok: false, error: "Seleccioná el tipo de proyecto" };
     }
 
-    if (!value.projectState || !["new", "remodelacion"].includes(value.projectState)) {
+    if (!value.projectState || !["new", "remodel"].includes(value.projectState)) {
       return { ok: false, error: "Indicá si es nuevo o remodelación" };
     }
 
@@ -57,9 +58,9 @@ function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
   return (
     <form className="avanzada__step-form" onSubmit={handleSubmit} noValidate>
       <fieldset className={`quick-quote__field`} disabled={status === "completed"}>
-        <legend>Tipo de Proyecto *</legend>
+        <legend>¿Qué tipo de web necesitas? *</legend>
         
-        <div className="form-select-group">
+        <div className="form-option-group">
           {(["website", "ecommerce", "web_app"] as const).map((type) => (
             <label key={type} className={`form-option ${value.projectType === type ? "avanzada__step-selected" : ""}`}>
               <input
@@ -74,7 +75,7 @@ function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
                 {type === "website" && "🌐 "}
                 {type === "ecommerce" && "🛒 "}
                 {type === "web_app" && "📱 "}
-                {type === "website" ? "Sitio Web Institucional" : type === "ecommerce" ? "E-commerce con Carrito" : "Web App Completa"}
+                {type === "website" ? "Sitio Informativo o Corporativo" : type === "ecommerce" ? "Tienda Online con Carrito" : "Aplicación Web Compleja"}
               </span>
             </label>
           ))}
@@ -82,10 +83,10 @@ function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
       </fieldset>
 
       <fieldset className={`quick-quote__field`} disabled={status === "completed"}>
-        <legend>Estado del Proyecto *</legend>
+        <legend>¿Tienes un sitio web actualmente? *</legend>
         
-        <div className="form-select-group">
-          {(["new", "remodelacion"] as const).map((state) => (
+        <div className="form-option-group">
+          {(["new", "remodel"] as const).map((state) => (
             <label key={state} className={`form-option ${value.projectState === state ? "avanzada__step-selected" : ""}`}>
               <input
                 type="radio"
@@ -96,9 +97,9 @@ function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
                 disabled={status === "completed"}
               />
               <span className={`form-option-name ${value.projectState === state ? "avanzada__step-highlight" : ""}`}>
-                {state === "new" && "🆕 "}
-                {state === "remodelacion" && "♻️ "}
-                {state === "new" ? "Nueva Web" : "Remodelación"}
+                {state === "new" && "✨ "}
+                {state === "remodel" && "🛠️ "}
+                {state === "new" ? "No, empezamos desde cero" : "Sí, quiero mejorar el que tengo"}
               </span>
             </label>
           ))}
@@ -106,29 +107,9 @@ function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
       </fieldset>
 
       <fieldset className={`quick-quote__field`} disabled={status === "completed"}>
-        <legend>País de Cliente *</legend>
+        <legend>¿Para cuándo lo necesitas listo? *</legend>
         
-        <input
-          type="text"
-          name="country"
-          id="country"
-          value={value.country}
-          onChange={(e) => {
-            const newValue = e.target.value.toUpperCase();
-            if (newValue.length <= 2) {
-              onChange({ ...value, country: newValue });
-            }
-          }}
-          disabled={status === "completed"}
-          placeholder="Ej: CL"
-        />
-        <span className="quick-quote__field-hint">Max. 2 letras mayúsculas</span>
-      </fieldset>
-
-      <fieldset className={`quick-quote__field`} disabled={status === "completed"}>
-        <legend>Prioridad *</legend>
-        
-        <div className="form-select-group">
+        <div className="form-option-group">
           {(["low", "medium", "high"] as const).map((priority) => (
             <label key={priority} className={`form-option ${value.priority === priority ? "avanzada__step-selected" : ""}`}>
               <input
@@ -140,29 +121,37 @@ function AvanzadaContexto({ value, onChange, onNext, status }: Props) {
                 disabled={status === "completed"}
               />
               <span className={`form-option-name ${value.priority === priority ? "avanzada__step-highlight" : ""}`}>
-                {priority === "low" && "🐌 "}
-                {priority === "medium" && "🚶 "}
-                {priority === "high" && "🏃 "}
-                {priority === "low" ? "Baja" : priority === "medium" ? "Media" : "Alta"}
+                {priority === "low" && "📆 "}
+                {priority === "medium" && "⏱️ "}
+                {priority === "high" && "🚀 "}
+                {priority === "low" ? "Tengo tiempo, sin apuro" : priority === "medium" ? "Ritmo normal (1-2 meses)" : "Lo necesito urgente"}
               </span>
             </label>
           ))}
         </div>
       </fieldset>
 
+      {/* Hidden country field since it's required by backend but bad UX */}
+      <input type="hidden" name="country" value="CL" />
+
+      {/* Footer con validación */}
       <footer className="avanzada__step-footer">
-        <button 
-          type="submit" 
-          className="quick-quote__submit"
-          disabled={status === "validating"}
-        >
-          {status === "active" ? "Siguiente" : status === "completed" ? "✓ Completado" : `Corregí errores`}
-        </button>
-        {Object.values(value).filter(Boolean).length > 0 && (
-          <span className="quick-quote__field-hint">
-            {value.country && value.projectType && value.projectState ? "Todo completo" : "Faltan campos"}
-          </span>
+        {onBack && (
+          <button type="button" onClick={onBack} className="quick-quote__submit" style={{ background: "rgba(255,255,255,0.05)", color: "#ccc", border: "1px solid rgba(255,255,255,0.1)", flex: "none" }}>
+            Atrás
+          </button>
         )}
+        
+        <div style={{ flex: 1 }}>
+          <button 
+            type="submit" 
+            className="quick-quote__submit"
+            disabled={status === "invalid"}
+            style={{ width: "100%" }}
+          >
+            {status === "active" ? "Siguiente" : status === "completed" ? "✓ Completado" : `Corregí`}
+          </button>
+        </div>
       </footer>
     </form>
   );

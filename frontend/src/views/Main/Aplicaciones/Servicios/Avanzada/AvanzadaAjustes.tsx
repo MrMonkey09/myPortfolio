@@ -1,7 +1,7 @@
 import type { AjustesComerciales, MonthlyService } from "@/types/index.js";
-import { CONFIGURACION_AVANZADA } from "./Configuracion.js";
 import { trackAdvancedStepViewed } from "@/hooks/useAnalytics";
 import { useEffect } from "react";
+import "./Estilos.css";
 
 interface Props {
   readonly value: AjustesComerciales;
@@ -9,322 +9,108 @@ interface Props {
   readonly serviciosMensuales: readonly MonthlyService[];
   readonly onChangeServicios: (servicios: MonthlyService[]) => void;
   readonly onNext: () => void;
+  readonly onBack?: () => void;
   readonly status: "active" | "completed" | "invalid" | "warning";
 }
 
-function AvanzadaAjustes({ value, onChange, serviciosMensuales, onChangeServicios, onNext, status }: Props) {
-  // Tracke paso al montar componente
+function AvanzadaAjustes({ value, serviciosMensuales, onChangeServicios, onNext, onBack, status }: Props) {
   useEffect(() => {
     trackAdvancedStepViewed(4, 'ajustes');
   }, []);
-  // Calcular total mensual de servicios seleccionados
+
   const totalMensual = serviciosMensuales.reduce((sum, s) => sum + (s.include === "yes" ? s.monthly_value : 0), 0);
 
-  function setUrgency(newMultiplier: number) {
-    // Clamp to valid range [0.8, 1.3]
-    const clamped = Math.max(0.8, Math.min(1.3, newMultiplier));
-    onChange({ ...value, urgencyMultiplier: clamped });
-  }
-
-  function setContingencePct(newPct: number) {
-    onChange({ ...value, contingency_pct: Number(newPct) / 100 });
-  }
-
-  function setMarginPct(newPct: number) {
-    // Clamp to valid range [15%, 40%]
-    const clamped = Math.max(15, Math.min(40, Number(newPct)));
-    onChange({ ...value, margin_pct: clamped / 100 });
-  }
-
-  function setDiscountPct(newPct: number) {
-    // Clamp to valid range [0%, 20%]
-    const clamped = Math.max(0, Math.min(20, Number(newPct)));
-    onChange({ ...value, discount_pct: clamped / 100 });
-  }
-
-  function setApplyVat(newVal: boolean) {
-    onChange({ 
-      ...value, 
-      apply_vat: newVal,
-      vat_pct: value.vat_pct || CONFIGURACION_AVANZADA.urgencia.low.multiplier // default placeholder
-    });
-  }
-
-  function toggleServicio(serviceId: string, currentInclude: "yes" | "no") {
-    onChangeServicios(serviciosMensuales.map(s => 
-      s.service_id === serviceId ? { ...s, include: currentInclude === "yes" ? "no" : "yes" } : s
-    ));
-  }
-
-  function validateAjustes(): { ok: boolean; error?: string } {
-    // Contingencia debe ser entre 0 y 25%
-    if (value.contingency_pct < 0 || value.contingency_pct > 0.25) {
-      return { ok: false, error: "Contingencia debe estar entre 0% y 25%" };
-    }
-
-    // Margen debe ser entre 15% y 40%
-    if (value.margin_pct < 0.15 || value.margin_pct > 0.40) {
-      return { ok: false, error: "Margen debe estar entre 15% y 40%" };
-    }
-
-    // Descuento debe ser entre 0% y 20%
-    if (value.discount_pct < 0 || value.discount_pct > 0.20) {
-      return { ok: false, error: "Descuento debe estar entre 0% y 20%" };
-    }
-
-    // Urgencia factor debe ser válido [0.8, 1.3]
-    if (value.urgencyMultiplier < CONFIGURACION_AVANZADA.urgencia.low.multiplier || 
-        value.urgencyMultiplier > CONFIGURACION_AVANZADA.urgencia.high.multiplier) {
-      return { ok: false, error: "Factor de urgencia debe estar entre 0.8 y 1.3" };
-    }
-
-    return { ok: true };
+  function selectPlan(serviceId: string) {
+    onChangeServicios(serviciosMensuales.map(s => ({
+      ...s,
+      include: s.service_id === serviceId ? "yes" : "no"
+    })));
   }
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-
-    const validation = validateAjustes();
-    if (!validation.ok) {
-      window.dispatchEvent(new CustomEvent("setStepStatus", { detail: { step: "ajustes", status: "invalid" } as const }));
-      return;
-    }
-
     onNext();
-  }
-
-  function getContingenceSliderValue() {
-    return Math.round(value.contingency_pct * 100);
-  }
-
-  function getMarginSliderValue() {
-    return Math.round(value.margin_pct * 100);
-  }
-
-  function getDiscountSliderValue() {
-    return Math.round(value.discount_pct * 100);
-  }
-
-  // Default values for preview
-  const defaultVatPct = CONFIGURACION_AVANZADA.schema_version ? 0.19 : 0;
-
-  // Preview de factores aplicados
-  function getFactorPreview(): React.ReactNode {
-    const urgencyLabel = value.urgencyMultiplier === 0.9 ? "Baja (0.9x)" : 
-      value.urgencyMultiplier === 1.0 ? "Media (1.0x)" : 
-      value.urgencyMultiplier === 1.25 ? "Alta (1.25x)" : `Personalizada (${value.urgencyMultiplier.toFixed(2)})`;
-    
-    const vatLabel = value.apply_vat ? `IVA: ${(value.vat_pct || defaultVatPct * 100).toFixed(0)}%` : "IVA: -";
-
-    return (
-      <div className={`ajustes__preview ${status === "completed" ? "ajustes__preview-completed" : ""}`}>
-        <h5>Factores Aplicados</h5>
-        <div className="ajustes__preview-grid">
-          <div title={`${urgencyLabel} (multiplier: ${value.urgencyMultiplier.toFixed(2)})`}>
-            Urgencia: {urgencyLabel}
-          </div>
-          <div title={`Contingencia: ${getContingenceSliderValue()}%`}>
-            Contingencia: {getContingenceSliderValue()}%
-          </div>
-          <div title={`Margen: ${getMarginSliderValue()}%`}>
-            Margen: {getMarginSliderValue()}%
-          </div>
-          <div title={`Descuento: ${getDiscountSliderValue()}%`}>
-            Descuento: {getDiscountSliderValue()}%
-          </div>
-          <div>{vatLabel}</div>
-        </div>
-      </div>
-    );
   }
 
   return (
     <form className="avanzada__step-form" onSubmit={handleSubmit} noValidate>
-      {/* Urgencia con Radio Buttons */}
-      <fieldset>
-        <legend>Urgencia del Proyecto</legend>
-        
-        <div className={`quick-quote__field avanzada__step-radio-group`}>
-          {Object.entries(CONFIGURACION_AVANZADA.urgencia).map(([key, config]) => (
-            <label key={key} className={`radios__option ${value.urgencyMultiplier === parseFloat(key) ? "radios__option--selected" : ""}`}>
-              <input
-                type="radio"
-                name="urgencia"
-                value={key}
-                checked={value.urgencyMultiplier === parseFloat(key)}
-                onChange={() => setUrgency(CONFIGURACION_AVANZADA.urgencia[key as "low" | "medium" | "high"].multiplier)}
-              />
-              <span className="radios__label">
-                {key}: {config.multiplier.toFixed(2)}x ({config.label})
-              </span>
-            </label>
-          ))}
-        </div>
+      <header className="modulos__header">
+        <h3>Lanzamiento y Soporte</h3>
+        <p>Tu web es un activo vivo. Elige cómo quieres que la cuidemos después de que esté online.</p>
+      </header>
 
-        {/* Slider personalizado para urgencia */}
-        <input
-          type="range"
-          min={0.8}
-          max={1.3}
-          step={0.05}
-          value={value.urgencyMultiplier}
-          onChange={(e) => setUrgency(parseFloat(e.target.value))}
-          style={{ width: "100%", marginTop: "0.75rem" }}
-        />
+      {/* Ajustes Comerciales Internos Ocultos */}
+      <div style={{ display: "none" }}>
+        <input type="hidden" name="contingency_pct" value={value.contingency_pct} />
+        <input type="hidden" name="margin_pct" value={value.margin_pct} />
+        <input type="hidden" name="discount_pct" value={value.discount_pct} />
+      </div>
 
-        {/* Badges por nivel */}
-        <div className={`radios__badges ${status === "completed" ? "radios__badges-completed" : ""}`}>
-          {value.urgencyMultiplier === 0.9 ? (
-            <span className="radios__badge radios__badge--low">Urgencia Baja</span>
-          ) : value.urgencyMultiplier === 1.25 ? (
-            <span className="radios__badge radios__badge--high">Urgencia Alta</span>
-          ) : (
-            <span className="radios__badge radios__badge--medium">Urgencia Media</span>
-          )}
-        </div>
-      </fieldset>
-
-      {/* Contingencia Slider */}
-      <fieldset>
-        <legend>Contingencia Comercial</legend>
-        
-        <label className={`quick-quote__field`}>
-          {getContingenceSliderValue()}%
-        </label>
-        
-        <input
-          type="range"
-          min={0}
-          max={25}
-          step={1}
-          value={getContingenceSliderValue()}
-          onChange={(e) => setContingencePct(Number(e.target.value))}
-          style={{ width: "100%", marginTop: "0.5rem" }}
-        />
-
-        {/* Slider labels */}
-        <div className={`radios__badges`} style={{ display: "none", marginTop: "0.5rem" }}>
-          {getContingenceSliderValue() <= 10 && 
-            <span className="radios__badge radios__badge--low">Baja ({getContingenceSliderValue()}%)</span>
-          }
-        </div>
-      </fieldset>
-
-      {/* Margen Slider */}
-      <fieldset>
-        <legend>Margen de Ganancia</legend>
-        
-        <label className={`quick-quote__field`}>
-          {getMarginSliderValue()}% - 40%
-        </label>
-        
-        <input
-          type="range"
-          min={15}
-          max={40}
-          step={1}
-          value={getMarginSliderValue()}
-          onChange={(e) => setMarginPct(Number(e.target.value))}
-          style={{ width: "100%", marginTop: "0.5rem" }}
-        />
-      </fieldset>
-
-      {/* Descuento Slider */}
-      <fieldset>
-        <legend>Descuento Comercial</legend>
-        
-        <label className={`quick-quote__field`}>
-          {getDiscountSliderValue()}% - 20%
-        </label>
-        
-        <input
-          type="range"
-          min={0}
-          max={20}
-          step={1}
-          value={getDiscountSliderValue()}
-          onChange={(e) => setDiscountPct(Number(e.target.value))}
-          style={{ width: "100%", marginTop: "0.5rem" }}
-        />
-
-        {/* Slider labels */}
-        <div className={`radios__badges radios__badges--discount`} style={{ display: "none", marginTop: "0.5rem" }}>
-          {getDiscountSliderValue() <= 5 && 
-            <span className="radios__badge">0%-10%</span>
-          }
-        </div>
-      </fieldset>
-
-      {/* IVA Toggle */}
-      <fieldset>
-        <legend>IVA en Cotización</legend>
-        
-        <label className={`quick-quote__field`}>
-          {value.apply_vat ? `Activado (${(value.vat_pct || defaultVatPct * 100).toFixed(0)}%)` : "Desactivado"}
-        </label>
-        
-        <input
-          type="checkbox"
-          checked={value.apply_vat}
-          onChange={() => setApplyVat(!value.apply_vat)}
-          style={{ marginTop: "0.5rem" }}
-        />
-
-        {/* Slider labels */}
-        <div className={`radios__badges radios__badges--vat`} style={{ display: "none", marginTop: "0.5rem" }}>
-          {value.apply_vat ? (
-            <>
-              <span className="radios__badge radios__badge--yes">IVA activado</span>
-            </>
-          ) : (
-            <span className="radios__badge radios__badge--no">IVA: -</span>
-          )}
-        </div>
-      </fieldset>
-
-      {/* Servicios Mensuales Selectables */}
-      <fieldset style={{ marginTop: "2rem" }}>
-        <legend>Servicios Mensuales Opcionales</legend>
-        
-        {!serviciosMensuales.length ? (
-          <p className="quick-quote__field">No hay servicios mensuales disponibles.</p>
-        ) : (
-          <div className={`avanzada__mensuales-list ${status === "completed" ? "avanzada__mensuales-completed" : ""}`} style={{ marginTop: "1rem" }}>
-            {serviciosMensuales.map((service) => (
-              <label 
-                key={service.service_id} 
-                className={`avanzada__mensual-item ${service.include === "yes" ? "avanzada__mensual--selected" : ""}`}
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 1rem", marginBottom: "0.5rem", borderRadius: "8px", border: "1px solid #e0e0e0" }}
-              >
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontWeight: 600 }}>{service.service_name}: {service.plan_name}</span>
-                  <small style={{ color: "#666" }}>{service.hours_included}h/mes - {service.sla}</small>
+      <div className="avanzada__planes-container" style={{ display: "grid", gap: "1rem", marginTop: "1rem" }}>
+        {serviciosMensuales.map((service) => {
+          const isSelected = service.include === "yes";
+          return (
+            <div
+              key={service.service_id}
+              onClick={() => selectPlan(service.service_id)}
+              className={`avanzada__plan-card ${isSelected ? "avanzada__step-selected" : ""}`}
+              style={{
+                padding: "1.25rem",
+                borderRadius: "12px",
+                border: isSelected ? "2px solid var(--accent-blue)" : "1px solid rgba(255,255,255,0.1)",
+                cursor: "pointer",
+                background: isSelected ? "rgba(0, 255, 65, 0.05)" : "rgba(255,255,255,0.02)",
+                transition: "all 0.3s ease",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <h4 style={{ margin: 0, color: isSelected ? "var(--accent-blue)" : "var(--text-primary)" }}>
+                    {service.plan_name}
+                  </h4>
+                  {service.plan_name === "Profesional" && (
+                    <span style={{ fontSize: "0.7rem", background: "var(--accent-blue)", color: "black", padding: "2px 6px", borderRadius: "4px", fontWeight: "bold" }}>
+                      RECOMENDADO
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <strong>${(service.monthly_value / 1000).toFixed(1)}k</strong>
+                <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", margin: "0.5rem 0" }}>
+                  {service.plan_name === "Esencial" && "Alojamiento seguro y actualizaciones críticas."}
+                  {service.plan_name === "Profesional" && "Soporte activo para cambios y mejoras continuas."}
+                  {service.plan_name === "Enterprise" && "Disponibilidad total y prioridad máxima en requerimientos."}
+                </p>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-tertiary)" }}>
+                  SLA: {service.sla} | {service.hours_included} horas/mes
                 </div>
-                <input
-                  type="checkbox"
-                  checked={service.include === "yes"}
-                  onChange={() => toggleServicio(service.service_id, service.include)}
-                  style={{ marginLeft: "1rem", width: "22px", height: "22px", cursor: "pointer" }}
-                />
-              </label>
-            ))}
-          </div>
+              </div>
+              <div style={{ textAlign: "right", paddingLeft: "1rem" }}>
+                <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "var(--text-primary)" }}>
+                  ${(service.monthly_value / 1000).toFixed(0)}k
+                </div>
+                <div style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>CLP/mes</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ marginTop: "1.5rem", padding: "1rem", background: "rgba(0,255,65,0.05)", borderRadius: "8px", textAlign: "center" }}>
+        <p style={{ margin: 0, fontSize: "0.9rem" }}>
+          Inversión mensual en soporte: <strong>${(totalMensual / 1000).toFixed(0)}k CLP</strong>
+        </p>
+      </div>
+
+      <footer className="avanzada__step-footer" style={{ marginTop: "2rem", display: "flex", justifyContent: "space-between", gap: "1rem" }}>
+        {onBack && (
+          <button type="button" onClick={onBack} className="quick-quote__submit" style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "white", flex: "none" }}>
+            Atrás
+          </button>
         )}
-
-        <div className="quick-quote__total-mensual" style={{ marginTop: "0.75rem", fontWeight: 700 }}>
-          Total Mensual: ${(totalMensual / 1000).toFixed(1)}k
-        </div>
-      </fieldset>
-
-      {/* Footer */}
-      <footer className="avanzada__step-footer" style={{display: "flex", flexDirection: "column", gap: "1rem", justifyContent: "space-between"}}>
-        {getFactorPreview()}
-
-        <button type="submit" className="quick-quote__submit" disabled={status === "validating"}>
-          {status === "active" ? "Siguiente" : status === "completed" ? "✓ Completado" : `Corregí`}
+        <button type="submit" className="quick-quote__submit" disabled={status === "invalid"} style={{ flex: 1 }}>
+          Ver Presupuesto Final
         </button>
       </footer>
     </form>

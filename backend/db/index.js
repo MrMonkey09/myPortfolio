@@ -69,7 +69,7 @@ async function initBetterSqlite3() {
    db.exec(`
      CREATE TABLE IF NOT EXISTS quotes_archive (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
-       quote_id TEXT PRIMARY KEY,
+       quote_id TEXT NOT NULL,
        archive_date TEXT NOT NULL DEFAULT (datetime('now')),
        original_created_at TEXT NOT NULL,
        origin TEXT NOT NULL DEFAULT 'unknown',
@@ -99,9 +99,15 @@ async function initSqlJs() {
   const initSqlJs = (await import("sql.js")).default;
   
   // Locate the WASM binary
-  const wasmPath = path.join(DB_DIR, "..", "node_modules", "sql.js", "dist", "sql-wasm.wasm");
-  let wasmBinary;
+  let wasmPath = path.join(DB_DIR, "..", "node_modules", "sql.js", "dist", "sql-wasm.wasm");
   
+  if (!fs.existsSync(wasmPath)) {
+    // Fallback search for monorepo / root node_modules
+    const rootNodeModules = path.join(__dirname, "../../node_modules");
+    wasmPath = path.join(rootNodeModules, "sql.js", "dist", "sql-wasm.wasm");
+  }
+
+  let wasmBinary;
   if (fs.existsSync(wasmPath)) {
     wasmBinary = fs.readFileSync(wasmPath);
   }
@@ -150,7 +156,7 @@ async function initSqlJs() {
    db.run(`
      CREATE TABLE IF NOT EXISTS quotes_archive (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
-       quote_id TEXT PRIMARY KEY,
+       quote_id TEXT NOT NULL,
        archive_date TEXT NOT NULL DEFAULT (datetime('now')),
        original_created_at TEXT NOT NULL,
        origin TEXT NOT NULL DEFAULT 'unknown',
@@ -266,7 +272,8 @@ export async function initDatabase() {
 
 export function getDatabase() {
   if (!dbInstance) {
-    throw new Error("Database not initialized. Call initDatabase() first.");
+    console.warn("[DB] Database not initialized. Operations requiring persistence will be skipped.");
+    return null;
   }
   return dbInstance;
 }

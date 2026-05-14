@@ -10,6 +10,7 @@ import { getDatabase } from "./index.js";
 
 export function createQuoteRecord(record) {
   const db = getDatabase();
+  if (!db) return null;
   
   // Usar named params para better-sqlite3, el wrapper de sql.js los maneja
   const stmt = db.prepare(`
@@ -50,12 +51,14 @@ export function createQuoteRecord(record) {
 
 export function getQuoteByTraceId(traceId) {
   const db = getDatabase();
+  if (!db) return null;
   const stmt = db.prepare("SELECT * FROM quotes WHERE trace_id = ?");
   return stmt.get(traceId);
 }
 
 export function getPendingSyncRecords(limit = 10) {
   const db = getDatabase();
+  if (!db) return [];
   const stmt = db.prepare(`
     SELECT * FROM quotes 
     WHERE sync_status IN ('pending', 'retrying')
@@ -67,6 +70,7 @@ export function getPendingSyncRecords(limit = 10) {
 
 export function updateSyncStatus(quoteId, { status, attempts, error }) {
   const db = getDatabase();
+  if (!db) return null;
   const stmt = db.prepare(`
     UPDATE quotes 
     SET sync_status = ?, sync_attempts = ?, sync_last_error = ?
@@ -77,12 +81,14 @@ export function updateSyncStatus(quoteId, { status, attempts, error }) {
 
 export function getQuoteById(quoteId) {
   const db = getDatabase();
+  if (!db) return null;
   const stmt = db.prepare("SELECT * FROM quotes WHERE quote_id = ?");
   return stmt.get(quoteId);
 }
 
 export function countQuotesByStatus(status) {
   const db = getDatabase();
+  if (!db) return 0;
   const stmt = db.prepare("SELECT COUNT(*) as count FROM quotes WHERE sync_status = ?");
   const result = stmt.get(status);
   return result?.count || 0;

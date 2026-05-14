@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from "react";
-import { useContactoNavegacion } from "@views/Main/ContactoNavegacionContext";
-import { simulateQuickQuote } from "@utilities/api";
+import { useState, useEffect, type FormEvent } from "react";
 import { MODULOS_PREDEFINIDOS, SERVICIOS_MENSUALES_PREDEFINIDOS, CONFIGURACION_AVANZADA } from "./Configuracion";
+import { simulateQuickQuote } from "@utilities/api";
 import type {
   AdvancedFormState,
   StepId,
@@ -10,7 +9,10 @@ import type {
   ModuloLinea,
   AjustesComerciales,
   MonthlyService,
-} from "@types";
+  QuoteSimulateResponse,
+  QuoteSimulateRequest,
+  StepStatus,
+} from "@/types/index.js";
 import AvanzadaContexto from "./AvanzadaContexto";
 import AvanzadaRequerimientos from "./AvanzadaRequerimientos";
 import AvanzadaModulos from "./AvanzadaModulos";
@@ -19,246 +21,141 @@ import AvanzadaResumen from "./AvanzadaResumen";
 import {
   trackAdvancedStepViewed,
   trackAdvancedStepCompleted,
+  trackContactSubmitted,
 } from "@/hooks/useAnalytics";
 import useAnalytics from "@/hooks/useAnalytics";
 import "./Estilos.css";
 
 const STEPS: StepId[] = ["contexto", "requerimientos", "modulos", "ajustes", "resumen"];
 
-// Naming de pasos para tracker
-const stepNames: Record<StepId, string> = {
-  contexto: "contexto",
-  requerimientos: "requerimientos",
-  modulos: "modulos",
-  ajustes: "ajustes",
-  resumen: "resumen",
+const stepUINames: Record<StepId, string> = {
+  contexto: "Tu Proyecto",
+  requerimientos: "Servicios Clave",
+  modulos: "Funcionalidades",
+  ajustes: "Soporte Mensual",
+  resumen: "Presupuesto Final",
 };
-
-// Ref para rastrear tiempos de entrada/salida en cada paso (performance.now())
 
 const INITIAL_CONTEXT: ContextoData = {
   projectType: "website",
   projectState: "new",
-  country: "CL",
   priority: "medium",
+  country: "CL",
 };
 
 const INITIAL_REQUERIMIENTOS: RequerimientosData = {
-  diseno: true,
-  desarrollo: true,
-  contenido: false,
-  seo: false,
-  analytics: false,
+  diseno: "no",
+  redaccion: "no",
+  seo: "no",
+  analytics: "no",
 };
 
 const INITIAL_AJUSTES: AjustesComerciales = {
-  urgencyMultiplier: 1.0,
-  contingency_pct: 0.12,
+  contingency_pct: 0.1,
   margin_pct: 0.25,
   discount_pct: 0,
-  apply_vat: true,
-  vat_pct: 0.19,
+  urgency: "medium",
+};
+
+const INITIAL_STATUSES: Record<StepId, StepStatus> = {
+  contexto: "active",
+  requerimientos: "locked",
+  modulos: "locked",
+  ajustes: "locked",
+  resumen: "locked",
 };
 
 function Avanzada() {
-  const {
-    irAContactoConContexto,
-    avanzadaHandoffContext,
-    limpiarHandoffAvanzada,
-  } = useContactoNavegacion();
-
+  const { getOrCreateTraceId } = useAnalytics();
+  const [activeStep, setActiveStep] = useState<StepId>("contexto");
   const [formState, setFormState] = useState<AdvancedFormState>({
     currentStep: "contexto",
-    stepStatuses: {
-      contexto: "active",
-      requerimientos: "locked",
-      modulos: "locked",
-      ajustes: "locked",
-      resumen: "locked",
-    },
-    globalStatus: "idle",
+    stepStatuses: INITIAL_STATUSES,
     contexto: INITIAL_CONTEXT,
     requerimientos: INITIAL_REQUERIMIENTOS,
-    modulos: MODULOS_PREDEFINIDOS,
+    modulos: [...MODULOS_PREDEFINIDOS],
     ajustes: INITIAL_AJUSTES,
-    serviciosMensuales: SERVICIOS_MENSUALES_PREDEFINIDOS,
-    resultado: null,
-    isStale: false,
+    serviciosMensuales: [...SERVICIOS_MENSUALES_PREDEFINIDOS],
+    globalStatus: "active",
     errorMessage: null,
+    resultado: null,
+    isStale: true,
   });
 
-  const { getOrCreateTraceId } = useAnalytics();
+  // Gestión de captura de cliente (Opción 3: Post-Simulación)
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    nombre: "",
+    email: "",
+    telefono: "",
+    redSocial: "WhatsApp",
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Inicializar traceId para tracking
-  useEffect(() => {
-    getOrCreateTraceId();
-  }, [getOrCreateTraceId]);
-
-  // Ref para almacenar duración del paso anterior antes de avanzar
-  const stepDurationRef = useRef<number>(0);
-
-  // Ref para rastrear tiempos de entrada/salida en cada paso (performance.now())
-  const stepTimersRef = useRef<Map<number, number>>(new Map());
-
-  // Pre-cargar contexto si viene de handoff (rápida → avanzada)
-  useEffect(() => {
-    if (avanzadaHandoffContext && !formState.resultado) {
-      // Pre-cargar datos del handoff
-      setFormState(prev => ({
-        ...prev,
-        contexto: {
-          projectType: "website",
-          projectState: "new",
-          country: avanzadaHandoffContext.context?.country || "CL",
-          priority: "medium",
-        },
-      resultado: null, // Requiere recalcular con nuevos datos
-      isStale: true,
-    }));
-    }
-    }, [avanzadaHandoffContext]);
-
-    // Inicializar timer para el paso actual cuando cambia (usando performance.now())
-    useEffect(() => {
-      const stepIndex = STEPS.indexOf(formState.currentStep);
-      if (stepIndex >= 0) {
-        stepTimersRef.current.set(stepIndex, performance.now());
-      }
-
-      // Calcular tiempo en paso anterior y tracke que se visualizó este paso
-      const timeOnPrevStepMs = stepDurationRef.current;
-      if (timeOnPrevStepMs > 0) {
-        trackAdvancedStepViewed(
-          stepIndex + 1, // Step number is 1-indexed for analytics
-          stepNames[formState.currentStep],
-          timeOnPrevStepMs
-        );
-      }
-    }, [formState.currentStep]);
-
-  function validateCurrentStep(step: StepId): boolean {
-    switch (step) {
-      case "contexto":
-        return Boolean(formState.contexto.projectType && formState.contexto.projectState);
-      case "requerimientos":
-        return Object.values(formState.requerimientos).some(Boolean);
-      case "modulos":
-        return formState.modulos.some(m => m.include === "yes" && m.quantity > 0 && m.complexity);
-      case "ajustes":
-        return true;
-      case "resumen":
-        return Boolean(formState.resultado);
-    }
-    return false;
+  function onContactFieldChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    const { name, value } = e.target;
+    setContactForm(prev => ({ ...prev, [name]: value }));
   }
 
-  function advanceToStep(nextStep: StepId) {
-    const currentIndex = STEPS.indexOf(formState.currentStep);
-    const nextIndex = STEPS.indexOf(nextStep);
-
-    if (nextIndex > currentIndex && !validateCurrentStep(formState.currentStep)) {
-      setFormState(prev => ({
-        ...prev,
-        globalStatus: "error",
-        errorMessage: "Para continuar, completá los campos obligatorios del paso y corregí los errores marcados.",
-      }));
+  async function handleFinalSave(e: FormEvent) {
+    e.preventDefault(); // Evitamos el refresh de la página
+    if (!formState.resultado || isSaving) return;
+    
+    if (!contactForm.nombre || !contactForm.email) {
+      setFormState(prev => ({ ...prev, errorMessage: "Por favor, completa nombre y email para recibir tu presupuesto." }));
       return;
     }
 
-    // Calcular duración del paso actual antes de avanzar
-    const durationMs = stepTimersRef.current.get(currentIndex)
-      ? performance.now() - stepTimersRef.current.get(currentIndex)!
-      : 0;
-    stepDurationRef.current = durationMs;
-
-    // Trackear completación del paso actual (si no es el resumen, ya que se avanza desde ajustes)
-    if (currentIndex >= 0 && nextStep !== "resumen" && currentIndex < STEPS.length - 1) {
-      trackAdvancedStepCompleted(
-        currentIndex + 1, // Step number is 1-indexed for analytics
-        stepNames[formState.currentStep],
-        durationMs
-      );
-    }
-
-    setFormState(prev => {
-      const newStatuses = { ...prev.stepStatuses };
-      newStatuses[prev.currentStep] = "completed";
-      if (nextStep !== "resumen") newStatuses[nextStep] = "active";
-
-      return {
-        ...prev,
-        currentStep: nextStep,
-        stepStatuses: newStatuses,
-        globalStatus: "idle",
-        errorMessage: null,
-      };
-    });
-  }
-
-  function updateContexto(data: ContextoData) {
-    setFormState(prev => ({
-      ...prev,
-      contexto: data,
-      isStale: true,
-    }));
-  }
-
-  function updateRequerimientos(data: RequerimientosData) {
-    setFormState(prev => ({
-      ...prev,
-      requerimientos: data,
-      isStale: true,
-    }));
-  }
-
-  function updateModulos(modulos: ModuloLinea[]) {
-    setFormState(prev => ({
-      ...prev,
-      modulos,
-      isStale: true,
-    }));
-  }
-
-  function updateAjustes(ajustes: AjustesComerciales) {
-    setFormState(prev => ({
-      ...prev,
-      ajustes,
-      isStale: true,
-    }));
-  }
-
-  function updateServiciosMensuales(servicios: MonthlyService[]) {
-    setFormState(prev => ({
-      ...prev,
-      serviciosMensuales: servicios,
-      isStale: true,
-    }));
-  }
-
-  async function handleCalcular() {
-    setFormState(prev => ({ ...prev, globalStatus: "validating", errorMessage: null }));
-
-    const lineItems = formState.modulos
-      .filter(m => m.include === "yes" && m.quantity > 0)
-      .map(m => ({
-        module_id: m.module_id,
-        module_name: m.module_name,
-        category: m.category,
-        include: m.include,
-        quantity: m.quantity,
-        complexity: m.complexity,
-        base_cost: m.base_cost,
-      }));
+    setIsSaving(true);
+    setFormState(prev => ({ ...prev, errorMessage: null }));
 
     try {
-      const payload = {
+      const traceId = getOrCreateTraceId();
+      
+      // Re-construimos el payload pero con persist: true y contact info
+      const syncModulos = formState.modulos.map((m: ModuloLinea) => {
+        let include = m.include;
+        let quantity = m.quantity;
+        // ... (lógica de sync simplificada para el guardado final)
+        if (m.module_id === "diseno-ui-ux" && formState.requerimientos.diseno === "yes") include = "yes";
+        if (m.module_id === "contenido" && formState.requerimientos.redaccion === "yes") include = "yes";
+        if (m.module_id === "seo-busqueda" && formState.requerimientos.seo === "yes") include = "yes";
+        if (m.module_id === "analitica-basica" && formState.requerimientos.analytics === "yes") include = "yes";
+        return { ...m, include, quantity: quantity || (include === "yes" ? 1 : 0) };
+      });
+
+      const lineItems = syncModulos
+        .filter((m: ModuloLinea) => m.include === "yes" && m.quantity > 0)
+        .map((m: ModuloLinea) => ({
+          module_id: m.module_id,
+          module_name: m.module_name,
+          category: m.category,
+          include: m.include,
+          quantity: m.quantity,
+          complexity: m.complexity,
+          base_cost: m.base_cost,
+          unit_hours: m.unit_hours,
+        }));
+
+      const payload: QuoteSimulateRequest = {
+        persist: true, // AHORA SÍ
+        contact: {
+          nombre: contactForm.nombre,
+          email: contactForm.email,
+          telefono: contactForm.telefono,
+          red_social: contactForm.redSocial,
+          mensaje: "Interesado en presupuesto avanzado detallado.",
+          servicio: `Proyecto Avanzado — ${formState.contexto.projectType}`
+        },
         context: {
           schema_version: CONFIGURACION_AVANZADA.schema_version,
           origin: "advanced",
-          project_type: formState.contexto.projectType || "website",
+          project_type: formState.contexto.projectType,
           project_state: formState.contexto.projectState,
           country: formState.contexto.country,
           currency: CONFIGURACION_AVANZADA.currency,
+          trace_id: traceId,
         },
         input: {
           requirements_checklist: formState.requerimientos,
@@ -268,161 +165,232 @@ function Avanzada() {
             contingency_pct: formState.ajustes.contingency_pct,
             margin_pct: formState.ajustes.margin_pct,
             discount_pct: formState.ajustes.discount_pct,
-            vat_pct: formState.ajustes.vat_pct,
-            apply_vat: formState.ajustes.apply_vat,
+            vat_pct: 0.19,
           },
         },
       };
 
-const resultado = await simulateQuickQuote(payload);
-
-      setFormState(prev => ({
-        ...prev,
-        globalStatus: "calculated",
-        resultado: resultado,
-        isStale: false,
-        stepStatuses: {
-          ...prev.stepStatuses,
-          resumen: "completed",
-        },
-      }));
-    } catch (error) {
-      setFormState(prev => ({
-        ...prev,
-        globalStatus: "error",
-        errorMessage: error instanceof Error ? error.message : "No pudimos calcular la cotización ahora. Intentá nuevamente.",
-      }));
+      await simulateQuickQuote(payload);
+      
+      trackContactSubmitted('advanced', formState.resultado.totals.total_project);
+      setSaveSuccess(true);
+      setShowContactForm(false);
+    } catch (err: any) {
+      setFormState(prev => ({ ...prev, errorMessage: "Error al enviar contacto. Por favor reintenta." }));
+    } finally {
+      setIsSaving(false);
     }
   }
 
-  function handleRecalculate() {
-    // Reset resumen status y recalcular
-    setFormState(prev => ({
-      ...prev,
-      globalStatus: "idle",
-      stepStatuses: {
-        ...prev.stepStatuses,
-        resumen: "active",
-      },
-      currentStep: "ajustes",
-    }));
+  useEffect(() => {
+    trackAdvancedStepViewed(1, 'contexto');
+  }, []);
+
+  function handleNext() {
+    const currentIndex = STEPS.indexOf(activeStep);
+    if (currentIndex < STEPS.length - 1) {
+      const nextStep = STEPS[currentIndex + 1];
+      trackAdvancedStepCompleted(currentIndex + 1, activeStep, 0);
+      setActiveStep(nextStep);
+      
+      if (nextStep === "resumen") {
+        handleCalcular();
+      }
+    }
   }
 
-  function handleContactarAhora() {
-    if (!formState.resultado) return;
-
-    const quoteHandoffContext = {
-      source: "advanced" as const,
-      quote_ref: {
-        quote_id: formState.resultado.quote.quote_id,
-        origin: "advanced",
-        total_project: formState.resultado.totals.total_project,
-        total_monthly: formState.serviciosMensuales
-          .filter(s => s.include === "yes")
-          .reduce((sum, s) => sum + s.monthly_value, 0),
-      },
-      context: {
-        project_type: formState.contexto.projectType || "website",
-        project_state: formState.contexto.projectState || "new",
-        currency: CONFIGURACION_AVANZADA.currency,
-        schema_version: formState.resultado.meta.schema_version,
-        pricing_config_version: formState.resultado.meta.pricing_config_version,
-        trace_id: formState.resultado.meta.trace_id,
-        confidence_level: formState.resultado.totals.confidence_level,
-        is_stale: formState.isStale,
-      },
-      servicios_mensuales: formState.serviciosMensuales.filter(s => s.include === "yes"),
-    };
-
-    irAContactoConContexto("Cotización avanzada — seguimiento comercial", quoteHandoffContext);
-    limpiarHandoffAvanzada();
+  function handleBack() {
+    const currentIndex = STEPS.indexOf(activeStep);
+    if (currentIndex > 0) {
+      setActiveStep(STEPS[currentIndex - 1]);
+    }
   }
 
-  // Renderizar paso activo
-  function renderStep() {
-    const { currentStep, stepStatuses } = formState;
-    switch (currentStep) {
-      case "contexto":
-        return (
-          <AvanzadaContexto
-            value={formState.contexto}
-            onChange={updateContexto}
-            onNext={() => advanceToStep("requerimientos")}
-            status={stepStatuses.contexto}
-          />
-        );
-      case "requerimientos":
-        return (
-          <AvanzadaRequerimientos
-            value={formState.requerimientos}
-            onChange={updateRequerimientos}
-            onNext={() => advanceToStep("modulos")}
-            onBack={() => advanceToStep("contexto")}
-            status={stepStatuses.requerimientos}
-          />
-        );
-      case "modulos":
-        return (
-          <AvanzadaModulos
-            value={formState.modulos}
-            onChange={updateModulos}
-            onNext={() => advanceToStep("ajustes")}
-            onBack={() => advanceToStep("requerimientos")}
-            status={stepStatuses.modulos}
-          />
-        );
-      case "ajustes":
-        return (
-          <AvanzadaAjustes
-            value={formState.ajustes}
-            serviciosMensuales={formState.serviciosMensuales}
-            onChange={updateAjustes}
-            onChangeServicios={updateServiciosMensuales}
-            onNext={handleCalcular}
-            onBack={() => advanceToStep("modulos")}
-            status={stepStatuses.ajustes}
-          />
-        );
-      case "resumen":
-        return (
-          <AvanzadaResumen
-            resultado={formState.resultado!}
-            serviciosMensuales={formState.serviciosMensuales.filter(s => s.include === "yes")}
-            onRecalculate={handleRecalculate}
-            onContact={handleContactarAhora}
-            isStale={formState.isStale}
-          />
-        );
+  function updateContexto(contexto: ContextoData) {
+    setFormState(prev => ({ ...prev, contexto, isStale: true }));
+  }
+
+  function updateRequerimientos(requerimientos: RequerimientosData) {
+    setFormState(prev => ({ ...prev, requerimientos, isStale: true }));
+  }
+
+  function updateModulos(modulos: readonly ModuloLinea[]) {
+    setFormState(prev => ({ ...prev, modulos: [...modulos], isStale: true }));
+  }
+
+  function updateAjustes(ajustes: AjustesComerciales) {
+    setFormState(prev => ({ ...prev, ajustes, isStale: true }));
+  }
+
+  function updateServiciosMensuales(servicios: MonthlyService[]) {
+    setFormState(prev => ({ ...prev, serviciosMensuales: [...servicios], isStale: true }));
+  }
+
+  async function handleCalcular() {
+    setFormState(prev => ({ ...prev, globalStatus: "validating", errorMessage: null }));
+
+    // Sincronización de respuestas conversacionales a módulos técnicos
+    const syncModulos = formState.modulos.map((m: ModuloLinea) => {
+      let include = m.include;
+      let quantity = m.quantity;
+
+      if (m.module_id === "diseno-ui-ux" && formState.requerimientos.diseno === "yes") {
+        include = "yes";
+        if (quantity === 0) quantity = 1;
+      }
+      if (m.module_id === "contenido" && formState.requerimientos.redaccion === "yes") {
+        include = "yes";
+        if (quantity === 0) quantity = 1;
+      }
+      if (m.module_id === "seo-busqueda" && formState.requerimientos.seo === "yes") {
+        include = "yes";
+        if (quantity === 0) quantity = 1;
+      }
+      if (m.module_id === "analitica-basica" && formState.requerimientos.analytics === "yes") {
+        include = "yes";
+        if (quantity === 0) quantity = 1;
+      }
+      
+      // Auto-include frontend if pages > 0
+      if (m.module_id === "desarrollo-frontend" && include === "no") {
+         if (m.quantity > 0) include = "yes";
+      }
+
+      return { ...m, include, quantity };
+    });
+
+    const lineItems = syncModulos
+      .filter((m: ModuloLinea) => m.include === "yes" && m.quantity > 0)
+      .map((m: ModuloLinea) => ({
+        module_id: m.module_id,
+        module_name: m.module_name,
+        category: m.category,
+        include: m.include,
+        quantity: m.quantity,
+        complexity: m.complexity,
+        base_cost: m.base_cost,
+        unit_hours: m.unit_hours,
+      }));
+
+    const traceId = getOrCreateTraceId();
+    try {
+      const payload: QuoteSimulateRequest = {
+        context: {
+          schema_version: CONFIGURACION_AVANZADA.schema_version,
+          origin: "advanced",
+          project_type: formState.contexto.projectType,
+          project_state: formState.contexto.projectState,
+          country: formState.contexto.country,
+          currency: CONFIGURACION_AVANZADA.currency,
+          trace_id: traceId,
+        },
+        input: {
+          requirements_checklist: formState.requerimientos,
+          line_items: lineItems,
+          monthly_services: formState.serviciosMensuales,
+          pricing: {
+            contingency_pct: formState.ajustes.contingency_pct,
+            margin_pct: formState.ajustes.margin_pct,
+            discount_pct: formState.ajustes.discount_pct,
+            vat_pct: 0.19,
+          },
+        },
+      };
+      
+      const data = await simulateQuickQuote({
+        ...payload,
+        persist: false
+      });
+      setFormState(prev => ({
+        ...prev,
+        resultado: data,
+        globalStatus: "completed",
+        isStale: false,
+      }));
+    } catch (err: any) {
+      setFormState(prev => ({
+        ...prev,
+        globalStatus: "invalid",
+        errorMessage: err.message || "No se pudo calcular el presupuesto",
+      }));
     }
   }
 
   return (
-    <section className="avanzada">
-      {/* Stepper de navegación */}
+    <div className="avanzada">
       <nav className="avanzada__steps">
         {STEPS.map((step, idx) => (
           <div
             key={step}
-            className={`avanzada__step avanzada__step--${formState.stepStatuses[step]}`}
+            className={`avanzada__step ${activeStep === step ? "avanzada__step--active" : ""} ${STEPS.indexOf(activeStep) > idx ? "avanzada__step--completed" : ""}`}
           >
             <span className="avanzada__step-number">{idx + 1}</span>
-            <span className="avanzada__step-label">{step}</span>
+            <span className="avanzada__step-label">{stepUINames[step]}</span>
           </div>
         ))}
       </nav>
 
-      {/* Mensaje de error global */}
-      {formState.errorMessage && (
-        <div className="avanzada-error" role="alert">
-          {formState.errorMessage}
-        </div>
-      )}
+      <main className="avanzada__content">
+        {activeStep === "contexto" && (
+          <AvanzadaContexto
+            value={formState.contexto}
+            onChange={updateContexto}
+            onNext={handleNext}
+            status="active"
+          />
+        )}
+        {activeStep === "requerimientos" && (
+          <AvanzadaRequerimientos
+            value={formState.requerimientos}
+            onChange={updateRequerimientos}
+            onNext={handleNext}
+            onBack={handleBack}
+            status="active"
+          />
+        )}
+        {activeStep === "modulos" && (
+          <AvanzadaModulos
+            value={formState.modulos}
+            onChange={updateModulos}
+            onNext={handleNext}
+            onBack={handleBack}
+            status={activeStep === "modulos" ? "active" : "completed"}
+          />
+        )}
+        {activeStep === "ajustes" && (
+          <AvanzadaAjustes
+            value={formState.ajustes}
+            onChange={updateAjustes}
+            onNext={handleNext}
+            onBack={handleBack}
+            serviciosMensuales={formState.serviciosMensuales}
+            onChangeServicios={updateServiciosMensuales}
+            status="active"
+          />
+        )}
+        {activeStep === "resumen" && formState.resultado && (
+          <AvanzadaResumen
+            resultado={formState.resultado}
+            serviciosMensuales={formState.serviciosMensuales}
+            onRecalculate={handleCalcular}
+            showContactForm={showContactForm}
+            contactForm={contactForm}
+            onContactFieldChange={onContactFieldChange}
+            onContactClick={() => setShowContactForm(true)}
+            onFinalSubmit={handleFinalSave}
+            isSaving={isSaving}
+            saveSuccess={saveSuccess}
+            isStale={formState.isStale}
+          />
+        )}
 
-      {/* Contenido del paso activo */}
-      <div className="avanzada__content">
-        {renderStep()}
-      </div>
-    </section>
+        {formState.errorMessage && (
+          <div className="avanzada__error-banner">
+            {formState.errorMessage}
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
 

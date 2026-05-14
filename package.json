@@ -7,6 +7,13 @@
     "dev": "cd frontend && bun run web:dev",
     "build": "cd frontend && bun run web:build",
     "lint": "cd frontend && bun run lint",
-    "api:dev": "cd frontend && bun run api:dev"
+    "api:dev": "cd frontend && bun run api:dev",
+    "install:all": "npm install && cd frontend && npm install"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.10.0",
+    "sql.js": "^1.14.1",
+    "@notionhq/client": "^4.0.2",
+    "dotenv": "^17.2.1"
   }
 }

@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import { Client as NotionClient } from "@notionhq/client";
@@ -14,7 +15,8 @@ import { initializeDatabase } from "../../backend/db/index.js";
 import { createQuoteRecord } from "../../backend/db/quotesRepository.js";
 import { syncWithRetry } from "../../backend/sync/notionSync.js";
 
-dotenv.config();
+dotenv.config(); // Load from frontend/.env if exists
+dotenv.config({ path: path.join(__dirname, "../../backend/.env") }); // Fallback to backend/.env
 
 // Inicializar DB async al cargar el módulo (con fallback a sql.js si better-sqlite3 no disponible)
 let db = null;
@@ -30,7 +32,18 @@ initializeDatabase()
   });
 
 const app = express();
-const PORT = Number(process.env.PORT || 3002);
+const PORT = Number(process.env.PORT || 3001);
+
+app.use((req, res, next) => {
+  console.log(`[API] ${req.method} ${req.path}`);
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-trace-id, x-api-key");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 const ORIGIN_VALUES = new Set(["quick", "advanced", "direct_contact"]);
 const CONFIDENCE_VALUES = new Set(["low", "medium", "high"]);
@@ -52,8 +65,8 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const IDEMPOTENCY_TTL_MS = 1000 * 60 * 30;
 const RETRY_BACKOFF_MS = [1000, 3000, 7000];
 
-const notionToken = process.env.NOTION_TOKEN;
-const notionDatabaseId = process.env.NOTION_DB_ID;
+const notionToken = process.env.NOTION_TOKEN?.trim();
+const notionDatabaseId = process.env.NOTION_DB_ID?.trim();
 const notionClient = notionToken ? new NotionClient({ auth: notionToken }) : null;
 const idempotencyStore = new Map();
 
@@ -291,7 +304,6 @@ function validateSimulatePayload(payload) {
   const details = [];
   const context = payload?.context ?? {};
   const input = payload?.input ?? {};
-  const lineItems = Array.isArray(input.line_items) ? input.line_items : [];
 
   const requiredContext = [
     "schema_version",
@@ -342,33 +354,23 @@ function validateSimulatePayload(payload) {
     }
   }
 
-  lineItems.forEach((item, index) => {
-    if (item?.include === "yes") {
-      if (!Number.isFinite(item.quantity) || item.quantity <= 0) {
-        details.push({
-          field: `input.line_items[${index}].quantity`,
-          code: "INVALID_QUANTITY",
-          message: "quantity debe ser mayor a 0 cuando include es yes",
-        });
-      }
-
-      if (typeof item.complexity !== "string" || item.complexity.trim() === "") {
-        details.push({
-          field: `input.line_items[${index}].complexity`,
-          code: "LINE_ITEM_COMPLEXITY_REQUIRED",
-          message: "complexity es obligatoria cuando include es yes",
-        });
-      }
-    }
-  });
+  // Re-assign lineItems for consistency in return
+  const currentLineItems = input?.line_items || [];
+  if (!Array.isArray(currentLineItems)) {
+    details.push({
+      field: "input.line_items",
+      code: "INVALID_TYPE",
+      message: "line_items debe ser un array",
+    });
+  }
 
   const pricing = {
     contingency_pct:
-      input?.pricing?.contingency_pct ?? payload?.pricing_snapshot?.contingency_pct ?? PRICING_CONFIG.contingency_pct,
-    margin_pct: input?.pricing?.margin_pct ?? payload?.pricing_snapshot?.margin_pct ?? PRICING_CONFIG.margin_pct,
+      input?.pricing?.contingency_pct ?? payload?.config_snapshot?.contingency_pct ?? PRICING_CONFIG.contingency_pct,
+    margin_pct: input?.pricing?.margin_pct ?? payload?.config_snapshot?.margin_pct ?? PRICING_CONFIG.margin_pct,
     discount_pct:
-      input?.pricing?.discount_pct ?? payload?.pricing_snapshot?.discount_pct ?? PRICING_CONFIG.discount_pct,
-    vat_pct: input?.pricing?.vat_pct ?? payload?.pricing_snapshot?.vat_pct ?? PRICING_CONFIG.vat_pct,
+      input?.pricing?.discount_pct ?? payload?.config_snapshot?.discount_pct ?? PRICING_CONFIG.discount_pct,
+    vat_pct: input?.pricing?.vat_pct ?? payload?.config_snapshot?.vat_pct ?? PRICING_CONFIG.vat_pct,
   };
 
   validateRangePct(details, pricing.discount_pct, "pricing.discount_pct");
@@ -376,17 +378,47 @@ function validateSimulatePayload(payload) {
   validateRangePct(details, pricing.margin_pct, "pricing.margin_pct");
   validateRangePct(details, pricing.vat_pct, "pricing.vat_pct");
 
-  return { details, lineItems, pricing };
+  return { 
+    details, 
+    lineItems: currentLineItems, 
+    pricing,
+    clientData: payload?.client_data || null,
+    configSnapshot: payload?.config_snapshot || null,
+    cronograma: payload?.cronograma || [],
+    checklist: payload?.checklist || []
+  };
 }
 
-function buildTotals({ lineItems, pricing, applyVat, monthlyServices = [] }) {
-  const directCost = lineItems
+function buildTotals({ lineItems, pricing, applyVat, monthlyServices = [], projectState = "new", configSnapshot = null }) {
+  const HOURLY_RATE = configSnapshot?.hourly_rate ?? 18000;
+  const complexityFactors = configSnapshot?.complexity_factors ?? {
+    low: 1.0,
+    medium: 1.2,
+    high: 1.45,
+  };
+
+  const projectStateMultiplier = projectState === "remodel" 
+    ? (configSnapshot?.remodel_factor ?? 0.85) 
+    : 1.0;
+
+  const directCostRaw = lineItems
     .filter((item) => item.include === "yes")
     .reduce((acc, item) => {
-      const unitCost = toNumber(item.base_cost, toNumber(item.unit_hours, 0) * 18000);
+      const hours = toNumber(item.unit_hours, 0);
       const qty = toNumber(item.quantity, 0);
+      const complexity = item.complexity || "medium";
+      const factor = complexityFactors[complexity] || 1.2;
+
+      // Prioridad: base_cost > (horas * factor * tarifa)
+      const unitCost =
+        toNumber(item.base_cost, 0) > 0
+          ? toNumber(item.base_cost, 0)
+          : Math.round(hours * factor * HOURLY_RATE);
+
       return acc + unitCost * qty;
     }, 0);
+
+  const directCost = Math.round(directCostRaw * projectStateMultiplier);
 
   const contingencyValue = directCost * pricing.contingency_pct;
   const subtotalWithContingency = directCost + contingencyValue;
@@ -426,30 +458,31 @@ app.get("/health", (_req, res) => {
 
 app.post("/api/quotes/simulate", (req, res) => {
   const traceId = makeTraceId();
+  const context = req.body?.context || {};
 
   try {
-    const { details, lineItems, pricing } = validateSimulatePayload(req.body);
+    const { 
+      details, 
+      lineItems, 
+      pricing, 
+      clientData, 
+      configSnapshot, 
+      cronograma, 
+      checklist 
+    } = validateSimulatePayload(req.body);
 
     if (details.length > 0) {
-      return sendError(
-        res,
-        400,
-        traceId,
-        "validation_error",
-        "INVALID_REQUEST",
-        "Hay campos inválidos",
-        details,
-      );
+      return sendError(res, 400, traceId, "VALIDATION_ERROR", "INVALID_PAYLOAD", "Payload inválido", details);
     }
 
-    // Normalize apply_vat to boolean (fix for string "false" being truthy)
-    const applyVatInput = req.body?.input?.apply_vat;
-    const applyVat = applyVatInput === undefined ? PRICING_CONFIG.apply_vat : normalizeBool(applyVatInput, PRICING_CONFIG.apply_vat);
+    const applyVat = req.body?.input?.apply_vat ?? PRICING_CONFIG.apply_vat;
     const totals = buildTotals({
       lineItems,
       pricing,
       applyVat,
-      monthlyServices: req.body.input?.monthly_services || [],
+      monthlyServices: req.body?.input?.monthly_services || [],
+      projectState: context?.project_state || "new",
+      configSnapshot
     });
 
     if (applyVat === false && totals.vat_value !== 0) {
@@ -476,43 +509,43 @@ app.post("/api/quotes/simulate", (req, res) => {
       );
     }
 
-    const origin = req.body?.context?.origin;
+    const origin = context?.origin;
     const confidenceLevel = origin === "advanced" ? "high" : "medium";
-
-    if (!CONFIDENCE_VALUES.has(confidenceLevel)) {
-      return sendError(
-        res,
-        500,
-        traceId,
-        "internal_error",
-        "CONFIDENCE_LEVEL_INVALID",
-        "No se pudo resolver confidence_level",
-      );
-    }
 
     const newQuoteId = `qt_${crypto.randomUUID().replace(/-/g, "")}`;
 
-    // Construir record para persistencia en SQLite y sync con Notion
     const quoteRecord = {
       quote_id: newQuoteId,
       trace_id: traceId,
-      schema_version: req.body.context.schema_version,
+      origin: context.origin,
+      status: "simulated",
+      confidence_level: confidenceLevel,
+      schema_version: context.schema_version,
       pricing_config_version: PRICING_CONFIG.pricing_config_version,
-      origin: req.body.context.origin,
-      project_type: req.body.context.project_type,
-      project_state: req.body.context.project_state,
-      currency: req.body.context.currency,
+      project_type: context.project_type,
+      project_state: context.project_state,
+      currency: context.currency,
       input_json: JSON.stringify({
-        requirements_checklist: req.body.input?.requirements_checklist,
-        line_items: lineItems,
-        monthly_services: req.body.input?.monthly_services,
-        pricing: pricing,
+        ...req.body.input,
+        client_data: clientData,
+        cronograma,
+        checklist,
+        config_snapshot: configSnapshot
       }),
       totals_json: JSON.stringify(totals),
       meta_json: JSON.stringify({
-        schema_version: req.body.context.schema_version,
-        pricing_config_version: PRICING_CONFIG.pricing_config_version,
         trace_id: traceId,
+        schema_version: context.schema_version,
+        pricing_config_version: PRICING_CONFIG.pricing_config_version,
+        client_data: clientData,
+        contact: {
+          nombre: req.body.input?.nombre || req.body.input?.name || "Pendiente",
+          email: req.body.input?.email || req.body.input?.correo_electronico || "No proveído",
+          telefono: req.body.input?.telefono || req.body.input?.phone || "No proveído",
+          mensaje: req.body.input?.mensaje || req.body.input?.message || "Sin mensaje",
+          red_social: req.body.input?.red_social || req.body.input?.social || "No especificado",
+          servicio: req.body.input?.servicio || req.body.context?.project_type || "General"
+        }
       }),
       created_at: new Date().toISOString(),
       sync_status: "pending",
@@ -520,23 +553,27 @@ app.post("/api/quotes/simulate", (req, res) => {
       sync_last_error: null,
     };
 
-    // Persistir en SQLite (si DB está disponible, sino continuar sin persistencia)
-    if (db) {
+    const shouldPersist = req.body.persist !== false;
+
+    // Persistir en SQLite (si DB está disponible y se solicita persistencia)
+    if (shouldPersist && db) {
       try {
-        createQuoteRecord(db, quoteRecord);
+        createQuoteRecord(quoteRecord);
       } catch (persistError) {
-        // Loguear error pero NO bloquear respuesta — SQLite es source of truth local
-        // La cotización queda en memoria del cliente, se puede reintentar
         console.error("SQLite persistence error:", persistError);
       }
+    } else if (!shouldPersist) {
+      console.log(`[API] Simulation only (persist=false) for trace ${traceId} — skipping persistence`);
     } else {
       console.warn("[API] DB not ready yet — skipping local persistence");
     }
 
-    // Sync a Notion async (fire and forget)
-    syncWithRetry(quoteRecord).catch((syncError) => {
-      console.error("Notion sync error:", syncError);
-    });
+    // Sync a Notion async solo si se solicita persistencia
+    if (shouldPersist) {
+      syncWithRetry(quoteRecord).catch((syncError) => {
+        console.error("Notion sync error:", syncError);
+      });
+    }
 
     return res.status(200).json({
       quote: {
@@ -701,7 +738,7 @@ app.use((req, res) => {
   );
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   // eslint-disable-next-line no-console
-  console.log(`Quotes API escuchando en http://localhost:${PORT}`);
+  console.log(`Quotes API escuchando en http://[IP_ADDRESS]:${PORT}`);
 });

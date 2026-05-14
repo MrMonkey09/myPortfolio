@@ -55,7 +55,7 @@ const Configuracion: ConfiguracionType = {
         planes: [
           {
             nombre: "Landing Page",
-            precio: "$250k – $600k",
+            precio: "$300k – $900k",
             caracteristicas: [
               "Enfocada en un objetivo único (Venta/Registro)",
               "Optimización de carga",
@@ -64,7 +64,7 @@ const Configuracion: ConfiguracionType = {
           },
           {
             nombre: "Web Corporativa",
-            precio: "$450k – $1.2M",
+            precio: "$800k – $2.5M",
             destacado: true,
             etiqueta: "Popular",
             caracteristicas: [
@@ -75,12 +75,21 @@ const Configuracion: ConfiguracionType = {
             ],
           },
           {
-            nombre: "E-commerce",
-            precio: "$800k – $3.5M",
+            nombre: "Catálogo Digital",
+            precio: "$1.2M – $3.0M",
             caracteristicas: [
-              "Tienda completa",
+              "Exhibición de productos sin venta directa",
+              "Filtros avanzados",
+              "Botón de cotización WhatsApp",
+            ],
+          },
+          {
+            nombre: "E-commerce",
+            precio: "$1.5M – $4.5M+",
+            caracteristicas: [
+              "Tienda completa con carrito",
               "Integración Webpay / MercadoPago",
-              "Carga inicial de productos",
+              "Gestión de inventario y pedidos",
             ],
           },
         ],
@@ -104,22 +113,22 @@ const Configuracion: ConfiguracionType = {
           },
           {
             nombre: "Profesional",
-            precio: "$147.000/mes",
+            precio: "$150.000/mes",
             destacado: true,
             etiqueta: "Recomendado",
             caracteristicas: [
               "Ideal para PYMES / Tiendas",
-              "Soporte prioritario 48h",
+              "Soporte prioritario 24h",
               "Optimización de Base de Datos",
               "Monitorización de seguridad",
             ],
           },
           {
-            nombre: "Premium",
-            precio: "$225.000/mes",
+            nombre: "Enterprise",
+            precio: "$280.000/mes",
             caracteristicas: [
               "E-commerce crítico",
-              "Emergencias + 2h/semana",
+              "Emergencias + Soporte 8h",
               "Actualizaciones + Optimización BD",
               "Asesoría de seguridad proactiva",
             ],

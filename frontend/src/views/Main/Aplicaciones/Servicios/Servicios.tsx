@@ -18,8 +18,8 @@ const QUICK_DISCLAIMER =
 type QuickStatus = "idle" | "validating" | "loading" | "error" | "success";
 
 type QuickForm = {
-  pagesEstimate: string;
-  needsEcommerce: "yes" | "no";
+  projectType: "landing" | "corporate" | "catalog" | "ecommerce" | "custom" | "";
+  contentReady: "yes" | "no" | "partial";
   urgency: "low" | "medium" | "high";
 };
 
@@ -37,16 +37,27 @@ function toCurrencyCLP(value: number): string {
 }
 
 function buildLineItemFromQuickAnswers(form: QuickForm) {
-  const pages = Number(form.pagesEstimate);
-  const urgencyMultiplier = form.urgency === "high" ? 1.25 : form.urgency === "medium" ? 1.1 : 1;
-  const ecommerceMultiplier = form.needsEcommerce === "yes" ? 1.45 : 1;
-  const baseCost = Math.round(65000 * urgencyMultiplier * ecommerceMultiplier);
+  let baseCost = 0;
+  let pages = 1;
+
+  switch (form.projectType) {
+    case "landing": baseCost = 215000; pages = 1; break;
+    case "corporate": baseCost = 575000; pages = 5; break;
+    case "catalog": baseCost = 860000; pages = 10; break;
+    case "ecommerce": baseCost = 1075000; pages = 15; break;
+    case "custom": baseCost = 2500000; pages = 20; break;
+    default: baseCost = 575000; pages = 3; break;
+  }
+
+  const contentMultiplier = form.contentReady === "no" ? 1.2 : form.contentReady === "partial" ? 1.1 : 1;
+  const urgencyMultiplier = form.urgency === "high" ? 1.25 : form.urgency === "low" ? 0.9 : 1;
+  const finalCost = Math.round(baseCost * contentMultiplier * urgencyMultiplier);
 
   return {
     include: "yes" as const,
-    quantity: pages,
+    quantity: 1, // We pass 1 so the API does base_cost * 1
     complexity: form.urgency,
-    base_cost: baseCost,
+    base_cost: finalCost,
   };
 }
 
@@ -61,8 +72,8 @@ function Servicios() {
   const { servicios } = Configuracion.contenido;
   const [categoriaActiva, setCategoriaActiva] = useState(0);
   const [quickForm, setQuickForm] = useState<QuickForm>({
-    pagesEstimate: "",
-    needsEcommerce: "no",
+    projectType: "",
+    contentReady: "yes",
     urgency: "medium",
   });
   const [quickStatus, setQuickStatus] = useState<QuickStatus>("idle");
@@ -71,7 +82,23 @@ function Servicios() {
     text: "Esta simulación es referencial y puede cambiar al validar alcance final.",
   });
   const [quoteResult, setQuoteResult] = useState<QuoteSimulateResponse | null>(null);
+  const [isQuickResultStale, setIsQuickResultStale] = useState(false);
   const [modoCotizador, setModoCotizador] = useState<"rapido" | "avanzado">("rapido");
+
+  // Gestión de captura de cliente (Opción 3: Post-Simulación)
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    nombre: "",
+    email: "",
+    telefono: "",
+    redSocial: "WhatsApp",
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  function onContactFieldChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    const { name, value } = e.target;
+    setContactForm(prev => ({ ...prev, [name]: value }));
+  }
   const cat = servicios[categoriaActiva];
 
   function buildQuoteHandoffContext(
@@ -125,27 +152,30 @@ function Servicios() {
   function validateQuickForm():
     | { ok: true; pages: number; warning?: UiMessage }
     | { ok: false; message: UiMessage } {
-    const pages = Number(quickForm.pagesEstimate);
-
-    if (!Number.isFinite(pages) || pages <= 0) {
+    
+    if (!quickForm.projectType) {
       return {
         ok: false,
         message: {
           tone: "error",
-          text: "Para continuar, completá los campos obligatorios del paso y corregí los errores marcados.",
+          text: "Para continuar, seleccioná qué tipo de web necesitas.",
         },
       };
     }
 
-    if (!Number.isInteger(pages)) {
-      return {
-        ok: true,
-        pages: Math.round(pages),
-        warning: {
-          tone: "warning",
-          text: "Podés continuar, pero redondeamos páginas estimadas para mantener consistencia del cálculo.",
-        },
-      };
+    let pages = 1;
+    let urgencyFactor = 1.0;
+    switch (quickForm.urgency) {
+      case "low": urgencyFactor = 0.9; break;
+      case "medium": urgencyFactor = 1.0; break;
+      case "high": urgencyFactor = 1.25; break;
+    }
+    switch (quickForm.projectType) {
+      case "landing": pages = 1; break;
+      case "corporate": pages = 5; break;
+      case "catalog": pages = 10; break;
+      case "ecommerce": pages = 15; break;
+      case "custom": pages = 20; break;
     }
 
     return { ok: true, pages };
@@ -176,10 +206,8 @@ function Servicios() {
     });
 
     try {
-      // origin="quick" porque este es el flujo de cotización rápida.
-      // origin="advanced" se usa cuando el usuario refine en la pantalla avanzada.
-      // origin="direct_contact" viene del flujo legacy y no pasa por simulate.
       const response = await simulateQuickQuote({
+        persist: false, // Simulación pura, no guarda en DB/Notion aún
         context: {
           schema_version: QUICK_SCHEMA_VERSION,
           origin: "quick",
@@ -190,7 +218,7 @@ function Servicios() {
         input: {
           quick_answers: {
             pages_estimate: validation.pages,
-            needs_ecommerce: quickForm.needsEcommerce,
+            needs_ecommerce: quickForm.projectType === "ecommerce" ? "yes" : "no",
             urgency: quickForm.urgency,
           },
           line_items: [buildLineItemFromQuickAnswers(quickForm)],
@@ -261,8 +289,8 @@ function Servicios() {
     trackAdvancedModeSwitch();
 
     const contexto = buildQuoteHandoffContext(quoteResult, "quick", isQuickResultStale, {
-      pages_estimate: Number(quickForm.pagesEstimate || 0),
-      needs_ecommerce: quickForm.needsEcommerce,
+      pages_estimate: quoteResult.input?.quick_answers?.pages_estimate || 0,
+      needs_ecommerce: quickForm.projectType === "ecommerce" ? "yes" : "no",
       urgency: quickForm.urgency,
     });
 
@@ -278,24 +306,72 @@ function Servicios() {
     setModoCotizador("avanzado");
   }
 
-  function handleContactarAhora() {
-    if (!quoteResult) {
-      irAContactoConServicio("Cotización rápida — seguimiento comercial");
+  async function handleFinalSave(e: FormEvent) {
+    e.preventDefault();
+    if (!quoteResult || isSaving) return;
+
+    if (!contactForm.nombre || !contactForm.email) {
+      setQuickMessage({ tone: "error", text: "Por favor, completa nombre y email para recibir tu presupuesto." });
       return;
     }
 
-    const total = quoteResult.totals.total_project;
+    setIsSaving(true);
+    setQuickMessage({ tone: "info", text: "Guardando tu presupuesto y enviando contacto..." });
 
-    const contexto = buildQuoteHandoffContext(quoteResult, "quick", isQuickResultStale, {
-      pages_estimate: Number(quickForm.pagesEstimate || 0),
-      needs_ecommerce: quickForm.needsEcommerce,
-      urgency: quickForm.urgency,
+    try {
+      const validation = validateQuickForm();
+      const pages = validation.ok ? validation.pages : 1;
+
+      await simulateQuickQuote({
+        persist: true, // Ahora sí guardamos en DB y Notion
+        contact: {
+          nombre: contactForm.nombre,
+          email: contactForm.email,
+          telefono: contactForm.telefono,
+          red_social: contactForm.redSocial,
+          mensaje: "Cliente interesado en presupuesto rápido simulado.",
+          servicio: `Web — ${quickForm.projectType}`
+        },
+        context: {
+          schema_version: QUICK_SCHEMA_VERSION,
+          origin: "quick",
+          project_type: QUICK_PROJECT_TYPE,
+          project_state: QUICK_PROJECT_STATE,
+          currency: QUICK_CURRENCY,
+        },
+        input: {
+          quick_answers: {
+            pages_estimate: pages,
+            needs_ecommerce: quickForm.projectType === "ecommerce" ? "yes" : "no",
+            urgency: quickForm.urgency,
+          },
+          line_items: [buildLineItemFromQuickAnswers(quickForm)],
+        },
+      });
+
+      trackContactSubmitted("quick", quoteResult.totals.total_project);
+      
+      setQuickStatus("idle"); // Reset status para mostrar éxito limpio
+      setQuickMessage({ 
+        tone: "info", 
+        text: `¡Listo ${contactForm.nombre}! Tu presupuesto ha sido registrado. Te contactaremos a ${contactForm.email} a la brevedad.` 
+      });
+      setShowContactForm(false);
+      setQuoteResult(null); // Limpiamos para evitar duplicados
+    } catch (error) {
+      console.error("Error en guardado final:", error);
+      setQuickMessage({ tone: "error", text: "Hubo un error al guardar. Por favor reintenta." });
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleContactarAhora() {
+    setShowContactForm(true);
+    setQuickMessage({
+      tone: "info",
+      text: "Completá tus datos para recibir este presupuesto formalmente.",
     });
-
-    // Track contacto desde Quick Flow con el total calculado
-    trackContactSubmitted("quick", total);
-
-    irAContactoConContexto("Cotización rápida — seguimiento comercial", contexto);
   }
 
   return (
@@ -394,58 +470,78 @@ function Servicios() {
                 </header>
 
                 <form className="quick-quote__form" onSubmit={handleQuickSimulate} noValidate>
-                  <label className="quick-quote__field" htmlFor="pages_estimate">
-                    <span>Páginas estimadas *</span>
-                    <input
-                      id="pages_estimate"
-                      name="pages_estimate"
-                      type="number"
-                      min={1}
-                      step={1}
-                      value={quickForm.pagesEstimate}
-                      onChange={(e) => onQuickFieldChange("pagesEstimate", e.target.value)}
-                      aria-invalid={quickStatus === "error" && Number(quickForm.pagesEstimate) <= 0}
-                      required
-                    />
-                  </label>
+                  {/* Tipo de Proyecto */}
+                  <div className="quick-quote__group">
+                    <label className="quick-quote__label">¿Qué tipo de proyecto tienes en mente? *</label>
+                    <div className="feature-cards-grid">
+                      {[
+                        { id: 'landing', title: 'Landing Page', icon: '🚀', desc: '1 página ideal para campañas o un solo producto.' },
+                        { id: 'corporate', title: 'Corporativa', icon: '🏢', desc: 'Sitio profesional con múltiples secciones informativas.' },
+                        { id: 'catalog', title: 'Catálogo', icon: '📖', desc: 'Muestra tus productos sin venta online directa.' },
+                        { id: 'ecommerce', title: 'E-Commerce', icon: '🛒', desc: 'Tienda online completa con carrito y pagos.' },
+                        { id: 'custom', title: 'A Medida', icon: '🛠️', desc: 'Sistemas avanzados y plataformas personalizadas.' }
+                      ].map(type => (
+                        <div 
+                          key={type.id}
+                          className={`feature-card ${quickForm.projectType === type.id ? 'active' : ''}`}
+                          onClick={() => onQuickFieldChange("projectType", type.id as QuickForm["projectType"])}
+                        >
+                          <div className="feature-card__icon">{type.icon}</div>
+                          <h4>{type.title}</h4>
+                          <p>{type.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                  <label className="quick-quote__field" htmlFor="needs_ecommerce">
-                    <span>¿Necesitás e-commerce? *</span>
-                    <select
-                      id="needs_ecommerce"
-                      name="needs_ecommerce"
-                      value={quickForm.needsEcommerce}
-                      onChange={(e) =>
-                        onQuickFieldChange("needsEcommerce", e.target.value as "yes" | "no")
-                      }
-                    >
-                      <option value="no">No</option>
-                      <option value="yes">Sí</option>
-                    </select>
-                  </label>
+                  <div className="quick-quote__row">
+                    {/* Contenido */}
+                    <div className="quick-quote__group">
+                      <label className="quick-quote__label">¿Tienes el contenido listo? *</label>
+                      <div className="radio-option-group">
+                        {[
+                          { id: 'yes', label: 'Sí, listo', icon: '✅' },
+                          { id: 'partial', label: 'A medias', icon: '📝' },
+                          { id: 'no', label: 'No, necesito ayuda', icon: '❌' }
+                        ].map(opt => (
+                          <div 
+                            key={opt.id}
+                            className={`form-option ${quickForm.contentReady === opt.id ? 'active' : ''}`}
+                            onClick={() => onQuickFieldChange("contentReady", opt.id as QuickForm["contentReady"])}
+                          >
+                            <span>{opt.icon} {opt.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-                  <label className="quick-quote__field" htmlFor="urgency">
-                    <span>Urgencia *</span>
-                    <select
-                      id="urgency"
-                      name="urgency"
-                      value={quickForm.urgency}
-                      onChange={(e) =>
-                        onQuickFieldChange("urgency", e.target.value as "low" | "medium" | "high")
-                      }
-                    >
-                      <option value="low">Baja</option>
-                      <option value="medium">Media</option>
-                      <option value="high">Alta</option>
-                    </select>
-                  </label>
+                    {/* Urgencia */}
+                    <div className="quick-quote__group">
+                      <label className="quick-quote__label">¿Para cuándo lo necesitas? *</label>
+                      <div className="radio-option-group">
+                        {[
+                          { id: 'low', label: 'Sin prisa', icon: '⏳' },
+                          { id: 'medium', label: 'Normal', icon: '📅' },
+                          { id: 'high', label: 'Urgente', icon: '🔥' }
+                        ].map(opt => (
+                          <div 
+                            key={opt.id}
+                            className={`form-option ${quickForm.urgency === opt.id ? 'active' : ''}`}
+                            onClick={() => onQuickFieldChange("urgency", opt.id as "low" | "medium" | "high")}
+                          >
+                            <span>{opt.icon} {opt.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
                   <button
                     type="submit"
                     className="quick-quote__submit"
                     disabled={quickStatus === "loading" || quickStatus === "validating"}
                   >
-                    {quickStatus === "loading" ? "Calculando..." : "Calcular cotización rápida"}
+                    {quickStatus === "loading" ? "Calculando..." : "Calcular Cotización Referencial"}
                   </button>
                 </form>
 
@@ -485,12 +581,52 @@ function Servicios() {
                     )}
 
                     <div className="quick-quote-result__cta">
-                      <button type="button" onClick={handleRefinarAvanzada}>
-                        Refinar en cotización avanzada
-                      </button>
-                      <button type="button" onClick={handleContactarAhora}>
-                        Contactar ahora
-                      </button>
+                      {!showContactForm ? (
+                        <>
+                          <button type="button" onClick={handleRefinarAvanzada}>
+                            Refinar en cotización avanzada
+                          </button>
+                          <button type="button" onClick={handleContactarAhora}>
+                            Contactar ahora
+                          </button>
+                        </>
+                      ) : (
+                        <form className="quick-contact-integrated" onSubmit={handleFinalSave}>
+                          <div className="quick-contact-integrated__fields">
+                            <input 
+                              type="text" 
+                              name="nombre" 
+                              placeholder="Nombre completo" 
+                              required 
+                              value={contactForm.nombre}
+                              onChange={onContactFieldChange}
+                            />
+                            <input 
+                              type="email" 
+                              name="email" 
+                              placeholder="Tu mejor Email" 
+                              required 
+                              value={contactForm.email}
+                              onChange={onContactFieldChange}
+                            />
+                            <input 
+                              type="tel" 
+                              name="telefono" 
+                              placeholder="WhatsApp (opcional)" 
+                              value={contactForm.telefono}
+                              onChange={onContactFieldChange}
+                            />
+                          </div>
+                          <div className="quick-contact-integrated__actions">
+                            <button type="submit" disabled={isSaving}>
+                              {isSaving ? "Guardando..." : "Confirmar y Enviar Presupuesto"}
+                            </button>
+                            <button type="button" className="btn-cancel" onClick={() => setShowContactForm(false)}>
+                              Cancelar
+                            </button>
+                          </div>
+                        </form>
+                      )}
                     </div>
                   </article>
                 )}

@@ -1,3 +1,101 @@
+/* ---- Conversational Feature Cards (Step 3) ---- */
+
+/* Styles moved to parent Servicios/Estilos.css for sharing with Quick Quoter */
+
+/* ---- Support Plan Cards (Step 4) ---- */
+
+.support-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.support-card {
+  background: rgba(12, 12, 12, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.support-card:hover {
+  border-color: var(--accent-blue);
+  background: rgba(80, 145, 255, 0.05);
+}
+
+.support-card.active {
+  border-color: var(--accent-blue);
+  background: rgba(80, 145, 255, 0.1);
+  transform: scale(1.02);
+  box-shadow: 0 0 30px rgba(80, 145, 255, 0.15);
+}
+
+.support-card__badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  color: var(--text-tertiary);
+}
+
+.support-card.active .support-card__badge {
+  background: var(--accent-blue);
+  color: #000;
+  font-weight: bold;
+}
+
+.support-card h4 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.support-card .price {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--accent-blue);
+}
+
+.support-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: grid;
+  gap: 0.5rem;
+}
+
+/* ---- Summary Glassmorphism ---- */
+
+.resumen-container {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 24px;
+  padding: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Responsive Adjustments ---- */
+
+@media (max-width: 768px) {
+  .feature-cards-grid, .support-plans-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .resumen-container {
+    padding: 1.5rem;
+  }
+}
+
 /* ============================================
    AVANZADA — Cotización Avanzada
    Dark theme with neon green accents (#74ff4e)
@@ -240,6 +338,42 @@
 .avanzada__step-footer button {
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+/* ---- Quick Quote Specific (Servicios.tsx) ---- */
+
+.quick-quote__group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.quick-quote__label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fuente-primaria);
+  letter-spacing: 0.02em;
+}
+
+.quick-quote__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .quick-quote__row {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.form-option.active {
+  background: rgba(116, 255, 78, 0.12);
+  border-color: var(--fuente-primaria);
+  box-shadow: 0 0 10px rgba(116, 255, 78, 0.1);
 }
 
 /* ---- Modules Table (Step 3) ---- */

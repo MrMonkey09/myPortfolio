@@ -212,6 +212,7 @@ type TrackerFn = () => void;
 interface UseAnalyticsReturn {
   /** ID de sesión único que persistió en sessionStorage durante el cotizador. */
   traceId: string;
+  getOrCreateTraceId: () => string;
   // Quick Flow helpers
   trackQuickStarted: TrackerFn;
   trackQuickCalculated: (result: QuickResult) => void;
