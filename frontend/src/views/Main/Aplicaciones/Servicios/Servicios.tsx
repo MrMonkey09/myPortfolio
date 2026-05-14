@@ -71,7 +71,7 @@ function Servicios() {
     text: "Esta simulación es referencial y puede cambiar al validar alcance final.",
   });
   const [quoteResult, setQuoteResult] = useState<QuoteSimulateResponse | null>(null);
-  const [isQuickResultStale, setIsQuickResultStale] = useState(false);
+  const [modoCotizador, setModoCotizador] = useState<"rapido" | "avanzado">("rapido");
   const cat = servicios[categoriaActiva];
 
   function buildQuoteHandoffContext(
@@ -274,6 +274,8 @@ function Servicios() {
         ? "Contexto enviado a avanzada, pero está desactualizado. Cuando avancemos con la pantalla avanzada, pediremos recalcular antes de confirmar resumen."
         : "Contexto enviado a avanzada. La pantalla avanzada completa se habilita en Sprint 1 P2 y ya queda pre-cargada para continuar.",
     });
+    
+    setModoCotizador("avanzado");
   }
 
   function handleContactarAhora() {
@@ -363,118 +365,139 @@ function Servicios() {
             ))}
           </div>
 
-          <section className="quick-quote" aria-labelledby="quick-quote-title">
-            <header className="quick-quote__header">
-              <h4 id="quick-quote-title">Cotización rápida (referencial)</h4>
-              <p>
-                Completá lo mínimo y te devuelvo rango estimado, total calculado y nivel
-                de confianza.
-              </p>
-            </header>
-
-            <form className="quick-quote__form" onSubmit={handleQuickSimulate} noValidate>
-              <label className="quick-quote__field" htmlFor="pages_estimate">
-                <span>Páginas estimadas *</span>
-                <input
-                  id="pages_estimate"
-                  name="pages_estimate"
-                  type="number"
-                  min={1}
-                  step={1}
-                  value={quickForm.pagesEstimate}
-                  onChange={(e) => onQuickFieldChange("pagesEstimate", e.target.value)}
-                  aria-invalid={quickStatus === "error" && Number(quickForm.pagesEstimate) <= 0}
-                  required
-                />
-              </label>
-
-              <label className="quick-quote__field" htmlFor="needs_ecommerce">
-                <span>¿Necesitás e-commerce? *</span>
-                <select
-                  id="needs_ecommerce"
-                  name="needs_ecommerce"
-                  value={quickForm.needsEcommerce}
-                  onChange={(e) =>
-                    onQuickFieldChange("needsEcommerce", e.target.value as "yes" | "no")
-                  }
-                >
-                  <option value="no">No</option>
-                  <option value="yes">Sí</option>
-                </select>
-              </label>
-
-              <label className="quick-quote__field" htmlFor="urgency">
-                <span>Urgencia *</span>
-                <select
-                  id="urgency"
-                  name="urgency"
-                  value={quickForm.urgency}
-                  onChange={(e) =>
-                    onQuickFieldChange("urgency", e.target.value as "low" | "medium" | "high")
-                  }
-                >
-                  <option value="low">Baja</option>
-                  <option value="medium">Media</option>
-                  <option value="high">Alta</option>
-                </select>
-              </label>
-
+          <section className="cotizador-wrapper">
+            <div className="cotizador-modo-toggle">
               <button
-                type="submit"
-                className="quick-quote__submit"
-                disabled={quickStatus === "loading" || quickStatus === "validating"}
+                type="button"
+                className={`cotizador-toggle-btn ${modoCotizador === "rapido" ? "active" : ""}`}
+                onClick={() => setModoCotizador("rapido")}
               >
-                {quickStatus === "loading" ? "Calculando..." : "Calcular cotización rápida"}
+                Cotizador Rápido
               </button>
-            </form>
-
-            <div className={`quick-quote__message quick-quote__message--${quickMessage.tone}`}>
-              {quickMessage.text}
+              <button
+                type="button"
+                className={`cotizador-toggle-btn ${modoCotizador === "avanzado" ? "active" : ""}`}
+                onClick={() => setModoCotizador("avanzado")}
+              >
+                Cotizador Avanzado
+              </button>
             </div>
 
-            {quoteResult && quickStatus === "success" && (
-              <article className="quick-quote-result" aria-live="polite">
-                <h5>Resultado referencial</h5>
-                <div className="quick-quote-result__grid">
+            {modoCotizador === "rapido" && (
+              <div className="quick-quote" aria-labelledby="quick-quote-title">
+                <header className="quick-quote__header">
+                  <h4 id="quick-quote-title">Cotización rápida (referencial)</h4>
                   <p>
-                    <span>Rango estimado</span>
-                    <strong>
-                      {toCurrencyCLP(quoteResult.totals.estimated_min)} - {" "}
-                      {toCurrencyCLP(quoteResult.totals.estimated_max)}
-                    </strong>
+                    Completá lo mínimo y te devuelvo rango estimado, total calculado y nivel
+                    de confianza.
                   </p>
-                  <p>
-                    <span>Total calculado</span>
-                    <strong>{toCurrencyCLP(quoteResult.totals.total_project)}</strong>
-                  </p>
-                  <p>
-                    <span>Confianza</span>
-                    <strong>{quoteResult.totals.confidence_level}</strong>
-                  </p>
+                </header>
+
+                <form className="quick-quote__form" onSubmit={handleQuickSimulate} noValidate>
+                  <label className="quick-quote__field" htmlFor="pages_estimate">
+                    <span>Páginas estimadas *</span>
+                    <input
+                      id="pages_estimate"
+                      name="pages_estimate"
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={quickForm.pagesEstimate}
+                      onChange={(e) => onQuickFieldChange("pagesEstimate", e.target.value)}
+                      aria-invalid={quickStatus === "error" && Number(quickForm.pagesEstimate) <= 0}
+                      required
+                    />
+                  </label>
+
+                  <label className="quick-quote__field" htmlFor="needs_ecommerce">
+                    <span>¿Necesitás e-commerce? *</span>
+                    <select
+                      id="needs_ecommerce"
+                      name="needs_ecommerce"
+                      value={quickForm.needsEcommerce}
+                      onChange={(e) =>
+                        onQuickFieldChange("needsEcommerce", e.target.value as "yes" | "no")
+                      }
+                    >
+                      <option value="no">No</option>
+                      <option value="yes">Sí</option>
+                    </select>
+                  </label>
+
+                  <label className="quick-quote__field" htmlFor="urgency">
+                    <span>Urgencia *</span>
+                    <select
+                      id="urgency"
+                      name="urgency"
+                      value={quickForm.urgency}
+                      onChange={(e) =>
+                        onQuickFieldChange("urgency", e.target.value as "low" | "medium" | "high")
+                      }
+                    >
+                      <option value="low">Baja</option>
+                      <option value="medium">Media</option>
+                      <option value="high">Alta</option>
+                    </select>
+                  </label>
+
+                  <button
+                    type="submit"
+                    className="quick-quote__submit"
+                    disabled={quickStatus === "loading" || quickStatus === "validating"}
+                  >
+                    {quickStatus === "loading" ? "Calculando..." : "Calcular cotización rápida"}
+                  </button>
+                </form>
+
+                <div className={`quick-quote__message quick-quote__message--${quickMessage.tone}`}>
+                  {quickMessage.text}
                 </div>
 
-                <p className="quick-quote-result__disclaimer">
-                  {quoteResult.totals.disclaimer || quoteResult.quote.disclaimer || QUICK_DISCLAIMER}
-                </p>
+                {quoteResult && quickStatus === "success" && (
+                  <article className="quick-quote-result" aria-live="polite">
+                    <h5>Resultado referencial</h5>
+                    <div className="quick-quote-result__grid">
+                      <p>
+                        <span>Rango estimado</span>
+                        <strong>
+                          {toCurrencyCLP(quoteResult.totals.estimated_min)} - {" "}
+                          {toCurrencyCLP(quoteResult.totals.estimated_max)}
+                        </strong>
+                      </p>
+                      <p>
+                        <span>Total calculado</span>
+                        <strong>{toCurrencyCLP(quoteResult.totals.total_project)}</strong>
+                      </p>
+                      <p>
+                        <span>Confianza</span>
+                        <strong>{quoteResult.totals.confidence_level}</strong>
+                      </p>
+                    </div>
 
-                {isQuickResultStale && (
-                  <p className="quick-quote-result__stale" role="status">
-                    Este resumen está desactualizado por cambios en los inputs. Recalculá para actualizar el handoff.
-                  </p>
+                    <p className="quick-quote-result__disclaimer">
+                      {quoteResult.totals.disclaimer || quoteResult.quote.disclaimer || QUICK_DISCLAIMER}
+                    </p>
+
+                    {isQuickResultStale && (
+                      <p className="quick-quote-result__stale" role="status">
+                        Este resumen está desactualizado por cambios en los inputs. Recalculá para actualizar el handoff.
+                      </p>
+                    )}
+
+                    <div className="quick-quote-result__cta">
+                      <button type="button" onClick={handleRefinarAvanzada}>
+                        Refinar en cotización avanzada
+                      </button>
+                      <button type="button" onClick={handleContactarAhora}>
+                        Contactar ahora
+                      </button>
+                    </div>
+                  </article>
                 )}
-
-                <div className="quick-quote-result__cta">
-                  <button type="button" onClick={handleRefinarAvanzada}>
-                    Refinar en cotización avanzada
-                  </button>
-                  <button type="button" onClick={handleContactarAhora}>
-                    Contactar ahora
-                  </button>
-                </div>
-              </article>
+              </div>
             )}
 
-            {avanzadaHandoffContext && (
+            {modoCotizador === "avanzado" && (
               <ServiciosAvanzada />
             )}
           </section>

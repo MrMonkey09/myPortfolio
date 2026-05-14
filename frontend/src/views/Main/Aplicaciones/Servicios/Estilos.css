@@ -264,6 +264,47 @@
   outline-offset: 2px;
 }
 
+/* ---- Cotizador Toggle ---- */
+.cotizador-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cotizador-modo-toggle {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(12, 12, 12, 0.4);
+  padding: 0.35rem;
+  border-radius: 12px;
+  border: 1px solid rgba(116, 255, 78, 0.1);
+  width: fit-content;
+}
+
+.cotizador-toggle-btn {
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fuente-secundaria);
+  border: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cotizador-toggle-btn:hover {
+  color: #fff;
+}
+
+.cotizador-toggle-btn.active {
+  background: rgba(116, 255, 78, 0.15);
+  color: var(--fuente-primaria);
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(116, 255, 78, 0.1);
+}
+
 /* ---- Quick quote ---- */
 
 .quick-quote {
