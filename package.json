@@ -8,12 +8,18 @@
     "build": "cd frontend && bun run web:build",
     "lint": "cd frontend && bun run lint",
     "api:dev": "cd frontend && bun run api:dev",
+    "test:api": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest frontend/api --forceExit",
     "install:all": "npm install && cd frontend && npm install"
   },
   "dependencies": {
-    "better-sqlite3": "^12.10.0",
-    "sql.js": "^1.14.1",
     "@notionhq/client": "^4.0.2",
-    "dotenv": "^17.2.1"
+    "better-sqlite3": "^12.10.0",
+    "dotenv": "^17.2.1",
+    "sql.js": "^1.14.1"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
   }
 }

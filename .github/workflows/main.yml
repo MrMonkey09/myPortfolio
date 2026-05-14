@@ -1,0 +1,100 @@
+name: CI/CD Portfolio & Cotizador
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: 🧪 Validate (Lint & Test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies (Root)
+        run: npm install
+
+      - name: Install Dependencies (Frontend)
+        run: cd frontend && npm install
+
+      - name: Run Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Run Tests (Frontend)
+        run: cd frontend && npm test
+        continue-on-error: true
+
+      - name: Run Tests (API)
+        run: npm run test:api
+
+  build:
+    name: 🏗️ Build Frontend
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          cd frontend && npm install
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.FTP_BACKEND_URL }}
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+
+  deploy:
+    name: 🚀 Deploy to cPanel
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+
+      - name: Install Deploy Dependencies
+        run: npm install basic-ftp dotenv
+
+      - name: Run Deploy Script
+        run: node scripts/deploy.js
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SECURE: "true"
+          FTP_FRONTEND_DIR: ${{ secrets.FTP_FRONTEND_DIR }}
+          FTP_BACKEND_DIR: ${{ secrets.FTP_BACKEND_DIR }}
+          FTP_BACKEND_URL: ${{ secrets.FTP_BACKEND_URL }}
