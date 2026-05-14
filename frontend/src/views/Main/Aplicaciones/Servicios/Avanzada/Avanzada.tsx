@@ -397,16 +397,16 @@ const resultado = await simulateQuickQuote(payload);
   }
 
   return (
-    <section className="avanzada-container">
+    <section className="avanzada">
       {/* Stepper de navegación */}
-      <nav className="avanzada-stepper">
+      <nav className="avanzada__steps">
         {STEPS.map((step, idx) => (
           <div
             key={step}
-            className={`avanzada-stepper__item avanzada-stepper__item--${formState.stepStatuses[step]}`}
+            className={`avanzada__step avanzada__step--${formState.stepStatuses[step]}`}
           >
-            <span className="avanzada-stepper__number">{idx + 1}</span>
-            <span className="avanzada-stepper__label">{step}</span>
+            <span className="avanzada__step-number">{idx + 1}</span>
+            <span className="avanzada__step-label">{step}</span>
           </div>
         ))}
       </nav>
@@ -419,7 +419,7 @@ const resultado = await simulateQuickQuote(payload);
       )}
 
       {/* Contenido del paso activo */}
-      <div className="avanzada-content">
+      <div className="avanzada__content">
         {renderStep()}
       </div>
     </section>
