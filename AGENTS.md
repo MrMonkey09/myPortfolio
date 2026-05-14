@@ -6,7 +6,13 @@
 
 ## API y Data Fetching
 - Usa correctamente los tipos y evita depender del enlazado implícito de tipos (`any`).
-- Mantén el backend (carpeta `/api`) con formato CommonJS/ESM según se definió.
+- Mantén el backend (carpeta `/api`) con formato ESM.
+- **Modelo de Datos:** Todas las simulaciones deben seguir el esquema **v2.0.0** definido en [RFC-005](file:///c:/Users/MrMonkey/Documents/GitHub/myPortfolio/docs/rfc/rfc-005-modelo-datos-profesional.md).
+
+## Testing y CI/CD
+- **Obligatorio:** Cada cambio en la lógica de negocio o contratos de API debe incluir o actualizar tests en `frontend/api/__tests__`.
+- Ejecutar `npm run test:api` antes de realizar un push.
+- El despliegue es automático vía **GitHub Actions** al pushear a `main`.
 
 ## Frontend UI / Componentes
 - Todos los componentes React deben ser definidos como funciones.
@@ -19,4 +25,5 @@
 - Estructurado base a Git Conventional Commits (feat, fix, refactor, chore, docs, style).
 
 ## Nueva Caracteristica En Curso
-- .\docs\manual-biblia-subida-nivel-portfolio-cotizador.md
+- Implementación de CI/CD y Testing de Contratos (v2.0.0).
+- Portal de Documentación: [docs/README.md](file:///c:/Users/MrMonkey/Documents/GitHub/myPortfolio/docs/README.md)
