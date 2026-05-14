@@ -16,9 +16,10 @@ function normalizeRemoteDir(value, fallback) {
 }
 
 const config = {
-  host: process.env.FTP_HOST,
+  host: (process.env.FTP_HOST || "").replace(/^ftp?s?:\/\//, ""),
   user: process.env.FTP_USER,
   password: process.env.FTP_PASSWORD,
+  port: parseInt(process.env.FTP_PORT || "21", 10),
   secure: process.env.FTP_SECURE === "true" ? "explicit" : false,
 };
 
