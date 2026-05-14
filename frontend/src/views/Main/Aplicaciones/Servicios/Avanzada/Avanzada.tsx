@@ -116,7 +116,7 @@ function Avanzada() {
       isStale: true,
     }));
     }
-    }, [advancedHandoffContext]);
+    }, [avanzadaHandoffContext]);
 
     // Inicializar timer para el paso actual cuando cambia (usando performance.now())
     useEffect(() => {
