@@ -9,6 +9,7 @@
   flex-direction: column;
   gap: 2rem;
   padding: 1rem;
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -50,7 +51,6 @@
   text-align: center;
   color: var(--fuente-secundaria);
   line-height: 1.2;
-  max-width: 44px;
 }
 
 /* Step variants */
