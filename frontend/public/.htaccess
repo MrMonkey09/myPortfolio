@@ -1,5 +1,11 @@
 RewriteEngine On
 
+# 0) API Routing (Critical to avoid HTML fallback for API calls)
+# Route /backend/api/* to backend/enviar.php/api/*
+RewriteCond %{REQUEST_URI} ^/backend/api/ [NC]
+RewriteRule ^backend/api/(.*)$ backend/enviar.php/api/$1 [L,QSA]
+
+
 # 1) Redirecciones canónicas sin .html
 RewriteRule ^educacion\.html$ /educacion [R=301,L]
 RewriteRule ^habilidades\.html$ /habilidades [R=301,L]
