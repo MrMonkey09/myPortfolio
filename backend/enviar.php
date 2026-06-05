@@ -43,73 +43,77 @@ $sqliteDbPath = __DIR__ . '/data/quotes.sqlite';
 $dbPdo = null;
 
 function getDbDriver() {
-    return strtolower(trim(getenv('DB_DRIVER') ?: 'sqlite'));
+    return strtolower(trim(getenv('DB_DRIVER') ?: 'mysql'));
 }
 
 function initPersistenceDb($sqlitePath) {
     $driver = getDbDriver();
 
-    if ($driver === 'mysql') {
-        $host = getenv('MYSQL_HOST') ?: 'localhost';
-        $port = getenv('MYSQL_PORT') ?: '3306';
-        $database = getenv('MYSQL_DATABASE') ?: '';
-        $user = getenv('MYSQL_USER') ?: '';
-        $password = getenv('MYSQL_PASSWORD') ?: '';
-        $charset = getenv('MYSQL_CHARSET') ?: 'utf8mb4';
-
-        if ($database === '' || $user === '') {
-            throw new RuntimeException('MYSQL_DATABASE y MYSQL_USER son obligatorios cuando DB_DRIVER=mysql');
-        }
-
-        $dsn = "mysql:host={$host};port={$port};dbname={$database};charset={$charset}";
-        $pdo = new PDO($dsn, $user, $password, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
-
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS quotes (
-                quote_id VARCHAR(64) PRIMARY KEY,
-                trace_id VARCHAR(80) NOT NULL UNIQUE,
-                schema_version VARCHAR(32) NOT NULL,
-                pricing_config_version VARCHAR(32) NOT NULL,
-                origin VARCHAR(32) NOT NULL,
-                project_type VARCHAR(64) NOT NULL,
-                project_state VARCHAR(32) NOT NULL,
-                currency VARCHAR(8) NOT NULL,
-                input_json LONGTEXT NOT NULL,
-                totals_json LONGTEXT NOT NULL,
-                contact_json LONGTEXT NULL,
-                meta_json LONGTEXT NOT NULL,
-                created_at VARCHAR(32) NOT NULL,
-                sync_status VARCHAR(32) NOT NULL DEFAULT 'pending',
-                sync_attempts INT NOT NULL DEFAULT 0,
-                sync_last_error TEXT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET={$charset}
-        ");
-
-        $pdo->exec("
-            CREATE TABLE IF NOT EXISTS leads (
-                lead_id VARCHAR(64) PRIMARY KEY,
-                quote_id VARCHAR(64) NULL,
-                trace_id VARCHAR(80) NOT NULL,
-                nombre VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL,
-                telefono VARCHAR(64) NULL,
-                red_social VARCHAR(64) NULL,
-                mensaje TEXT NULL,
-                servicio VARCHAR(255) NULL,
-                created_at VARCHAR(32) NOT NULL,
-                INDEX idx_leads_email (email),
-                INDEX idx_leads_quote_id (quote_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET={$charset}
-        ");
-
-        return $pdo;
+    if (!in_array($driver, ['mysql', 'sqlite', 'auto'], true)) {
+        throw new RuntimeException('DB_DRIVER inválido. Usar mysql, sqlite o auto');
     }
 
     if ($driver !== 'sqlite') {
-        throw new RuntimeException('DB_DRIVER inválido. Usar sqlite o mysql');
+        try {
+            $host = getenv('MYSQL_HOST') ?: 'localhost';
+            $port = getenv('MYSQL_PORT') ?: '3306';
+            $database = getenv('MYSQL_DATABASE') ?: '';
+            $user = getenv('MYSQL_USER') ?: '';
+            $password = getenv('MYSQL_PASSWORD') ?: '';
+            $charset = getenv('MYSQL_CHARSET') ?: 'utf8mb4';
+
+            if ($database === '' || $user === '') {
+                throw new RuntimeException('MYSQL_DATABASE y MYSQL_USER no configurados');
+            }
+
+            $dsn = "mysql:host={$host};port={$port};dbname={$database};charset={$charset}";
+            $pdo = new PDO($dsn, $user, $password, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            ]);
+
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS quotes (
+                    quote_id VARCHAR(64) PRIMARY KEY,
+                    trace_id VARCHAR(80) NOT NULL UNIQUE,
+                    schema_version VARCHAR(32) NOT NULL,
+                    pricing_config_version VARCHAR(32) NOT NULL,
+                    origin VARCHAR(32) NOT NULL,
+                    project_type VARCHAR(64) NOT NULL,
+                    project_state VARCHAR(32) NOT NULL,
+                    currency VARCHAR(8) NOT NULL,
+                    input_json LONGTEXT NOT NULL,
+                    totals_json LONGTEXT NOT NULL,
+                    contact_json LONGTEXT NULL,
+                    meta_json LONGTEXT NOT NULL,
+                    created_at VARCHAR(32) NOT NULL,
+                    sync_status VARCHAR(32) NOT NULL DEFAULT 'pending',
+                    sync_attempts INT NOT NULL DEFAULT 0,
+                    sync_last_error TEXT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset}
+            ");
+
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS leads (
+                    lead_id VARCHAR(64) PRIMARY KEY,
+                    quote_id VARCHAR(64) NULL,
+                    trace_id VARCHAR(80) NOT NULL,
+                    nombre VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) NOT NULL,
+                    telefono VARCHAR(64) NULL,
+                    red_social VARCHAR(64) NULL,
+                    mensaje TEXT NULL,
+                    servicio VARCHAR(255) NULL,
+                    created_at VARCHAR(32) NOT NULL,
+                    INDEX idx_leads_email (email),
+                    INDEX idx_leads_quote_id (quote_id)
+                ) ENGINE=InnoDB DEFAULT CHARSET={$charset}
+            ");
+
+            return $pdo;
+        } catch (Throwable $e) {
+            error_log('MySQL no disponible; usando fallback SQLite: ' . $e->getMessage());
+        }
     }
 
     $dir = dirname($sqlitePath);
