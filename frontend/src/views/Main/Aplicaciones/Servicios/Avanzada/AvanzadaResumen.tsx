@@ -59,7 +59,16 @@ function AvanzadaResumen({
   }
 
   const monthlyServices = serviciosMensuales.filter(s => s.include === "yes");
-  const projectModules = resultado.breakdown || [];
+  const projectModules: any[] = resultado.breakdown || [];
+  const totals = resultado.totals as any;
+
+  function calcUnitCost(m: any): number {
+    return m.base_cost > 0 ? m.base_cost : (m.unit_hours || 0) * 18000;
+  }
+
+  function calcSubtotal(m: any): number {
+    return calcUnitCost(m) * (m.quantity || 1);
+  }
 
   return (
     <section className={`avanzada__step-form resumen-container ${isStale ? "resumen-stale" : ""}`}>
@@ -89,21 +98,102 @@ function AvanzadaResumen({
         </article>
       </div>
 
-      {/* Desglose Detallado */}
-      <div className="resumen-details" style={{ marginTop: "2rem", padding: "1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
-        <h4 style={{ margin: "0 0 1rem 0", fontSize: "1rem", color: "var(--text-secondary)" }}>Estructura de Inversión</h4>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.75rem" }}>
-          {projectModules.map((m, idx) => (
-            <li key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", paddingBottom: "0.5rem", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ color: "var(--text-primary)", fontWeight: "500" }}>{m.module_name}</span>
-                <span style={{ fontSize: "0.75rem", color: "var(--text-tertiary)" }}>Cant: {m.quantity} | {m.complexity}</span>
+      {/* Tabla de Costos por Módulo */}
+      {projectModules.length > 0 && (
+        <div className="resumen-details" style={{ marginTop: "2rem", padding: "1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <h4 style={{ margin: "0 0 1rem 0", fontSize: "1rem", color: "var(--text-secondary)" }}>Desglose por Módulo</h4>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", color: "var(--text-tertiary)", textTransform: "uppercase", fontSize: "0.7rem", letterSpacing: "0.5px" }}>
+                  <th style={{ textAlign: "left", padding: "0.5rem 0.75rem" }}>Módulo</th>
+                  <th style={{ textAlign: "center", padding: "0.5rem 0.75rem" }}>Cant.</th>
+                  <th style={{ textAlign: "right", padding: "0.5rem 0.75rem" }}>Costo Unit.</th>
+                  <th style={{ textAlign: "right", padding: "0.5rem 0.75rem" }}>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projectModules.map((m: any, idx: number) => (
+                  <tr key={idx} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                    <td style={{ padding: "0.75rem", color: "var(--text-primary)", fontWeight: "500" }}>
+                      {m.module_name}
+                      <span style={{ display: "block", fontSize: "0.7rem", color: "var(--text-tertiary)", marginTop: "0.15rem" }}>
+                        {m.complexity === "low" ? "Baja" : m.complexity === "high" ? "Alta" : "Media"} complejidad
+                      </span>
+                    </td>
+                    <td style={{ textAlign: "center", padding: "0.75rem", color: "var(--text-secondary)" }}>{m.quantity}</td>
+                    <td style={{ textAlign: "right", padding: "0.75rem", color: "var(--text-secondary)" }}>{toCurrencyCLP(calcUnitCost(m))}</td>
+                    <td style={{ textAlign: "right", padding: "0.75rem", color: "var(--text-primary)", fontWeight: "600" }}>{toCurrencyCLP(calcSubtotal(m))}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Servicios Mensuales */}
+      {monthlyServices.length > 0 && (
+        <div className="resumen-details" style={{ marginTop: "1.5rem", padding: "1.5rem", background: "rgba(0,255,65,0.02)", borderRadius: "12px", border: "1px solid rgba(0,255,65,0.15)" }}>
+          <h4 style={{ margin: "0 0 1rem 0", fontSize: "1rem", color: "var(--accent-blue)" }}>Plan de Acompañamiento Mensual</h4>
+          <div style={{ display: "grid", gap: "0.75rem" }}>
+            {monthlyServices.map((s, idx) => (
+              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "8px" }}>
+                <div>
+                  <span style={{ fontWeight: "600", color: "var(--text-primary)" }}>Plan: {s.plan_name}</span>
+                  <span style={{ display: "block", fontSize: "0.75rem", color: "var(--text-tertiary)", marginTop: "0.15rem" }}>
+                    SLA: {s.sla} | {s.hours_included} horas incluidas
+                  </span>
+                </div>
+                <span style={{ fontWeight: "700", color: "var(--accent-blue)", fontSize: "1.05rem" }}>{toCurrencyCLP(s.monthly_value)}/mes</span>
               </div>
-              <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>{m.base_cost > 0 ? "Incluido" : `${m.unit_hours * m.quantity}h Est.`}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Desglose de Pricing */}
+      {(totals.direct_cost != null || totals.contingency_value != null) && (
+        <div className="resumen-details" style={{ marginTop: "1.5rem", padding: "1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <h4 style={{ margin: "0 0 1rem 0", fontSize: "1rem", color: "var(--text-secondary)" }}>Estructura de Costos</h4>
+          <div style={{ display: "grid", gap: "0.5rem", fontSize: "0.85rem" }}>
+            {totals.direct_cost != null && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                <span style={{ color: "var(--text-secondary)" }}>Costo directo (hs × tarifa)</span>
+                <span style={{ color: "var(--text-primary)" }}>{toCurrencyCLP(totals.direct_cost)}</span>
+              </div>
+            )}
+            {totals.contingency_value != null && totals.contingency_value > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                <span style={{ color: "var(--text-secondary)" }}>Contingencia ({Math.round((totals.contingency_value / (totals.direct_cost || 1)) * 100)}%)</span>
+                <span style={{ color: "var(--text-secondary)" }}>+ {toCurrencyCLP(totals.contingency_value)}</span>
+              </div>
+            )}
+            {totals.margin_value != null && totals.margin_value > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                <span style={{ color: "var(--text-secondary)" }}>Margen ({Math.round((totals.margin_value / (totals.subtotal_with_contingency || 1)) * 100)}%)</span>
+                <span style={{ color: "var(--text-secondary)" }}>+ {toCurrencyCLP(totals.margin_value)}</span>
+              </div>
+            )}
+            {(totals as any).discount_value != null && (totals as any).discount_value > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                <span style={{ color: "#4caf50" }}>Descuento</span>
+                <span style={{ color: "#4caf50" }}>- {toCurrencyCLP((totals as any).discount_value)}</span>
+              </div>
+            )}
+            {totals.vat_value != null && totals.vat_value > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                <span style={{ color: "var(--text-secondary)" }}>IVA 19%</span>
+                <span style={{ color: "var(--text-secondary)" }}>+ {toCurrencyCLP(totals.vat_value)}</span>
+              </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem 0 0 0", borderTop: "2px solid rgba(255,255,255,0.15)", marginTop: "0.5rem" }}>
+              <span style={{ fontWeight: "700", color: "var(--text-primary)", fontSize: "1rem" }}>Total Proyecto</span>
+              <span style={{ fontWeight: "700", color: "var(--accent-blue)", fontSize: "1.1rem" }}>{toCurrencyCLP(resultado.totals.total_project)}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ACCIONES FINALES Y CAPTURA DE CONTACTO */}
       <div className="resumen-cta-group" style={{ marginTop: "2.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
