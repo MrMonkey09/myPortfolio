@@ -5,9 +5,9 @@
  * Safe environment manager for this project.
  *
  * Commands:
- *   node scripts/env-manager.mjs setup [--target backend|frontend|all] [--env development|production]
- *   node scripts/env-manager.mjs check [--target backend|frontend|all] [--env development|production]
- *   node scripts/env-manager.mjs show  [--target backend|frontend|all] [--env development|production]
+ *   node scripts/env-manager.mjs setup [--target deploy|backend|frontend|all] [--env development|production]
+ *   node scripts/env-manager.mjs check [--target deploy|backend|frontend|all] [--env development|production]
+ *   node scripts/env-manager.mjs show  [--target deploy|backend|frontend|all] [--env development|production]
  *
  * Security rules:
  * - Never prints secret values.
@@ -26,13 +26,14 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 
 const COMMANDS = new Set(["setup", "check", "show"]);
-const TARGETS = new Set(["backend", "frontend", "all"]);
+const TARGETS = new Set(["deploy", "backend", "frontend", "all"]);
 const ENVS = new Set(["development", "production"]);
 const DB_DRIVERS = new Set(["mysql", "sqlite", "auto"]);
 
 const SECRET_KEYS = new Set([
   "API_KEY",
   "MYSQL_PASSWORD",
+  "FTP_PASSWORD",
   "DB_PASSWORD",
   "PASSWORD",
   "TOKEN",
@@ -60,7 +61,7 @@ function parseArgs(argv) {
     throw new Error(`Comando inválido: ${args.command}. Usar: setup, check o show.`);
   }
   if (!TARGETS.has(args.target)) {
-    throw new Error(`Target inválido: ${args.target}. Usar: backend, frontend o all.`);
+    throw new Error(`Target inválido: ${args.target}. Usar: deploy, backend, frontend o all.`);
   }
   if (!ENVS.has(args.env)) {
     throw new Error(`Env inválido: ${args.env}. Usar: development o production.`);
@@ -71,6 +72,9 @@ function parseArgs(argv) {
 
 function targetFiles(target, envName) {
   const files = [];
+  if (target === "deploy" || target === "all") {
+    files.push({ target: "deploy", file: path.join(ROOT, ".env.deploy") });
+  }
   if (target === "backend" || target === "all") {
     files.push({ target: "backend", file: path.join(ROOT, "backend", ".env") });
   }
@@ -169,6 +173,29 @@ function renderBackendEnv(values) {
   return `${lines.join("\n")}\n`;
 }
 
+function renderDeployEnv(values) {
+  const lines = [
+    "# Configuración de Deploy FTP/cPanel",
+    "# Generado por npm run env:setup",
+    "",
+    "# Credenciales FTP",
+    `FTP_HOST=${values.get("FTP_HOST") || ""}`,
+    `FTP_USER=${values.get("FTP_USER") || ""}`,
+    `FTP_PASSWORD=${values.get("FTP_PASSWORD") || ""}`,
+    `FTP_PORT=${values.get("FTP_PORT") || "21"}`,
+    `FTP_SECURE=${values.get("FTP_SECURE") || "false"}`,
+    "",
+    "# Rutas remotas en cPanel",
+    `FTP_FRONTEND_DIR=${values.get("FTP_FRONTEND_DIR") || "/public_html"}`,
+    `FTP_BACKEND_DIR=${values.get("FTP_BACKEND_DIR") || "/api"}`,
+    `FTP_BACKEND_URL=${values.get("FTP_BACKEND_URL") || ""}`,
+    "",
+    "# Opcional: saltar build durante deploy",
+    `SKIP_BUILD=${values.get("SKIP_BUILD") || "false"}`,
+  ];
+  return `${lines.join("\n")}\n`;
+}
+
 function renderFrontendEnv(values) {
   const lines = [
     "# Configuración Frontend Vite",
@@ -200,6 +227,23 @@ async function setupBackend(rl, file, yes) {
   await writeEnvFile(rl, file, renderBackendEnv(values), yes);
 }
 
+async function setupDeploy(rl, file, yes) {
+  const current = readEnv(file);
+  const values = new Map(current);
+
+  values.set("FTP_HOST", await ask(rl, "FTP_HOST", values.get("FTP_HOST") || ""));
+  values.set("FTP_USER", await ask(rl, "FTP_USER", values.get("FTP_USER") || ""));
+  values.set("FTP_PASSWORD", await ask(rl, "FTP_PASSWORD", values.get("FTP_PASSWORD") || "", { secret: true }));
+  values.set("FTP_PORT", await ask(rl, "FTP_PORT", values.get("FTP_PORT") || "21", { defaultValue: "21" }));
+  values.set("FTP_SECURE", await askChoice(rl, "FTP_SECURE", new Set(["true", "false"]), values.get("FTP_SECURE") || "false", "false"));
+  values.set("FTP_FRONTEND_DIR", await ask(rl, "FTP_FRONTEND_DIR", values.get("FTP_FRONTEND_DIR") || "/public_html", { defaultValue: "/public_html" }));
+  values.set("FTP_BACKEND_DIR", await ask(rl, "FTP_BACKEND_DIR", values.get("FTP_BACKEND_DIR") || "/api", { defaultValue: "/api" }));
+  values.set("FTP_BACKEND_URL", await ask(rl, "FTP_BACKEND_URL", values.get("FTP_BACKEND_URL") || ""));
+  values.set("SKIP_BUILD", await askChoice(rl, "SKIP_BUILD", new Set(["true", "false"]), values.get("SKIP_BUILD") || "false", "false"));
+
+  await writeEnvFile(rl, file, renderDeployEnv(values), yes);
+}
+
 async function setupFrontend(rl, file, yes) {
   const current = readEnv(file);
   const values = new Map(current);
@@ -224,6 +268,7 @@ async function writeEnvFile(rl, file, content, yes) {
 }
 
 function requiredKeysFor(target, values) {
+  if (target === "deploy") return ["FTP_HOST", "FTP_USER", "FTP_PASSWORD", "FTP_FRONTEND_DIR", "FTP_BACKEND_DIR"];
   if (target === "frontend") return ["VITE_BASE_URL", "VITE_API_KEY"];
   const driver = values.get("DB_DRIVER") || "mysql";
   const keys = ["API_KEY", "DB_DRIVER"];
@@ -288,7 +333,8 @@ async function main() {
   try {
     for (const item of files) {
       console.log(`\nConfigurando ${item.target}: ${path.relative(ROOT, item.file)}`);
-      if (item.target === "backend") await setupBackend(rl, item.file, args.yes);
+      if (item.target === "deploy") await setupDeploy(rl, item.file, args.yes);
+      else if (item.target === "backend") await setupBackend(rl, item.file, args.yes);
       else await setupFrontend(rl, item.file, args.yes);
     }
   } finally {
