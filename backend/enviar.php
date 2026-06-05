@@ -179,6 +179,7 @@ function sendError($status, $traceId, $type, $code, $message, $details = []) {
 }
 
 function toNumber($value, $fallback = 0) {
+    if ($value === null || $value === '') return $fallback;
     $parsed = floatval($value);
     return is_finite($parsed) ? $parsed : $fallback;
 }
@@ -341,7 +342,8 @@ function checkApiKey($validKey) {
 // ROUTER
 // ============================================================================
 
-$path = $_SERVER['PATH_INFO'] ?? '/';
+// REQUEST_URI fallback para PHP built-in server con router.php (PATH_INFO no se setea)
+$path = $_SERVER['PATH_INFO'] ?? parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 
 // Health check
 if ($path === '/health' && $_SERVER['REQUEST_METHOD'] === 'GET') {

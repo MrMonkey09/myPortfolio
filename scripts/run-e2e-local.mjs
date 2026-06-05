@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 /**
- * Helper: iniciar Express, esperar, correr tests, parar.
+ * Helper E2E: inicia Express, ejecuta suite de tests, detiene servidor.
+ *
  * Uso: node scripts/run-e2e-local.mjs
+ *
+ * El servidor Express se inicia en http://localhost:3001,
+ * luego se ejecuta test-e2e.mjs como proceso hijo.
+ * Al finalizar (éxito o error), se detiene el servidor.
  */
 
 import { spawn } from "child_process";
 import { setTimeout as wait } from "timers/promises";
 
-const SERVER_URL = "http://localhost:3002";
+const SERVER_URL = "http://localhost:3001";
 let serverProcess = null;
 
 function log(step, msg) {
@@ -19,7 +24,6 @@ async function startServer() {
   serverProcess = spawn("node", ["frontend/api/server.js"], {
     cwd: process.cwd(),
     stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, NODE_PATH: "./frontend/node_modules" },
   });
 
   serverProcess.stdout.on("data", (data) => {
@@ -29,16 +33,18 @@ async function startServer() {
     process.stderr.write(`[SRV-ERR] ${data}`);
   });
 
-  // Esperar a que esté listo (max 10s)
+  // Esperar health check (máx 10s)
   for (let i = 0; i < 20; i++) {
     await wait(500);
     try {
       const res = await fetch(SERVER_URL + "/health");
       if (res.ok) {
-        log("SRV", "✅ Servidor respondiendo");
+        log("SRV", "✅ Servidor respondiendo en " + SERVER_URL);
         return;
       }
-    } catch (_) {}
+    } catch (_) {
+      // todavía no arrancó
+    }
   }
   throw new Error("Servidor no respondió en 10s");
 }
@@ -53,21 +59,33 @@ async function stopServer() {
 }
 
 async function run() {
+  let exitCode = 0;
+
   try {
     await startServer();
 
-    // Ejecutar tests importando el script E2E
+    // Ejecutar test-e2e.mjs como proceso hijo
     log("TEST", "Ejecutando suite E2E...");
-    const { default: runTests } = await import("./test-e2e.mjs");
-    await runTests(); // si test-e2e exporta función, sino reexecutamos lógica
+    const testExitCode = await new Promise((resolve) => {
+      const testProcess = spawn("node", ["scripts/test-e2e.mjs"], {
+        cwd: process.cwd(),
+        stdio: "inherit",
+      });
+      testProcess.on("exit", resolve);
+    });
 
-    log("SUCCESS", "✅ Todos los tests pasaron");
-    process.exit(0);
+    exitCode = testExitCode ?? 1;
+    if (exitCode === 0) {
+      log("SUCCESS", "✅ Todos los tests E2E pasaron");
+    } else {
+      log("FAIL", `❌ Tests E2E fallaron (exit code ${exitCode})`);
+    }
   } catch (e) {
     log("FATAL", `Error: ${e.message}`);
-    process.exit(1);
+    exitCode = 1;
   } finally {
     await stopServer();
+    process.exit(exitCode);
   }
 }
 

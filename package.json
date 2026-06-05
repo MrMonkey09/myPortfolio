@@ -8,6 +8,10 @@
     "build": "cd frontend && npm run web:build",
     "lint": "cd frontend && npm run lint",
     "api:dev": "cd frontend && npm run api:dev",
+    "api:php": "php -S localhost:3001 backend/router.php",
+    "dev:full": "node scripts/local.js",
+    "dev:node": "node scripts/local-node.mjs",
+    "e2e": "node scripts/run-e2e-local.mjs",
     "test:api": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest frontend/api --forceExit",
     "install:all": "npm install && cd frontend && npm install"
   },

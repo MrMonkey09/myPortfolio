@@ -16,7 +16,7 @@
 import { spawn } from "child_process";
 import { setTimeout as wait } from "timers/promises";
 
-const API_BASE = "http://localhost:3002";
+const API_BASE = "http://localhost:3001";
 const TRACE_ID_PREFIX = "trc_test_";
 
 function log(step, msg) {
@@ -216,70 +216,56 @@ async function runTests() {
     process.exit(1);
   }
 
-  // 4. Test — Handoff avanzada → contacto (lead)
-  log("TEST4", "Handoff avanzada → contacto — enviar lead enriquecido");
+  // 4. Test — Handoff avanzada → contacto (lead en SQLite)
+  log("TEST4", "Handoff avanzada → contacto — enviar lead a SQLite");
   const quoteRef = {
     quote_id: resp3.quote.quote_id,
-    origin: "advanced",
-    total_project: resp3.totals.total_project,
-    total_monthly: resp3.totals.total_monthly,
   };
 
   const leadPayload = {
     contact: {
-      name: "Test User",
+      nombre: "Test User",
       email: "test@example.com",
-      phone: "+56912345678",
-      preferred_channel: "whatsapp",
+      telefono: "+56912345678",
+      red_social: "whatsapp",
+      servicio: "Cotización Web",
     },
+    mensaje: "Test E2E — interesado en cotización avanzada",
     quote_ref: quoteRef,
-    message: "Test E2E Sprint 5 — interested in advanced quote",
-    schema_version: resp3.meta.schema_version,
-    pricing_config_version: resp3.meta.pricing_config_version,
   };
 
-  // Necesitamos trace_id desde respuesta simulate para header
-  const traceId = resp3.meta.trace_id;
-
   try {
-    const resp4 = await fetch(`${API_BASE}/api/quotes/lead`, {
+    const resp4 = await fetch(`${API_BASE}/api/quotes/contact`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-trace-id": traceId,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(leadPayload),
-    }).then((r) => r.json());
-
-    console.log("   Lead response:", JSON.stringify(resp4, null, 2));
-
-    if (resp4.error?.code === "NOTION_NOT_CONFIGURED") {
-      log(
-        "TEST4",
-        `⚠️ Lead omitido — Notion no configurado (comportamiento esperado sin credenciales)`
-      );
-    } else {
-      if (!resp4.lead_id) {
-        throw new Error("lead_id missing en respuesta");
+    }).then(async (r) => {
+      const contentType = r.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return { status: r.status, body: await r.json() };
       }
-      if (resp4.status !== "created") {
-        throw new Error(`Expected status=created, got ${resp4.status}`);
-      }
-      log(
-        "TEST4",
-        `✅ Lead creado — lead_id=${resp4.lead_id}, crm_sync=${resp4.crm_sync}`
-      );
+      return { status: r.status, body: await r.text() };
+    });
+
+    console.log("   Lead response:", JSON.stringify(resp4.body, null, 2));
+
+    if (resp4.status !== 201) {
+      throw new Error(`Expected 201, got ${resp4.status}: ${JSON.stringify(resp4.body)}`);
     }
+    if (!resp4.body.lead_id) {
+      throw new Error("lead_id missing en respuesta");
+    }
+    if (resp4.body.status !== "created") {
+      throw new Error(`Expected status=created, got ${resp4.body.status}`);
+    }
+    log("TEST4", `✅ Lead creado — lead_id=${resp4.body.lead_id} (SQLite)`);
   } catch (e) {
     log("TEST4", `❌ Falló: ${e.message}`);
     process.exit(1);
   }
 
   log("SUCCESS", "✅✅✅ Todos los tests E2E pasaron correctamente");
-  log(
-    "NEXT",
-    "Ahora proceder a Fase 2 — Preparar deploy cPanel (ver plan-pendientes-operativos.md)"
-  );
+  log("NEXT", "Backend listo para deploy en cPanel");
   process.exit(0);
 }
 

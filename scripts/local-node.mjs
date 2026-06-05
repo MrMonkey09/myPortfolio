@@ -1,13 +1,13 @@
 /**
- * local.js — Arranca Frontend (Vite) + Backend PHP para desarrollo local.
+ * local-node.mjs — Arranca Frontend (Vite) + Backend Node (Express) para desarrollo.
  *
- * Frontend: vite dev (por defecto http://localhost:5173)
- * Backend:  PHP built-in server con router.php en http://localhost:3001
+ * Frontend: vite dev (http://localhost:5173)
+ * Backend:  Node Express en http://localhost:3001
  *
  * vite.config.ts debe tener proxy para redirigir /api/* → localhost:3001,
- * o bien definir VITE_BASE_URL=http://localhost:3001 en .env.development.
+ * o definir VITE_BASE_URL=http://localhost:3001 en .env.development.
  *
- * Uso: node scripts/local.js
+ * Uso: node scripts/local-node.mjs
  */
 
 import { spawn } from "child_process";
@@ -20,26 +20,22 @@ const ROOT = path.join(__dirname, "..");
 
 const BACKEND_PORT = 3001;
 
-// Arrancar Backend (PHP Built-in Server con router.php)
-const backend = spawn("php", [
-  "-S", `localhost:${BACKEND_PORT}`,
-  "router.php"  // router.php redirige todas las rutas a enviar.php
-], {
-  cwd: path.join(ROOT, "backend"),
+// Arrancar Backend (Node Express)
+const backend = spawn("node", ["api/server.js"], {
+  cwd: path.join(ROOT, "frontend"),
   stdio: "inherit",
   shell: true,
 });
 
-// Esperar un poco para que PHP arranque antes de Vite
+// Esperar un poco antes de arrancar Vite
 setTimeout(() => {
-  // Arrancar Frontend (Vite)
   const frontend = spawn("npm", ["run", "web:dev"], {
     cwd: path.join(ROOT, "frontend"),
     stdio: "inherit",
     shell: true,
   });
 
-  console.log(`🐘 Backend PHP corriendo en http://localhost:${BACKEND_PORT}`);
+  console.log(`🚀 Backend Node en http://localhost:${BACKEND_PORT}`);
   console.log("🚀 Frontend Vite arrancando...");
 
   frontend.on("close", (code) => {
