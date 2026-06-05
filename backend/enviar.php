@@ -268,14 +268,22 @@ function validateSimulatePayload($payload) {
 // BUILD TOTALS - RFC-002 + RFC-004 Patch
 // ============================================================================
 
-function buildTotals($lineItems, $pricing, $applyVat, $monthlyServices = []) {
+function buildTotals(&$lineItems, $pricing, $applyVat, $monthlyServices = []) {
     $directCost = 0;
-    foreach ($lineItems as $item) {
+    foreach ($lineItems as &$item) {
         if (($item['include'] ?? '') === 'yes') {
             $unitCost = toNumber($item['base_cost'] ?? null, toNumber($item['unit_hours'] ?? 0) * 18000);
-            $directCost += $unitCost * toNumber($item['quantity'] ?? 0);
+            $qty = toNumber($item['quantity'] ?? 0);
+            $itemCost = $unitCost * $qty;
+            $item['direct_cost'] = round($itemCost);
+            $item['computed_unit_cost'] = round($unitCost);
+            $directCost += $itemCost;
+        } else {
+            $item['direct_cost'] = 0;
+            $item['computed_unit_cost'] = 0;
         }
     }
+    unset($item);
 
     $contingencyValue = $directCost * $pricing['contingency_pct'];
     $subtotalWithContingency = $directCost + $contingencyValue;

@@ -289,6 +289,30 @@ app.post("/api/quotes/simulate", (req, res) => {
       configSnapshot
     });
 
+    // Enrich lineItems with per-item direct_cost for breakdown
+    const hourlyRate = configSnapshot?.hourly_rate ?? 18000;
+    const complexityFactors = configSnapshot?.complexity_factors ?? { low: 1.0, medium: 1.2, high: 1.45 };
+    const projectStateMultiplier = context?.project_state === "remodel"
+      ? (configSnapshot?.remodel_factor ?? 0.85)
+      : 1.0;
+    for (const item of lineItems) {
+      if (item.include === "yes") {
+        const hours = toNumber(item.unit_hours, 0);
+        const qty = toNumber(item.quantity, 0);
+        const complexity = item.complexity || "medium";
+        const factor = complexityFactors[complexity] || 1.2;
+        const unitCost =
+          toNumber(item.base_cost, 0) > 0
+            ? toNumber(item.base_cost, 0)
+            : Math.round(hours * factor * hourlyRate);
+        item.direct_cost = Math.round(unitCost * qty * projectStateMultiplier);
+        item.computed_unit_cost = Math.round(unitCost);
+      } else {
+        item.direct_cost = 0;
+        item.computed_unit_cost = 0;
+      }
+    }
+
     if (applyVat === false && totals.vat_value !== 0) {
       return sendError(
         res,
