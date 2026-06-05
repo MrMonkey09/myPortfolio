@@ -100,6 +100,9 @@ function initSqliteDb($dbPath) {
 }
 
 function createQuoteRecord($pdo, $record) {
+    if (!$pdo) {
+        throw new RuntimeException('SQLite no disponible');
+    }
     $stmt = $pdo->prepare("
         INSERT INTO quotes (
             quote_id, trace_id, schema_version, pricing_config_version,
@@ -117,6 +120,9 @@ function createQuoteRecord($pdo, $record) {
 }
 
 function updateSyncStatus($pdo, $quoteId, $status, $attempts, $error) {
+    if (!$pdo) {
+        throw new RuntimeException('SQLite no disponible');
+    }
     $stmt = $pdo->prepare("
         UPDATE quotes SET sync_status = ?, sync_attempts = ?, sync_last_error = ?
         WHERE quote_id = ?
@@ -125,6 +131,9 @@ function updateSyncStatus($pdo, $quoteId, $status, $attempts, $error) {
 }
 
 function createLeadRecord($pdo, $record) {
+    if (!$pdo) {
+        throw new RuntimeException('SQLite no disponible');
+    }
     $stmt = $pdo->prepare("
         INSERT INTO leads (lead_id, quote_id, trace_id, nombre, email, telefono, red_social, mensaje, servicio, created_at)
         VALUES (:lead_id, :quote_id, :trace_id, :nombre, :email, :telefono, :red_social, :mensaje, :servicio, :created_at)
@@ -452,7 +461,7 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlitePdo = initSqliteDb($sqliteDbPath);
         }
         createQuoteRecord($sqlitePdo, $record);
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         error_log("SQLite persistence error: " . $e->getMessage());
     }
 
@@ -471,8 +480,11 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             ':created_at' => gmdate('Y-m-d\TH:i:s\Z'),
         ];
         try {
+            if (!$sqlitePdo) {
+                $sqlitePdo = initSqliteDb($sqliteDbPath);
+            }
             createLeadRecord($sqlitePdo, $leadRecord);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             error_log("SQLite lead persistence error: " . $e->getMessage());
         }
     }
@@ -510,8 +522,17 @@ if ($path === '/api/quotes/contact' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlitePdo = initSqliteDb($sqliteDbPath);
         }
         createLeadRecord($sqlitePdo, $record);
-    } catch (Exception $e) {
-        sendError(500, $traceId, 'internal_error', 'DB_ERROR', 'Error al guardar el lead: ' . $e->getMessage());
+    } catch (Throwable $e) {
+        error_log("SQLite lead persistence error: " . $e->getMessage());
+        echo json_encode([
+            'lead_id' => $leadId,
+            'status' => 'accepted_without_persistence',
+            'meta' => [
+                'trace_id' => $traceId,
+                'warning' => 'SQLite no disponible en este entorno; lead no persistido localmente'
+            ]
+        ]);
+        exit();
     }
 
     echo json_encode([
