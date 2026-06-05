@@ -62,11 +62,15 @@ function AvanzadaResumen({
   const projectModules: any[] = resultado.breakdown || [];
   const totals = resultado.totals as any;
 
+  // Usar valores calculados por el backend cuando están disponibles.
+  // computed_unit_cost y direct_cost los agrega buildTotals() (Node y PHP).
   function calcUnitCost(m: any): number {
+    if (m.computed_unit_cost != null && m.computed_unit_cost > 0) return m.computed_unit_cost;
     return m.base_cost > 0 ? m.base_cost : (m.unit_hours || 0) * 18000;
   }
 
   function calcSubtotal(m: any): number {
+    if (m.direct_cost != null && m.direct_cost > 0) return m.direct_cost;
     return calcUnitCost(m) * (m.quantity || 1);
   }
 

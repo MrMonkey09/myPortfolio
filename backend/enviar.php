@@ -271,9 +271,17 @@ function validateSimulatePayload($payload) {
 
 function buildTotals(&$lineItems, $pricing, $applyVat, $monthlyServices = []) {
     $directCost = 0;
+    $complexityFactors = ['low' => 1.0, 'medium' => 1.2, 'high' => 1.45];
     foreach ($lineItems as &$item) {
         if (($item['include'] ?? '') === 'yes') {
-            $unitCost = toNumber($item['base_cost'] ?? null, toNumber($item['unit_hours'] ?? 0) * 18000);
+            // Prioridad: base_cost > 0 → usar base_cost, sino unit_hours * factor * 18000
+            $hasBaseCost = isset($item['base_cost']) && $item['base_cost'] > 0;
+            $hours = toNumber($item['unit_hours'] ?? 0);
+            $complexity = $item['complexity'] ?? 'medium';
+            $factor = $complexityFactors[$complexity] ?? 1.2;
+            $unitCost = $hasBaseCost
+                ? toNumber($item['base_cost'])
+                : round($hours * $factor * 18000);
             $qty = toNumber($item['quantity'] ?? 0);
             $itemCost = $unitCost * $qty;
             $item['direct_cost'] = round($itemCost);
