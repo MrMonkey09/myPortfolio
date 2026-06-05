@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import crypto from "crypto";
 import dotenv from "dotenv";
-import { Client as NotionClient } from "@notionhq/client";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -12,8 +11,7 @@ const __dirname = path.dirname(__filename);
 // DB se inicializa async con fallback (better-sqlite3 -> sql.js)
 // backend/ está en nivel superior: ../../backend/
 import { initializeDatabase } from "../../backend/db/index.js";
-import { createQuoteRecord } from "../../backend/db/quotesRepository.js";
-import { syncWithRetry } from "../../backend/sync/notionSync.js";
+import { createQuoteRecord, createLeadRecord } from "../../backend/db/quotesRepository.js";
 
 dotenv.config(); // Load from frontend/.env if exists
 dotenv.config({ path: path.join(__dirname, "../../backend/.env") }); // Fallback to backend/.env
@@ -58,19 +56,6 @@ const PRICING_CONFIG = {
 };
 
 const DISCLAIMER = "La cotización final se confirma tras validar requerimientos.";
-const LEAD_SCHEMA_VERSION = "1.0.0";
-const LEAD_EVENT_NAME = "lead_submit";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const IDEMPOTENCY_TTL_MS = 1000 * 60 * 30;
-const RETRY_BACKOFF_MS = [1000, 3000, 7000];
-
-const notionToken = process.env.NOTION_TOKEN?.trim();
-const notionDatabaseId = process.env.NOTION_DB_ID?.trim();
-const notionClient = notionToken ? new NotionClient({ auth: notionToken }) : null;
-const idempotencyStore = new Map();
-
-let notionTitlePropertyName = null;
 
 app.use(express.json({ limit: "1mb" }));
 
@@ -90,191 +75,10 @@ function sendError(res, status, traceId, type, code, message, details = []) {
   });
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function isTransientNotionError(error) {
-  const status = Number(error?.status ?? error?.statusCode ?? 0);
-  if (status === 429) return true;
-  if (status >= 500 && status < 600) return true;
-
-  const code = String(error?.code ?? "");
-  return code === "ECONNRESET" || code === "ETIMEDOUT" || code === "ENOTFOUND";
-}
-
-async function withRetry(operation) {
-  let lastError;
-
-  for (let attempt = 0; attempt < RETRY_BACKOFF_MS.length; attempt += 1) {
-    try {
-      return await operation();
-    } catch (error) {
-      lastError = error;
-      if (!isTransientNotionError(error) || attempt === RETRY_BACKOFF_MS.length - 1) {
-        throw error;
-      }
-      await sleep(RETRY_BACKOFF_MS[attempt]);
-    }
-  }
-
-  throw lastError;
-}
-
 function sanitizeMessage(value) {
   if (typeof value !== "string") return "";
   const trimmed = value.trim();
   return trimmed.replace(/\s+/g, " ").slice(0, 2000);
-}
-
-function chunkText(value, chunkSize = 2000) {
-  if (typeof value !== "string" || value.length === 0) return [""];
-  const chunks = [];
-  for (let i = 0; i < value.length; i += chunkSize) {
-    chunks.push(value.slice(i, i + chunkSize));
-  }
-  return chunks;
-}
-
-function pruneIdempotencyStore() {
-  const now = Date.now();
-  for (const [key, value] of idempotencyStore.entries()) {
-    if (!value || value.expiresAt <= now) {
-      idempotencyStore.delete(key);
-    }
-  }
-}
-
-function getIdempotencyEntry(key) {
-  pruneIdempotencyStore();
-  return idempotencyStore.get(key);
-}
-
-function setIdempotencyEntry(key, payload) {
-  idempotencyStore.set(key, {
-    ...payload,
-    expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
-  });
-}
-
-async function resolveNotionTitlePropertyName() {
-  if (notionTitlePropertyName) {
-    return notionTitlePropertyName;
-  }
-
-  const database = await notionClient.databases.retrieve({ database_id: notionDatabaseId });
-  const titleEntry = Object.entries(database?.properties ?? {}).find(([, prop]) => prop?.type === "title");
-
-  if (!titleEntry) {
-    throw new Error("NOTION_TITLE_PROPERTY_NOT_FOUND");
-  }
-
-  notionTitlePropertyName = titleEntry[0];
-  return notionTitlePropertyName;
-}
-
-function validateLeadPayload(payload) {
-  const details = [];
-  const contact = payload?.contact ?? {};
-  const quoteRef = payload?.quote_ref ?? {};
-
-  if (typeof contact.name !== "string" || contact.name.trim() === "") {
-    details.push({ field: "contact.name", code: "REQUIRED", message: "name es obligatorio" });
-  }
-
-  if (typeof contact.email !== "string" || contact.email.trim() === "") {
-    details.push({ field: "contact.email", code: "REQUIRED", message: "email es obligatorio" });
-  } else if (!EMAIL_REGEX.test(contact.email.trim())) {
-    details.push({ field: "contact.email", code: "INVALID_EMAIL", message: "email no es válido" });
-  }
-
-  if (typeof quoteRef.quote_id !== "string" || quoteRef.quote_id.trim() === "") {
-    details.push({ field: "quote_ref.quote_id", code: "REQUIRED", message: "quote_id es obligatorio" });
-  }
-
-  if (typeof quoteRef.origin !== "string" || quoteRef.origin.trim() === "") {
-    details.push({ field: "quote_ref.origin", code: "REQUIRED", message: "origin es obligatorio" });
-  } else if (!ORIGIN_VALUES.has(quoteRef.origin.trim())) {
-    details.push({
-      field: "quote_ref.origin",
-      code: "INVALID_ENUM",
-      message: "origin debe ser quick, advanced o direct_contact",
-    });
-  }
-
-  if (!Number.isFinite(quoteRef.total_project) || quoteRef.total_project < 0) {
-    details.push({
-      field: "quote_ref.total_project",
-      code: "OUT_OF_RANGE",
-      message: "total_project debe ser mayor o igual a 0",
-    });
-  }
-
-  if (!Number.isFinite(quoteRef.total_monthly) || quoteRef.total_monthly < 0) {
-    details.push({
-      field: "quote_ref.total_monthly",
-      code: "OUT_OF_RANGE",
-      message: "total_monthly debe ser mayor o igual a 0",
-    });
-  }
-
-  return {
-    details,
-    sanitized: {
-      contact: {
-        name: typeof contact.name === "string" ? contact.name.trim() : "",
-        email: typeof contact.email === "string" ? contact.email.trim().toLowerCase() : "",
-        phone: typeof contact.phone === "string" ? contact.phone.trim() : "",
-        preferred_channel:
-          typeof contact.preferred_channel === "string" ? contact.preferred_channel.trim().toLowerCase() : "",
-      },
-      quote_ref: {
-        quote_id: typeof quoteRef.quote_id === "string" ? quoteRef.quote_id.trim() : "",
-        origin: typeof quoteRef.origin === "string" ? quoteRef.origin.trim() : "",
-        total_project: Number(quoteRef.total_project),
-        total_monthly: Number(quoteRef.total_monthly),
-      },
-      message: sanitizeMessage(payload?.message),
-    },
-  };
-}
-
-async function persistLeadToNotion({ traceId, leadId, payload }) {
-  const titlePropertyName = await withRetry(() => resolveNotionTitlePropertyName());
-  const createdAt = new Date().toISOString();
-
-  const notionPayload = {
-    lead_id: leadId,
-    event: LEAD_EVENT_NAME,
-    trace_id: traceId,
-    schema_version: payload.schema_version,
-    pricing_config_version: payload.pricing_config_version,
-    created_at: createdAt,
-    submitted_at: createdAt,
-    ...payload,
-  };
-
-  const titleValue = `Lead ${leadId} | ${payload.quote_ref.quote_id}`;
-  const serialized = JSON.stringify(notionPayload, null, 2);
-  const payloadBlocks = chunkText(serialized).slice(0, 40).map((chunk) => ({
-    object: "block",
-    type: "paragraph",
-    paragraph: {
-      rich_text: [{ type: "text", text: { content: chunk } }],
-    },
-  }));
-
-  return withRetry(() =>
-    notionClient.pages.create({
-      parent: { database_id: notionDatabaseId },
-      properties: {
-        [titlePropertyName]: {
-          title: [{ text: { content: titleValue.slice(0, 2000) } }],
-        },
-      },
-      children: payloadBlocks,
-    }),
-  );
 }
 
 function toNumber(value, fallback = 0) {
@@ -568,11 +372,25 @@ app.post("/api/quotes/simulate", (req, res) => {
       console.warn("[API] DB not ready yet — skipping local persistence");
     }
 
-    // Sync a Notion async solo si se solicita persistencia
-    if (shouldPersist) {
-      syncWithRetry(quoteRecord).catch((syncError) => {
-        console.error("Notion sync error:", syncError);
-      });
+    // Persistir contacto en SQLite leads si viene en el payload
+    const contact = req.body.contact;
+    if (shouldPersist && db && contact && contact.nombre && contact.email) {
+      try {
+        createLeadRecord({
+          lead_id: `ld_${crypto.randomUUID().replace(/-/g, "")}`,
+          quote_id: newQuoteId,
+          trace_id: traceId,
+          nombre: contact.nombre.trim(),
+          email: contact.email.trim().toLowerCase(),
+          telefono: (contact.telefono || "").trim(),
+          red_social: (contact.red_social || "").trim(),
+          mensaje: (contact.mensaje || "").trim(),
+          servicio: (contact.servicio || context.project_type || "").trim(),
+          created_at: new Date().toISOString(),
+        });
+      } catch (leadError) {
+        console.error("SQLite lead persistence error:", leadError);
+      }
     }
 
     return res.status(200).json({
@@ -608,122 +426,58 @@ app.post("/api/quotes/simulate", (req, res) => {
   }
 });
 
-app.post("/api/quotes/lead", async (req, res) => {
-  const traceId = req.header("x-trace-id") || makeTraceId();
+app.post("/api/quotes/contact", async (req, res) => {
+  const traceId = makeTraceId();
 
   try {
-    if (!notionToken || !notionDatabaseId || !notionClient) {
-      return sendError(
-        res,
-        503,
-        traceId,
-        "internal_error",
-        "NOTION_NOT_CONFIGURED",
-        "Persistencia Notion no configurada en el entorno",
-        [
-          { field: "NOTION_TOKEN", code: "REQUIRED_ENV", message: "Variable de entorno faltante" },
-          { field: "NOTION_DB_ID", code: "REQUIRED_ENV", message: "Variable de entorno faltante" },
-        ],
-      );
+    const contact = req.body?.contact ?? {};
+    const quoteRef = req.body?.quote_ref ?? {};
+
+    // Validar campos obligatorios
+    if (typeof contact.nombre !== "string" || contact.nombre.trim() === "") {
+      return sendError(res, 400, traceId, "validation_error", "REQUIRED_FIELDS", "nombre es obligatorio", [
+        { field: "contact.nombre", code: "REQUIRED", message: "nombre es obligatorio" },
+      ]);
     }
-
-    const { details, sanitized } = validateLeadPayload(req.body);
-
-    if (details.length > 0) {
-      return sendError(
-        res,
-        400,
-        traceId,
-        "validation_error",
-        "INVALID_REQUEST",
-        "Hay campos inválidos",
-        details,
-      );
+    if (typeof contact.email !== "string" || contact.email.trim() === "") {
+      return sendError(res, 400, traceId, "validation_error", "REQUIRED_FIELDS", "email es obligatorio", [
+        { field: "contact.email", code: "REQUIRED", message: "email es obligatorio" },
+      ]);
     }
 
     const leadId = `ld_${crypto.randomUUID().replace(/-/g, "")}`;
-    const idempotencyKey = `${traceId}:${LEAD_EVENT_NAME}:${sanitized.quote_ref.quote_id}`;
-    const existingEntry = getIdempotencyEntry(idempotencyKey);
-
-    if (existingEntry?.status === "done") {
-      return res.status(200).json(existingEntry.response);
-    }
-
-    if (existingEntry?.status === "in_progress") {
-      return sendError(
-        res,
-        409,
-        traceId,
-        "conflict_error",
-        "LEAD_IN_PROGRESS",
-        "Ya existe una operación en curso para esta clave de idempotencia",
-      );
-    }
-
-    setIdempotencyEntry(idempotencyKey, { status: "in_progress" });
-
-    const persistencePayload = {
-      ...sanitized,
-      schema_version: req.body?.schema_version || LEAD_SCHEMA_VERSION,
-      pricing_config_version: req.body?.pricing_config_version || PRICING_CONFIG.pricing_config_version,
+    const leadRecord = {
+      lead_id: leadId,
+      quote_id: (quoteRef?.quote_id || "").trim(),
+      trace_id: traceId,
+      nombre: contact.nombre.trim(),
+      email: contact.email.trim().toLowerCase(),
+      telefono: (contact.telefono || "").trim(),
+      red_social: (contact.red_social || "").trim(),
+      mensaje: sanitizeMessage(req.body?.mensaje || ""),
+      servicio: (contact.servicio || "").trim(),
+      created_at: new Date().toISOString(),
     };
 
-    try {
-      await persistLeadToNotion({
-        traceId,
-        leadId,
-        payload: persistencePayload,
-      });
-    } catch (error) {
-      setIdempotencyEntry(idempotencyKey, { status: "failed" });
-
-      if (isTransientNotionError(error)) {
-        return sendError(
-          res,
-          409,
-          traceId,
-          "conflict_error",
-          "NOTION_TRANSIENT_FAILURE",
-          "No se pudo persistir el lead en Notion por una falla transitoria. Reintentá en unos segundos.",
-        );
+    if (db) {
+      try {
+        createLeadRecord(leadRecord);
+      } catch (persistError) {
+        console.error("SQLite lead persistence error:", persistError);
       }
-
-      return sendError(
-        res,
-        500,
-        traceId,
-        "internal_error",
-        "NOTION_PERSISTENCE_FAILED",
-        "No se pudo persistir el lead en Notion",
-        [{ field: "notion", code: String(error?.code || "UNKNOWN"), message: String(error?.message || "Error") }],
-      );
+    } else {
+      console.warn("[API] DB not ready — lead not persisted to SQLite");
     }
 
-    const response = {
+    return res.status(201).json({
       lead_id: leadId,
       status: "created",
-      crm_sync: "queued",
-      meta: {
-        trace_id: traceId,
-        schema_version: persistencePayload.schema_version,
-        pricing_config_version: persistencePayload.pricing_config_version,
-      },
-    };
-
-    setIdempotencyEntry(idempotencyKey, { status: "done", response });
-    return res.status(201).json(response);
-} catch {
-    return sendError(
-      res,
-      500,
-      traceId,
-      "internal_error",
-      "No se pudo obtener información de la base de datos",
-      [],
-    );
+      meta: { trace_id: traceId },
+    });
+  } catch (err) {
+    console.error("[CONTACT-ERROR]", err);
+    return sendError(res, 500, traceId, "internal_error", "INTERNAL_ERROR", "Error al guardar contacto");
   }
-
-  // POST /api/quotes/lead
 });
 
 app.use((req, res) => {

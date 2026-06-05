@@ -92,7 +92,25 @@ export async function submitQuoteLead(
   payload: QuoteLeadRequest,
   traceId?: string,
 ): Promise<QuoteLeadResponse> {
-  const url = `${BASE_URL}/api/quotes/lead`;
+  // Mapear campos name->nombre, phone->telefono para compatibilidad con backend PHP
+  const contact = payload.contact || {};
+  const mappedPayload = {
+    ...payload,
+    contact: {
+      nombre: contact.name || contact.nombre || "",
+      email: contact.email || "",
+      telefono: contact.phone || contact.telefono || "",
+      red_social: contact.preferred_channel || contact.red_social || "",
+      mensaje: payload.message || "",
+      servicio: contact.servicio || "",
+    },
+    quote_ref: payload.quote_ref,
+  };
+  delete (mappedPayload as any).message;
+  delete (mappedPayload as any).pricing_config_version;
+  delete (mappedPayload as any).schema_version;
+
+  const url = `${BASE_URL}/api/quotes/contact`;
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -100,7 +118,7 @@ export async function submitQuoteLead(
       "x-api-key": import.meta.env.VITE_API_KEY || "",
       ...(traceId ? { "x-trace-id": traceId } : {}),
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(mappedPayload),
   });
 
   if (!response.ok) {
@@ -112,9 +130,11 @@ export async function submitQuoteLead(
   return (await response.json()) as QuoteLeadResponse;
 }
 
-// Ejemplo específico para obtener datos de Notion
+/**
+ * Enviar formulario de contacto legacy — ahora apunta al endpoint PHP unificado
+ */
 export async function notionCommit(formulario: string) {
-  return apiFetch(`/enviar.php`, {
+  return apiFetch(`/api/quotes/contact`, {
     method: "POST",
     headers: { "x-api-key": import.meta.env.VITE_API_KEY || "" },
     body: formulario,

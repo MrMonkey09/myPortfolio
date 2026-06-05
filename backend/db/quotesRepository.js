@@ -93,3 +93,20 @@ export function countQuotesByStatus(status) {
   const result = stmt.get(status);
   return result?.count || 0;
 }
+
+export function createLeadRecord(record) {
+  const db = getDatabase();
+  if (!db) return null;
+  const stmt = db.prepare(`
+    INSERT INTO leads (lead_id, quote_id, trace_id, nombre, email, telefono, red_social, mensaje, servicio, created_at)
+    VALUES (@lead_id, @quote_id, @trace_id, @nombre, @email, @telefono, @red_social, @mensaje, @servicio, @created_at)
+  `);
+  return stmt.run(record);
+}
+
+export function getLeadsByEmail(email) {
+  const db = getDatabase();
+  if (!db) return [];
+  const stmt = db.prepare("SELECT * FROM leads WHERE email = ? ORDER BY created_at DESC");
+  return stmt.all(email);
+}

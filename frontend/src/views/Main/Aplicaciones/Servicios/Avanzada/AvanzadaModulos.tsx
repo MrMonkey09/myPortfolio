@@ -17,23 +17,6 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status, req
     trackAdvancedStepViewed(3, 'modulos');
   }, []);
 
-  // Sync requerimientos → módulos al montar el componente
-  useEffect(() => {
-    let changed = false;
-    const synced = modulos.map((m) => {
-      if (m.module_id === "diseno-ui-ux" && requerimientos.diseno === "yes" && m.include === "no") {
-        changed = true;
-        return { ...m, include: "yes" as const, quantity: Math.max(m.quantity, 1), complexity: "medium" as const };
-      }
-      if (m.module_id === "contenido" && requerimientos.redaccion === "yes" && m.include === "no") {
-        changed = true;
-        return { ...m, include: "yes" as const, quantity: Math.max(m.quantity, 1), complexity: "medium" as const };
-      }
-      return m;
-    });
-    if (changed) onChange(synced);
-  }, []); // Solo al montar
-
   // Helpers to get/set logic from the underlying technical array
   const pagesQuantity = modulos.find((m) => m.module_id === "desarrollo-frontend")?.quantity || 1;
   const hasBackend = modulos.find((m) => m.module_id === "backend-api")?.include === "yes";

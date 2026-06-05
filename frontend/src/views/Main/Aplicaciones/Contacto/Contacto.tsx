@@ -37,10 +37,10 @@ function Contacto() {
         await submitQuoteLead(
           {
             contact: {
-              name: formData[CAMPO_NOMBRE] ?? "",
+              nombre: formData[CAMPO_NOMBRE] ?? "",
               email: formData[CAMPO_CORREO] ?? "",
-              phone: formData[CAMPO_TELEFONO] ?? "",
-              preferred_channel: formData[CAMPO_CANAL] ?? "",
+              telefono: formData[CAMPO_TELEFONO] ?? "",
+              red_social: formData[CAMPO_CANAL] ?? "",
             },
             quote_ref: {
               quote_id: quoteHandoffContext.quote_ref.quote_id,
@@ -49,8 +49,6 @@ function Contacto() {
               total_monthly: quoteHandoffContext.quote_ref.total_monthly,
             },
             message: mensaje,
-            schema_version: quoteHandoffContext.context.schema_version,
-            pricing_config_version: quoteHandoffContext.context.pricing_config_version,
           },
           quoteHandoffContext.context.trace_id,
         );

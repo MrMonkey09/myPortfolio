@@ -86,6 +86,22 @@ async function initBetterSqlite3() {
      CREATE INDEX IF NOT EXISTS idx_archive_date ON quotes_archive(archive_date);
      CREATE INDEX IF NOT EXISTS idx_archive_quote_id ON quotes_archive(quote_id);
    `);
+
+   // Create leads table for contact persistence
+   db.exec(`
+     CREATE TABLE IF NOT EXISTS leads (
+       lead_id TEXT PRIMARY KEY,
+       quote_id TEXT,
+       trace_id TEXT NOT NULL,
+       nombre TEXT NOT NULL,
+       email TEXT NOT NULL,
+       telefono TEXT,
+       red_social TEXT,
+       mensaje TEXT,
+       servicio TEXT,
+       created_at TEXT NOT NULL
+     )
+   `);
   
   dbType = "better-sqlite3";
   return db;
@@ -152,30 +168,46 @@ async function initSqlJs() {
     )
    `);
 
-   // Create archive table for retention policy (Work-Unit B)
-   db.run(`
-     CREATE TABLE IF NOT EXISTS quotes_archive (
-       id INTEGER PRIMARY KEY AUTOINCREMENT,
-       quote_id TEXT NOT NULL,
-       archive_date TEXT NOT NULL DEFAULT (datetime('now')),
-       original_created_at TEXT NOT NULL,
-       origin TEXT NOT NULL DEFAULT 'unknown',
-       project_type TEXT NOT NULL DEFAULT 'unknown',
-       total_project INTEGER,
-       total_monthly INTEGER,
-       confidence_level TEXT,
-       sync_status TEXT NOT NULL DEFAULT 'archived'
-     )
-   `);
+    // Create archive table for retention policy (Work-Unit B)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS quotes_archive (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        quote_id TEXT NOT NULL,
+        archive_date TEXT NOT NULL DEFAULT (datetime('now')),
+        original_created_at TEXT NOT NULL,
+        origin TEXT NOT NULL DEFAULT 'unknown',
+        project_type TEXT NOT NULL DEFAULT 'unknown',
+        total_project INTEGER,
+        total_monthly INTEGER,
+        confidence_level TEXT,
+        sync_status TEXT NOT NULL DEFAULT 'archived'
+      )
+    `);
 
-   // Create indexes (sql.js doesn't support IF NOT EXISTS for indexes well)
-   try {
-     db.run("CREATE INDEX IF NOT EXISTS idx_quotes_trace_id ON quotes(trace_id)");
-     db.run("CREATE INDEX IF NOT EXISTS idx_quotes_sync_status ON quotes(sync_status)");
-     db.run("CREATE INDEX IF NOT EXISTS idx_quotes_created_at ON quotes(created_at)");
-     db.run("CREATE INDEX IF NOT EXISTS idx_archive_date ON quotes_archive(archive_date)");
-     db.run("CREATE INDEX IF NOT EXISTS idx_archive_quote_id ON quotes_archive(quote_id)");
-   } catch {
+    // Create leads table for contact persistence
+    db.run(`
+      CREATE TABLE IF NOT EXISTS leads (
+        lead_id TEXT PRIMARY KEY,
+        quote_id TEXT,
+        trace_id TEXT NOT NULL,
+        nombre TEXT NOT NULL,
+        email TEXT NOT NULL,
+        telefono TEXT,
+        red_social TEXT,
+        mensaje TEXT,
+        servicio TEXT,
+        created_at TEXT NOT NULL
+      )
+    `);
+
+    // Create indexes (sql.js doesn't support IF NOT EXISTS for indexes well)
+    try {
+      db.run("CREATE INDEX IF NOT EXISTS idx_quotes_trace_id ON quotes(trace_id)");
+      db.run("CREATE INDEX IF NOT EXISTS idx_quotes_sync_status ON quotes(sync_status)");
+      db.run("CREATE INDEX IF NOT EXISTS idx_quotes_created_at ON quotes(created_at)");
+      db.run("CREATE INDEX IF NOT EXISTS idx_archive_date ON quotes_archive(archive_date)");
+      db.run("CREATE INDEX IF NOT EXISTS idx_archive_quote_id ON quotes_archive(quote_id)");
+    } catch {
      // Indexes may already exist
    }
   

@@ -1,7 +1,7 @@
 <?php
 /**
  * Backend PHP para Cotizador Web - RFC-002 Compliant
- * Endpoints: POST /api/quotes/simulate, POST /api/quotes/lead
+ * Endpoints: POST /api/quotes/simulate, POST /api/quotes/contact
  * Compatible con cPanel-first (PHP 7.4+)
  */
 
@@ -34,8 +34,6 @@ function loadEnv($path) {
 loadEnv(__DIR__ . '/.env');
 
 $apiKey = getenv('API_KEY') ?: ($_ENV['API_KEY'] ?? '');
-$notionToken = getenv('NOTION_TOKEN') ?: ($_ENV['NOTION_TOKEN'] ?? '');
-$notionDbId = getenv('NOTION_DB_ID') ?: ($_ENV['NOTION_DB_ID'] ?? '');
 
 // ============================================================================
 // INICIALIZACIÓN SQLITE (Work-Unit D: Paridad PHP)
@@ -82,6 +80,22 @@ function initSqliteDb($dbPath) {
         // Column might already exist, ignore
     }
     
+    // Create leads table for contact persistence
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS leads (
+            lead_id TEXT PRIMARY KEY,
+            quote_id TEXT,
+            trace_id TEXT NOT NULL,
+            nombre TEXT NOT NULL,
+            email TEXT NOT NULL,
+            telefono TEXT,
+            red_social TEXT,
+            mensaje TEXT,
+            servicio TEXT,
+            created_at TEXT NOT NULL
+        )
+    ");
+    
     return $pdo;
 }
 
@@ -110,6 +124,14 @@ function updateSyncStatus($pdo, $quoteId, $status, $attempts, $error) {
     return $stmt->execute([$status, $attempts, $error, $quoteId]);
 }
 
+function createLeadRecord($pdo, $record) {
+    $stmt = $pdo->prepare("
+        INSERT INTO leads (lead_id, quote_id, trace_id, nombre, email, telefono, red_social, mensaje, servicio, created_at)
+        VALUES (:lead_id, :quote_id, :trace_id, :nombre, :email, :telefono, :red_social, :mensaje, :servicio, :created_at)
+    ");
+    return $stmt->execute($record);
+}
+
 // ============================================================================
 // CONFIGURACIÓN
 // ============================================================================
@@ -127,11 +149,6 @@ $disclaimer = 'La cotización final se confirma tras validar requerimientos.';
 $originValues = ['quick', 'advanced', 'direct_contact'];
 $confidenceValues = ['low', 'medium', 'high'];
 
-// Configuración de reintentos
-$retryBackoffMs = [1000, 3000, 7000]; // 1s, 3s, 7s
-$idempotencyTtlSeconds = 1800; // 30 minutos
-$idempotencyDir = __DIR__ . '/.idempotency';
-
 // ============================================================================
 // FUNCIONES HELPERS
 // ============================================================================
@@ -145,64 +162,6 @@ function normalizeBool($value, $default = true) {
     if ($value === 'false' || $value === '0' || $value === 0 || $value === 'no') return false;
     if ($value === 'true' || $value === '1' || $value === 1 || $value === 'yes') return true;
     return $default;
-}
-
-function isTransientNotionError($response, $httpCode) {
-    // Rate limit
-    if ($httpCode === 429) return true;
-    // Server errors
-    if ($httpCode >= 500 && $httpCode < 600) return true;
-    // Connection errors en response
-    if (is_array($response)) {
-        $code = $response['code'] ?? '';
-        if (in_array($code, ['ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'internal_error'])) return true;
-    }
-    return false;
-}
-
-function sleepMs($ms) {
-    usleep($ms * 1000);
-}
-
-function ensureIdempotencyDir() {
-    global $idempotencyDir;
-    if (!is_dir($idempotencyDir)) {
-        @mkdir($idempotencyDir, 0755, true);
-    }
-}
-
-function getIdempotencyKey($traceId, $quoteId) {
-    return md5("{$traceId}:lead:{$quoteId}");
-}
-
-function checkIdempotency($traceId, $quoteId) {
-    global $idempotencyDir, $idempotencyTtlSeconds;
-    ensureIdempotencyDir();
-    $key = getIdempotencyKey($traceId, $quoteId);
-    $file = $idempotencyDir . '/' . $key . '.json';
-    if (!file_exists($file)) return null;
-    $content = json_decode(file_get_contents($file), true);
-    if (!$content) return null;
-    // Check TTL
-    if (isset($content['expires_at']) && $content['expires_at'] < time()) {
-        @unlink($file);
-        return null;
-    }
-    return $content;
-}
-
-function setIdempotency($traceId, $quoteId, $status, $response = null) {
-    global $idempotencyDir, $idempotencyTtlSeconds;
-    ensureIdempotencyDir();
-    $key = getIdempotencyKey($traceId, $quoteId);
-    $file = $idempotencyDir . '/' . $key . '.json';
-    $data = [
-        'status' => $status,
-        'response' => $response,
-        'created_at' => time(),
-        'expires_at' => time() + $idempotencyTtlSeconds,
-    ];
-    @file_put_contents($file, json_encode($data));
 }
 
 function sendError($status, $traceId, $type, $code, $message, $details = []) {
@@ -305,58 +264,6 @@ function validateSimulatePayload($payload) {
     return ['details' => $details, 'lineItems' => $lineItems, 'pricing' => $pricing];
 }
 
-function validateLeadPayload($payload) {
-    $details = [];
-    $contact = $payload['contact'] ?? [];
-    $quoteRef = $payload['quote_ref'] ?? [];
-    global $originValues;
-
-    // Contact validation
-    if (empty(trim($contact['name'] ?? ''))) {
-        $details[] = ['field' => 'contact.name', 'code' => 'REQUIRED', 'message' => 'name obligatorio'];
-    }
-    if (empty(trim($contact['email'] ?? ''))) {
-        $details[] = ['field' => 'contact.email', 'code' => 'REQUIRED', 'message' => 'email obligatorio'];
-    } elseif (!filter_var(trim($contact['email']), FILTER_VALIDATE_EMAIL)) {
-        $details[] = ['field' => 'contact.email', 'code' => 'INVALID_EMAIL', 'message' => 'email no válido'];
-    }
-
-    // quote_ref validation
-    if (empty(trim($quoteRef['quote_id'] ?? ''))) {
-        $details[] = ['field' => 'quote_ref.quote_id', 'code' => 'REQUIRED', 'message' => 'quote_id obligatorio'];
-    }
-    if (empty(trim($quoteRef['origin'] ?? ''))) {
-        $details[] = ['field' => 'quote_ref.origin', 'code' => 'REQUIRED', 'message' => 'origin obligatorio'];
-    } elseif (!in_array($quoteRef['origin'], $originValues)) {
-        $details[] = ['field' => 'quote_ref.origin', 'code' => 'INVALID_ENUM', 'message' => 'origin debe ser quick/advanced/direct_contact'];
-    }
-    if (!isset($quoteRef['total_project']) || $quoteRef['total_project'] < 0) {
-        $details[] = ['field' => 'quote_ref.total_project', 'code' => 'OUT_OF_RANGE', 'message' => 'total_project >= 0'];
-    }
-    if (!isset($quoteRef['total_monthly']) || $quoteRef['total_monthly'] < 0) {
-        $details[] = ['field' => 'quote_ref.total_monthly', 'code' => 'OUT_OF_RANGE', 'message' => 'total_monthly >= 0'];
-    }
-
-    return [
-        'details' => $details,
-        'sanitized' => [
-            'contact' => [
-                'name' => trim($contact['name'] ?? ''),
-                'email' => strtolower(trim($contact['email'] ?? '')),
-                'phone' => trim($contact['phone'] ?? ''),
-                'preferred_channel' => strtolower(trim($contact['preferred_channel'] ?? '')),
-            ],
-            'quote_ref' => [
-                'quote_id' => trim($quoteRef['quote_id'] ?? ''),
-                'origin' => trim($quoteRef['origin'] ?? ''),
-                'total_project' => floatval($quoteRef['total_project'] ?? 0),
-                'total_monthly' => floatval($quoteRef['total_monthly'] ?? 0),
-            ],
-            'message' => sanitizeMessage($payload['message'] ?? ''),
-        ]
-    ];
-}
-
 // ============================================================================
 // BUILD TOTALS - RFC-002 + RFC-004 Patch
 // ============================================================================
@@ -405,171 +312,6 @@ function buildTotals($lineItems, $pricing, $applyVat, $monthlyServices = []) {
         'estimated_min' => round($estimatedMin),
         'estimated_max' => round($estimatedMax),
     ];
-}
-
-// ============================================================================
-// PERSISTENCIA NOTION CON REINTENTOS
-// ============================================================================
-
-function persistLeadToNotion($token, $dbId, $leadId, $traceId, $payload) {
-    global $retryBackoffMs;
-
-    $createdAt = gmdate('Y-m-d\TH:i:s\Z');
-    $title = "Lead {$leadId} | " . ($payload['quote_ref']['quote_id'] ?? 'unknown');
-
-    $notionPayload = [
-        'parent' => ['database_id' => $dbId],
-        'properties' => [
-            'Name' => ['title' => [['text' => ['content' => substr($title, 0, 2000)]]]]
-        ],
-        'children' => []
-    ];
-
-    // Agregar contenido como bloques
-    $content = json_encode(array_merge([
-        'lead_id' => $leadId,
-        'trace_id' => $traceId,
-        'created_at' => $createdAt,
-        'schema_version' => $payload['schema_version'] ?? '1.0.0',
-        'pricing_config_version' => $payload['pricing_config_version'] ?? '2026.05.11',
-    ], $payload), JSON_PRETTY_PRINT);
-
-    $chunks = str_split($content, 1900);
-    foreach ($chunks as $chunk) {
-        $notionPayload['children'][] = [
-            'object' => 'block',
-            'type' => 'paragraph',
-            'paragraph' => ['rich_text' => [['type' => 'text', 'text' => ['content' => $chunk]]]]
-        ];
-    }
-
-    $lastError = null;
-    $lastHttpCode = 0;
-
-    foreach ($retryBackoffMs as $attempt => $backoffMs) {
-        $ch = curl_init("https://api.notion.com/v1/pages");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($notionPayload));
-        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Authorization: Bearer {$token}",
-            "Notion-Version: 2022-06-28",
-            "Content-Type: application/json"
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode >= 200 && $httpCode < 300) {
-            return $response; // Success
-        }
-
-        $lastError = $response;
-        $lastHttpCode = $httpCode;
-
-        // Check if transient error - retry
-        if (isTransientNotionError($response, $httpCode) && $attempt < count($retryBackoffMs) - 1) {
-            sleepMs($backoffMs);
-            continue;
-        }
-
-        // Non-retryable error - break
-        break;
-    }
-
-    // Return last response (will be handled as error by caller)
-    return $lastError;
-}
-
-// ============================================================================
-// SYNC BACKGROUND - Work-Unit D: Paridad PHP
-// ============================================================================
-
-function syncQuoteToNotionBackground($record) {
-    global $notionToken, $notionDbId;
-    
-    if (empty($notionToken) || empty($notionDbId)) {
-        return;
-    }
-    
-    $retryBackoffMs = [1000, 3000, 7000];
-    $maxRetries = 3;
-    
-    // Extraer contacto si existe
-    $contact = !empty($record[':contact_json']) ? json_decode($record[':contact_json'], true) : null;
-    $totals = json_decode($record[':totals_json'], true);
-    
-    for ($attempt = 0; $attempt < $maxRetries; $attempt++) {
-        $ch = curl_init("https://api.notion.com/v1/pages");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        
-        $titlePrefix = $contact ? "Lead: " . ($contact['nombre'] ?? $contact['name'] ?? 'Sin nombre') : "Quote";
-        $title = $titlePrefix . " | " . $record[':quote_id'];
-
-        $properties = [
-            'Name' => ['title' => [['text' => ['content' => substr($title, 0, 2000)]]]]
-        ];
-
-        // Mapear campos de contacto si están disponibles
-        if ($contact) {
-            $email = $contact['email'] ?? null;
-            $phone = $contact['telefono'] ?? $contact['phone'] ?? null;
-            
-            if ($email) {
-                $properties['Correo electrónico'] = ['email' => $email];
-            }
-            if ($phone) {
-                $properties['Teléfono'] = ['phone_number' => $phone];
-            }
-            
-            // Si es un lead de simulación, marcar origen
-            $properties['Servicio de interés'] = ['select' => ['name' => normalizeService($record[':project_type'])]];
-        }
-
-        $payload = [
-            'parent' => ['database_id' => $notionDbId],
-            'properties' => $properties,
-            'children' => [
-                [
-                    'object' => 'block',
-                    'type' => 'paragraph',
-                    'paragraph' => ['rich_text' => [['type' => 'text', 'text' => ['content' => json_encode([
-                        'quote_id' => $record[':quote_id'],
-                        'trace_id' => $record[':trace_id'],
-                        'origin' => $record[':origin'],
-                        'total_project' => $totals['total_project'] ?? 0,
-                        'total_monthly' => $totals['total_monthly'] ?? 0,
-                        'contact' => $contact
-                    ], JSON_PRETTY_PRINT)]]]]]
-            ]
-        ];
-        
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Authorization: Bearer $notionToken",
-            "Notion-Version: 2022-06-28",
-            "Content-Type: application/json"
-        ]);
-        
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($httpCode >= 200 && $httpCode < 300) {
-            return; // Success
-        }
-        
-        // Transient error - retry
-        if (($httpCode === 429 || $httpCode >= 500) && $attempt < $maxRetries - 1) {
-            usleep($retryBackoffMs[$attempt] * 1000);
-            continue;
-        }
-        
-        break;
-    }
 }
 
 // ============================================================================
@@ -696,137 +438,70 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log("SQLite persistence error: " . $e->getMessage());
     }
 
-    // Solo sincronizar a Notion si es una persistencia explícita o tiene contacto
-    $shouldPersist = normalizeBool($payload['persist'] ?? false, false);
-    if ($shouldPersist || $contact) {
-        register_shutdown_function(function() use ($record) { syncQuoteToNotionBackground($record); });
+    // Si hay datos de contacto, persistir también como lead en SQLite
+    if ($contact) {
+        $leadRecord = [
+            ':lead_id' => 'ld_' . bin2hex(random_bytes(12)),
+            ':quote_id' => $response['quote']['quote_id'],
+            ':trace_id' => $traceId,
+            ':nombre' => trim($contact['nombre'] ?? $payload['contact']['nombre'] ?? ''),
+            ':email' => strtolower(trim($contact['email'] ?? $payload['contact']['email'] ?? '')),
+            ':telefono' => trim($contact['telefono'] ?? $payload['contact']['telefono'] ?? ''),
+            ':red_social' => trim($contact['red_social'] ?? $payload['contact']['red_social'] ?? ''),
+            ':mensaje' => trim($contact['mensaje'] ?? $payload['contact']['mensaje'] ?? ''),
+            ':servicio' => trim($contact['servicio'] ?? $payload['contact']['servicio'] ?? ''),
+            ':created_at' => gmdate('Y-m-d\TH:i:s\Z'),
+        ];
+        try {
+            createLeadRecord($sqlitePdo, $leadRecord);
+        } catch (Exception $e) {
+            error_log("SQLite lead persistence error: " . $e->getMessage());
+        }
     }
 
     echo json_encode($response);
     exit();
 }
 
-// POST /api/quotes/lead
-if ($path === '/api/quotes/lead' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $traceId = $_SERVER['HTTP_X_TRACE_ID'] ?? makeTraceId();
-
-    if (empty($notionToken) || empty($notionDbId)) {
-        sendError(503, $traceId, 'internal_error', 'NOTION_NOT_CONFIGURED', 'Notion no configurado');
-    }
-
+// POST /api/quotes/contact
+if ($path === '/api/quotes/contact' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $traceId = makeTraceId();
     $payload = json_decode(file_get_contents('php://input'), true) ?? [];
-    $validation = validateLeadPayload($payload);
 
-    if (!empty($validation['details'])) {
-        sendError(400, $traceId, 'validation_error', 'INVALID_REQUEST', 'Hay campos inválidos', $validation['details']);
+    $contact = $payload['contact'] ?? [];
+    if (empty(trim($contact['nombre'] ?? '')) || empty(trim($contact['email'] ?? ''))) {
+        sendError(400, $traceId, 'validation_error', 'REQUIRED_FIELDS', 'nombre y email son obligatorios');
     }
 
-    // Idempotency check
-    $quoteId = $validation['sanitized']['quote_ref']['quote_id'];
-    $existingEntry = checkIdempotency($traceId, $quoteId);
-
-    if ($existingEntry) {
-        if ($existingEntry['status'] === 'done') {
-            // Return cached response
-            http_response_code(200);
-            echo json_encode($existingEntry['response']);
-            exit();
-        } elseif ($existingEntry['status'] === 'in_progress') {
-            sendError(409, $traceId, 'conflict_error', 'LEAD_IN_PROGRESS', 'Ya existe una operación en curso para esta clave de idempotencia');
-        }
-    }
-
-    // Mark as in progress
-    setIdempotency($traceId, $quoteId, 'in_progress');
-
-    $leadId = 'ld_' . str_replace('-', '', bin2hex(random_bytes(12)));
-    $persistencePayload = array_merge($validation['sanitized'], [
-        'schema_version' => $payload['schema_version'] ?? '1.0.0',
-        'pricing_config_version' => $payload['pricing_config_version'] ?? $pricingConfig['pricing_config_version'],
-    ]);
-
-    try {
-        $response = persistLeadToNotion($notionToken, $notionDbId, $leadId, $traceId, $persistencePayload);
-        $data = json_decode($response, true);
-
-        if (empty($data['id'])) {
-            setIdempotency($traceId, $quoteId, 'failed');
-            // Check if transient error (rate limit 429 o similar)
-            if (isset($data['code']) && ($data['code'] === 'rate_limited' || strpos($response, '429') !== false)) {
-                sendError(409, $traceId, 'conflict_error', 'NOTION_TRANSIENT_FAILURE', 'No se pudo persistir el lead en Notion por una falla transitoria. Reintentá en unos segundos.');
-            }
-            sendError(500, $traceId, 'internal_error', 'NOTION_PERSISTENCE_FAILED', 'No se pudo persistir el lead');
-        }
-
-        // Success - cache response
-        $successResponse = [
-            'lead_id' => $leadId,
-            'status' => 'created',
-            'crm_sync' => 'queued',
-            'meta' => [
-                'trace_id' => $traceId,
-                'schema_version' => $persistencePayload['schema_version'],
-                'pricing_config_version' => $persistencePayload['pricing_config_version'],
-            ]
-        ];
-        setIdempotency($traceId, $quoteId, 'done', $successResponse);
-
-        http_response_code(201);
-        echo json_encode($successResponse);
-        exit();
-
-    } catch (Exception $e) {
-        setIdempotency($traceId, $quoteId, 'failed');
-        sendError(500, $traceId, 'internal_error', 'NOTION_PERSISTENCE_FAILED', 'No se pudo persistir el lead: ' . $e->getMessage());
-    }
-}
-
-// Legacy endpoint: POST / (backwards compatible)
-if (($_SERVER['REQUEST_METHOD'] === 'POST') && ($path === '/' || $path === '')) {
-    if (empty($notionToken) || empty($notionDbId)) {
-        sendError(500, makeTraceId(), 'internal_error', 'CONFIG_MISSING', 'Configuración incompleta');
-    }
-
-    $formulario = json_decode(file_get_contents('php://input'), true);
-    if (!is_array($formulario) || empty(trim($formulario['Nombre'] ?? ''))) {
-        sendError(400, makeTraceId(), 'validation_error', 'INVALID_PAYLOAD', 'Payload inválido');
-    }
-
-    $serviceName = normalizeService($formulario['Servicio de interés'] ?? '');
-
-    $notionPayload = [
-        'parent' => ['database_id' => $notionDbId],
-        'properties' => [
-            'Name' => ['title' => [['text' => ['content' => $formulario['Nombre'] ?? '']]]],
-            'Correo electrónico' => ['email' => $formulario['Correo'] ?? ''],
-            'Teléfono' => ['phone_number' => $formulario['N° de Contacto'] ?? ''],
-            'Red Social Preferente' => ['url' => $formulario['Red Social Preferente'] ?? null],
-            'Mensaje' => ['rich_text' => [['text' => ['content' => $formulario['Mensaje'] ?? '']]]],
-            'Servicio de interés' => ['select' => ['name' => $serviceName]],
-        ]
+    $leadId = 'ld_' . bin2hex(random_bytes(12));
+    $record = [
+        ':lead_id' => $leadId,
+        ':quote_id' => $payload['quote_ref']['quote_id'] ?? '',
+        ':trace_id' => $traceId,
+        ':nombre' => trim($contact['nombre']),
+        ':email' => strtolower(trim($contact['email'])),
+        ':telefono' => trim($contact['telefono'] ?? ''),
+        ':red_social' => trim($contact['red_social'] ?? ''),
+        ':mensaje' => trim($contact['mensaje'] ?? ''),
+        ':servicio' => trim($contact['servicio'] ?? ''),
+        ':created_at' => gmdate('Y-m-d\TH:i:s\Z'),
     ];
 
-    $ch = curl_init("https://api.notion.com/v1/pages");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($notionPayload));
-    curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bearer {$notionToken}",
-        "Notion-Version: 2022-06-28",
-        "Content-Type: application/json"
-    ]);
-
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($httpCode >= 200 && $httpCode < 300) {
-        echo json_encode(['success' => true, 'data' => $formulario]);
-        exit();
+    try {
+        if (!$sqlitePdo) {
+            $sqlitePdo = initSqliteDb($sqliteDbPath);
+        }
+        createLeadRecord($sqlitePdo, $record);
+    } catch (Exception $e) {
+        sendError(500, $traceId, 'internal_error', 'DB_ERROR', 'Error al guardar el lead: ' . $e->getMessage());
     }
 
-    sendError(500, makeTraceId(), 'internal_error', 'NOTION_ERROR', 'Error al guardar en Notion');
+    echo json_encode([
+        'lead_id' => $leadId,
+        'status' => 'created',
+        'meta' => ['trace_id' => $traceId]
+    ]);
+    exit();
 }
 
 // 404

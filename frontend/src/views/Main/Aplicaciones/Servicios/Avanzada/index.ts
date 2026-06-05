@@ -9,13 +9,8 @@
  */
 
 // Exportar configuración
-export { CONFIGURACION_AVANZADA } from "./Configuracion.js";
-export { MODULOS_PREDEFINIDOS } from "./Configuracion.js";
-export { SERVICIOS_MENSUALES_PREDEFINIDOS } from "./Configuracion.js";
+export { CONFIGURACION_AVANZADA, MODULOS_PREDEFINIDOS, SERVICIOS_MENSUALES_PREDEFINIDOS } from "./Configuracion.js";
 
 // Componentes principales
 export { default as CotizadorAvanzado } from "./Avanzada.js";
-export { CONFIGURACION_AVANZADA } from "./Configuracion.js";
-export { MODULOS_PREDEFINIDOS } from "./Configuracion.js";
-export { SERVICIOS_MENSUALES_PREDEFINIDOS } from "./Configuracion.js";
 
