@@ -1,4 +1,4 @@
-import type { QuoteSimulateResponse, MonthlyService } from "@/types/index.js";
+import type { QuoteSimulateResponse, MonthlyService, AjustesComerciales } from "@/types/index.js";
 import { trackAdvancedStepViewed, trackAdvancedCalculated, trackContactSubmitted } from "@/hooks/useAnalytics";
 import { useEffect } from "react";
 import "./Estilos.css";
@@ -6,6 +6,7 @@ import "./Estilos.css";
 interface Props {
   readonly resultado: QuoteSimulateResponse;
   readonly serviciosMensuales: readonly MonthlyService[];
+  readonly ajustes: AjustesComerciales;
   readonly onRecalculate: () => void;
   readonly showContactForm: boolean;
   readonly contactForm: {
@@ -25,6 +26,7 @@ interface Props {
 function AvanzadaResumen({ 
   resultado, 
   serviciosMensuales, 
+  ajustes,
   onRecalculate, 
   showContactForm,
   contactForm,
@@ -38,17 +40,6 @@ function AvanzadaResumen({
   useEffect(() => {
     trackAdvancedStepViewed(5, 'resumen');
   }, []);
-
-  useEffect(() => {
-    if (resultado?.totals) {
-      trackAdvancedCalculated({
-        success: true,
-        total_project: resultado.totals.total_project,
-        total_monthly: resultado.totals.total_monthly,
-        confidence_level: resultado.totals.confidence_level,
-      });
-    }
-  }, [resultado?.totals?.total_project]);
 
   function toCurrencyCLP(value: number): string {
     return new Intl.NumberFormat("es-CL", {
@@ -74,6 +65,70 @@ function AvanzadaResumen({
     return calcUnitCost(m) * (m.quantity || 1);
   }
 
+  const derivedDirectCost = projectModules.reduce((sum, module) => sum + calcSubtotal(module), 0);
+  const derivedMonthlyTotal = monthlyServices.reduce((sum, service) => sum + (service.monthly_value || 0), 0);
+  const shouldUseDerivedTotals = derivedDirectCost > 0 && (!totals.total_project || totals.total_project <= 0);
+
+  const effectiveDirectCost = shouldUseDerivedTotals
+    ? derivedDirectCost
+    : (totals.direct_cost ?? derivedDirectCost);
+  const effectiveContingency = shouldUseDerivedTotals
+    ? Math.round(effectiveDirectCost * ajustes.contingency_pct)
+    : (totals.contingency_value ?? 0);
+  const effectiveSubtotalWithContingency = shouldUseDerivedTotals
+    ? effectiveDirectCost + effectiveContingency
+    : (totals.subtotal_with_contingency ?? effectiveDirectCost + effectiveContingency);
+  const effectiveMargin = shouldUseDerivedTotals
+    ? Math.round(effectiveSubtotalWithContingency * ajustes.margin_pct)
+    : (totals.margin_value ?? 0);
+  const effectiveSubtotalNet = shouldUseDerivedTotals
+    ? effectiveSubtotalWithContingency + effectiveMargin
+    : (totals.subtotal_net ?? effectiveSubtotalWithContingency + effectiveMargin);
+  const effectiveDiscount = shouldUseDerivedTotals
+    ? Math.round(effectiveSubtotalNet * ajustes.discount_pct)
+    : (totals.discount_value ?? 0);
+  const effectiveTotalNet = shouldUseDerivedTotals
+    ? effectiveSubtotalNet - effectiveDiscount
+    : (totals.total_net ?? effectiveSubtotalNet - effectiveDiscount);
+  const effectiveVat = shouldUseDerivedTotals
+    ? Math.round(effectiveTotalNet * 0.19)
+    : (totals.vat_value ?? 0);
+  const effectiveTotalProject = shouldUseDerivedTotals
+    ? effectiveTotalNet + effectiveVat
+    : (totals.total_project ?? 0);
+  const effectiveTotalMonthly = totals.total_monthly && totals.total_monthly > 0
+    ? totals.total_monthly
+    : derivedMonthlyTotal;
+  const effectiveTotals = {
+    direct_cost: effectiveDirectCost,
+    contingency_value: effectiveContingency,
+    subtotal_with_contingency: effectiveSubtotalWithContingency,
+    margin_value: effectiveMargin,
+    subtotal_net: effectiveSubtotalNet,
+    discount_value: effectiveDiscount,
+    total_net: effectiveTotalNet,
+    vat_value: effectiveVat,
+    total_project: effectiveTotalProject,
+    total_monthly: effectiveTotalMonthly,
+    estimated_min: totals.estimated_min && totals.estimated_min > 0
+      ? totals.estimated_min
+      : Math.round(effectiveTotalProject * 0.9),
+    estimated_max: totals.estimated_max && totals.estimated_max > 0
+      ? totals.estimated_max
+      : Math.round(effectiveTotalProject * 1.15),
+  };
+
+  useEffect(() => {
+    if (resultado?.totals) {
+      trackAdvancedCalculated({
+        success: true,
+        total_project: effectiveTotals.total_project,
+        total_monthly: effectiveTotals.total_monthly,
+        confidence_level: resultado.totals.confidence_level,
+      });
+    }
+  }, [resultado?.totals?.total_project, effectiveTotals.total_project, effectiveTotals.total_monthly]);
+
   return (
     <section className={`avanzada__step-form resumen-container ${isStale ? "resumen-stale" : ""}`}>
       <header className="resumen-header">
@@ -91,13 +146,13 @@ function AvanzadaResumen({
       <div className="resumen-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1.5rem", marginTop: "1rem" }}>
         <article style={{ background: "rgba(255,255,255,0.03)", padding: "1.5rem", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.1)" }}>
           <h4 style={{ margin: "0 0 1rem 0", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--text-secondary)" }}>Inversión del Proyecto</h4>
-          <div style={{ fontSize: "2rem", fontWeight: "bold", color: "var(--text-primary)" }}>{toCurrencyCLP(resultado.totals.total_project)}</div>
-          <p style={{ fontSize: "0.8rem", color: "var(--text-tertiary)", marginTop: "0.5rem" }}>Rango: {toCurrencyCLP(resultado.totals.estimated_min)} - {toCurrencyCLP(resultado.totals.estimated_max)}</p>
+          <div style={{ fontSize: "2rem", fontWeight: "bold", color: "var(--text-primary)" }}>{toCurrencyCLP(effectiveTotals.total_project)}</div>
+          <p style={{ fontSize: "0.8rem", color: "var(--text-tertiary)", marginTop: "0.5rem" }}>Rango: {toCurrencyCLP(effectiveTotals.estimated_min)} - {toCurrencyCLP(effectiveTotals.estimated_max)}</p>
         </article>
 
         <article style={{ background: "rgba(0,255,65,0.03)", padding: "1.5rem", borderRadius: "16px", border: "1px solid rgba(0,255,65,0.2)" }}>
           <h4 style={{ margin: "0 0 1rem 0", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--accent-blue)" }}>Acompañamiento Mensual</h4>
-          <div style={{ fontSize: "2rem", fontWeight: "bold", color: "var(--accent-blue)" }}>{toCurrencyCLP(resultado.totals.total_monthly)}</div>
+          <div style={{ fontSize: "2rem", fontWeight: "bold", color: "var(--accent-blue)" }}>{toCurrencyCLP(effectiveTotals.total_monthly)}</div>
           <p style={{ fontSize: "0.8rem", color: "var(--text-tertiary)", marginTop: "0.5rem" }}>Mantenimiento y soporte profesional.</p>
         </article>
       </div>
@@ -157,43 +212,43 @@ function AvanzadaResumen({
       )}
 
       {/* Desglose de Pricing */}
-      {(totals.direct_cost != null || totals.contingency_value != null) && (
+      {(effectiveTotals.direct_cost > 0 || effectiveTotals.contingency_value > 0) && (
         <div className="resumen-details" style={{ marginTop: "1.5rem", padding: "1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
           <h4 style={{ margin: "0 0 1rem 0", fontSize: "1rem", color: "var(--text-secondary)" }}>Estructura de Costos</h4>
           <div style={{ display: "grid", gap: "0.5rem", fontSize: "0.85rem" }}>
-            {totals.direct_cost != null && (
+            {effectiveTotals.direct_cost > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
                 <span style={{ color: "var(--text-secondary)" }}>Costo directo (hs × tarifa)</span>
-                <span style={{ color: "var(--text-primary)" }}>{toCurrencyCLP(totals.direct_cost)}</span>
+                <span style={{ color: "var(--text-primary)" }}>{toCurrencyCLP(effectiveTotals.direct_cost)}</span>
               </div>
             )}
-            {totals.contingency_value != null && totals.contingency_value > 0 && (
+            {effectiveTotals.contingency_value > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
-                <span style={{ color: "var(--text-secondary)" }}>Contingencia ({Math.round((totals.contingency_value / (totals.direct_cost || 1)) * 100)}%)</span>
-                <span style={{ color: "var(--text-secondary)" }}>+ {toCurrencyCLP(totals.contingency_value)}</span>
+                <span style={{ color: "var(--text-secondary)" }}>Contingencia ({Math.round((effectiveTotals.contingency_value / (effectiveTotals.direct_cost || 1)) * 100)}%)</span>
+                <span style={{ color: "var(--text-secondary)" }}>+ {toCurrencyCLP(effectiveTotals.contingency_value)}</span>
               </div>
             )}
-            {totals.margin_value != null && totals.margin_value > 0 && (
+            {effectiveTotals.margin_value > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
-                <span style={{ color: "var(--text-secondary)" }}>Margen ({Math.round((totals.margin_value / (totals.subtotal_with_contingency || 1)) * 100)}%)</span>
-                <span style={{ color: "var(--text-secondary)" }}>+ {toCurrencyCLP(totals.margin_value)}</span>
+                <span style={{ color: "var(--text-secondary)" }}>Margen ({Math.round((effectiveTotals.margin_value / (effectiveTotals.subtotal_with_contingency || 1)) * 100)}%)</span>
+                <span style={{ color: "var(--text-secondary)" }}>+ {toCurrencyCLP(effectiveTotals.margin_value)}</span>
               </div>
             )}
-            {(totals as any).discount_value != null && (totals as any).discount_value > 0 && (
+            {effectiveTotals.discount_value > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
                 <span style={{ color: "#4caf50" }}>Descuento</span>
-                <span style={{ color: "#4caf50" }}>- {toCurrencyCLP((totals as any).discount_value)}</span>
+                <span style={{ color: "#4caf50" }}>- {toCurrencyCLP(effectiveTotals.discount_value)}</span>
               </div>
             )}
-            {totals.vat_value != null && totals.vat_value > 0 && (
+            {effectiveTotals.vat_value > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
                 <span style={{ color: "var(--text-secondary)" }}>IVA 19%</span>
-                <span style={{ color: "var(--text-secondary)" }}>+ {toCurrencyCLP(totals.vat_value)}</span>
+                <span style={{ color: "var(--text-secondary)" }}>+ {toCurrencyCLP(effectiveTotals.vat_value)}</span>
               </div>
             )}
             <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem 0 0 0", borderTop: "2px solid rgba(255,255,255,0.15)", marginTop: "0.5rem" }}>
               <span style={{ fontWeight: "700", color: "var(--text-primary)", fontSize: "1rem" }}>Total Proyecto</span>
-              <span style={{ fontWeight: "700", color: "var(--accent-blue)", fontSize: "1.1rem" }}>{toCurrencyCLP(resultado.totals.total_project)}</span>
+              <span style={{ fontWeight: "700", color: "var(--accent-blue)", fontSize: "1.1rem" }}>{toCurrencyCLP(effectiveTotals.total_project)}</span>
             </div>
           </div>
         </div>

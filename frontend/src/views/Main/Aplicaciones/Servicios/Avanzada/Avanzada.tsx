@@ -383,6 +383,7 @@ function Avanzada() {
           <AvanzadaResumen
             resultado={formState.resultado}
             serviciosMensuales={formState.serviciosMensuales}
+            ajustes={formState.ajustes}
             onRecalculate={handleCalcular}
             showContactForm={showContactForm}
             contactForm={contactForm}
