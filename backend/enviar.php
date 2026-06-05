@@ -40,18 +40,86 @@ $apiKey = getenv('API_KEY') ?: ($_ENV['API_KEY'] ?? '');
 // ============================================================================
 
 $sqliteDbPath = __DIR__ . '/data/quotes.sqlite';
-$sqlitePdo = null;
+$dbPdo = null;
 
-function initSqliteDb($dbPath) {
-    $dir = dirname($dbPath);
+function getDbDriver() {
+    return strtolower(trim(getenv('DB_DRIVER') ?: 'sqlite'));
+}
+
+function initPersistenceDb($sqlitePath) {
+    $driver = getDbDriver();
+
+    if ($driver === 'mysql') {
+        $host = getenv('MYSQL_HOST') ?: 'localhost';
+        $port = getenv('MYSQL_PORT') ?: '3306';
+        $database = getenv('MYSQL_DATABASE') ?: '';
+        $user = getenv('MYSQL_USER') ?: '';
+        $password = getenv('MYSQL_PASSWORD') ?: '';
+        $charset = getenv('MYSQL_CHARSET') ?: 'utf8mb4';
+
+        if ($database === '' || $user === '') {
+            throw new RuntimeException('MYSQL_DATABASE y MYSQL_USER son obligatorios cuando DB_DRIVER=mysql');
+        }
+
+        $dsn = "mysql:host={$host};port={$port};dbname={$database};charset={$charset}";
+        $pdo = new PDO($dsn, $user, $password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        ]);
+
+        $pdo->exec("
+            CREATE TABLE IF NOT EXISTS quotes (
+                quote_id VARCHAR(64) PRIMARY KEY,
+                trace_id VARCHAR(80) NOT NULL UNIQUE,
+                schema_version VARCHAR(32) NOT NULL,
+                pricing_config_version VARCHAR(32) NOT NULL,
+                origin VARCHAR(32) NOT NULL,
+                project_type VARCHAR(64) NOT NULL,
+                project_state VARCHAR(32) NOT NULL,
+                currency VARCHAR(8) NOT NULL,
+                input_json LONGTEXT NOT NULL,
+                totals_json LONGTEXT NOT NULL,
+                contact_json LONGTEXT NULL,
+                meta_json LONGTEXT NOT NULL,
+                created_at VARCHAR(32) NOT NULL,
+                sync_status VARCHAR(32) NOT NULL DEFAULT 'pending',
+                sync_attempts INT NOT NULL DEFAULT 0,
+                sync_last_error TEXT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET={$charset}
+        ");
+
+        $pdo->exec("
+            CREATE TABLE IF NOT EXISTS leads (
+                lead_id VARCHAR(64) PRIMARY KEY,
+                quote_id VARCHAR(64) NULL,
+                trace_id VARCHAR(80) NOT NULL,
+                nombre VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                telefono VARCHAR(64) NULL,
+                red_social VARCHAR(64) NULL,
+                mensaje TEXT NULL,
+                servicio VARCHAR(255) NULL,
+                created_at VARCHAR(32) NOT NULL,
+                INDEX idx_leads_email (email),
+                INDEX idx_leads_quote_id (quote_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET={$charset}
+        ");
+
+        return $pdo;
+    }
+
+    if ($driver !== 'sqlite') {
+        throw new RuntimeException('DB_DRIVER inválido. Usar sqlite o mysql');
+    }
+
+    $dir = dirname($sqlitePath);
     if (!is_dir($dir)) {
         @mkdir($dir, 0755, true);
     }
-    
-    $pdo = new PDO("sqlite:$dbPath");
+
+    $pdo = new PDO("sqlite:$sqlitePath");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // Create tables if not exist
+
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS quotes (
             quote_id TEXT PRIMARY KEY,
@@ -72,15 +140,13 @@ function initSqliteDb($dbPath) {
             sync_last_error TEXT
         )
     ");
-    
-    // Schema evolution: ensure contact_json exists (Work-Unit D Patch)
+
     try {
         $pdo->exec("ALTER TABLE quotes ADD COLUMN contact_json TEXT");
     } catch (Exception $e) {
         // Column might already exist, ignore
     }
-    
-    // Create leads table for contact persistence
+
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS leads (
             lead_id TEXT PRIMARY KEY,
@@ -95,13 +161,13 @@ function initSqliteDb($dbPath) {
             created_at TEXT NOT NULL
         )
     ");
-    
+
     return $pdo;
 }
 
 function createQuoteRecord($pdo, $record) {
     if (!$pdo) {
-        throw new RuntimeException('SQLite no disponible');
+        throw new RuntimeException('Base de datos no disponible');
     }
     $stmt = $pdo->prepare("
         INSERT INTO quotes (
@@ -121,7 +187,7 @@ function createQuoteRecord($pdo, $record) {
 
 function updateSyncStatus($pdo, $quoteId, $status, $attempts, $error) {
     if (!$pdo) {
-        throw new RuntimeException('SQLite no disponible');
+        throw new RuntimeException('Base de datos no disponible');
     }
     $stmt = $pdo->prepare("
         UPDATE quotes SET sync_status = ?, sync_attempts = ?, sync_last_error = ?
@@ -132,7 +198,7 @@ function updateSyncStatus($pdo, $quoteId, $status, $attempts, $error) {
 
 function createLeadRecord($pdo, $record) {
     if (!$pdo) {
-        throw new RuntimeException('SQLite no disponible');
+        throw new RuntimeException('Base de datos no disponible');
     }
     $stmt = $pdo->prepare("
         INSERT INTO leads (lead_id, quote_id, trace_id, nombre, email, telefono, red_social, mensaje, servicio, created_at)
@@ -428,7 +494,7 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     // Extraer contacto si viene en el payload (Work-Unit D Patch)
     $contact = $payload['contact'] ?? null;
 
-    // Construir record para SQLite
+    // Construir record para persistencia
     $record = [
         ':quote_id' => $response['quote']['quote_id'],
         ':trace_id' => $traceId,
@@ -455,17 +521,17 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         ':sync_last_error' => null,
     ];
 
-    // Persistir en SQLite (non-blocking)
+    // Persistir en base de datos (non-blocking)
     try {
-        if (!$sqlitePdo) {
-            $sqlitePdo = initSqliteDb($sqliteDbPath);
+        if (!$dbPdo) {
+            $dbPdo = initPersistenceDb($sqliteDbPath);
         }
-        createQuoteRecord($sqlitePdo, $record);
+        createQuoteRecord($dbPdo, $record);
     } catch (Throwable $e) {
-        error_log("SQLite persistence error: " . $e->getMessage());
+        error_log("DB persistence error: " . $e->getMessage());
     }
 
-    // Si hay datos de contacto, persistir también como lead en SQLite
+    // Si hay datos de contacto, persistir también como lead
     if ($contact) {
         $leadRecord = [
             ':lead_id' => 'ld_' . bin2hex(random_bytes(12)),
@@ -480,12 +546,12 @@ if ($path === '/api/quotes/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             ':created_at' => gmdate('Y-m-d\TH:i:s\Z'),
         ];
         try {
-            if (!$sqlitePdo) {
-                $sqlitePdo = initSqliteDb($sqliteDbPath);
+            if (!$dbPdo) {
+                $dbPdo = initPersistenceDb($sqliteDbPath);
             }
-            createLeadRecord($sqlitePdo, $leadRecord);
+            createLeadRecord($dbPdo, $leadRecord);
         } catch (Throwable $e) {
-            error_log("SQLite lead persistence error: " . $e->getMessage());
+            error_log("DB lead persistence error: " . $e->getMessage());
         }
     }
 
@@ -518,18 +584,18 @@ if ($path === '/api/quotes/contact' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     try {
-        if (!$sqlitePdo) {
-            $sqlitePdo = initSqliteDb($sqliteDbPath);
+        if (!$dbPdo) {
+            $dbPdo = initPersistenceDb($sqliteDbPath);
         }
-        createLeadRecord($sqlitePdo, $record);
+        createLeadRecord($dbPdo, $record);
     } catch (Throwable $e) {
-        error_log("SQLite lead persistence error: " . $e->getMessage());
+        error_log("DB lead persistence error: " . $e->getMessage());
         echo json_encode([
             'lead_id' => $leadId,
             'status' => 'accepted_without_persistence',
             'meta' => [
                 'trace_id' => $traceId,
-                'warning' => 'SQLite no disponible en este entorno; lead no persistido localmente'
+                'warning' => 'Base de datos no disponible en este entorno; lead no persistido'
             ]
         ]);
         exit();
