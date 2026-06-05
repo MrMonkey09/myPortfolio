@@ -273,8 +273,6 @@ export interface ContextoData {
 export interface RequerimientosData {
   diseno: "yes" | "no";
   redaccion: "yes" | "no";
-  seo: "yes" | "no";
-  analytics: "yes" | "no";
 }
 
 export interface ModuloLinea {
