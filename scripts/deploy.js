@@ -8,8 +8,11 @@ import * as fs from "fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Cargar variables de entorno desde el root
+// Cargar variables de entorno de deploy desde root.
+// Fallback legacy: .env.deploy. Específico por entorno: .env.deploy.production/development.
+const DEPLOY_ENV = process.env.DEPLOY_ENV || process.env.NODE_ENV || "production";
 dotenv.config({ path: path.join(__dirname, "..", ".env.deploy"), override: false });
+dotenv.config({ path: path.join(__dirname, "..", `.env.deploy.${DEPLOY_ENV}`), override: true });
 
 function normalizeRemoteDir(value, fallback) {
   const raw = (value || "").trim().replace(/^['"]|['"]$/g, "");
@@ -107,11 +110,14 @@ async function deployBackend() {
       }
     }
 
-    // Subir .env (solo si existe localmente)
-    const envPath = path.join(backendPath, ".env");
+    // Subir env backend: preferir archivo específico por entorno y subirlo como .env remoto.
+    const envSpecificPath = path.join(backendPath, `.env.${DEPLOY_ENV}`);
+    const envPath = fs.existsSync(envSpecificPath)
+      ? envSpecificPath
+      : path.join(backendPath, ".env");
     if (fs.existsSync(envPath)) {
       await client.uploadFrom(envPath, `${remoteDir}/.env`);
-      console.log("  ✅ .env (credenciales)");
+      console.log(`  ✅ ${path.basename(envPath)} → .env (credenciales)`);
     } else {
       console.log(
         "  ⚠️  .env no existe localmente. Asegurate de que esté en el servidor."

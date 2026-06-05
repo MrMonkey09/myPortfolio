@@ -25,6 +25,7 @@ const backend = spawn("node", ["api/server.js"], {
   cwd: path.join(ROOT, "frontend"),
   stdio: "inherit",
   shell: true,
+  env: { ...process.env, APP_ENV: "development", NODE_ENV: "development" },
 });
 
 // Esperar un poco antes de arrancar Vite

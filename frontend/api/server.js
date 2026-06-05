@@ -13,8 +13,12 @@ const __dirname = path.dirname(__filename);
 import { initializeDatabase } from "../../backend/db/index.js";
 import { createQuoteRecord, createLeadRecord } from "../../backend/db/quotesRepository.js";
 
-dotenv.config(); // Load from frontend/.env if exists
-dotenv.config({ path: path.join(__dirname, "../../backend/.env") }); // Fallback to backend/.env
+const appEnv = process.env.APP_ENV || process.env.NODE_ENV || "development";
+
+dotenv.config(); // Legacy fallback: frontend/.env if exists
+dotenv.config({ path: path.join(__dirname, `../.env.${appEnv}`), override: true });
+dotenv.config({ path: path.join(__dirname, "../../backend/.env") }); // Legacy fallback: backend/.env
+dotenv.config({ path: path.join(__dirname, `../../backend/.env.${appEnv}`), override: true });
 
 // Inicializar DB async al cargar el módulo (con fallback a sql.js si better-sqlite3 no disponible)
 let db = null;

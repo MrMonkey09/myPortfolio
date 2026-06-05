@@ -28,6 +28,7 @@ const backend = spawn("php", [
   cwd: path.join(ROOT, "backend"),
   stdio: "inherit",
   shell: true,
+  env: { ...process.env, APP_ENV: "development" },
 });
 
 // Esperar un poco para que PHP arranque antes de Vite

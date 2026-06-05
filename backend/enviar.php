@@ -31,7 +31,9 @@ function loadEnv($path) {
     return true;
 }
 
+$appEnv = getenv('APP_ENV') ?: 'production';
 loadEnv(__DIR__ . '/.env');
+loadEnv(__DIR__ . '/.env.' . $appEnv);
 
 $apiKey = getenv('API_KEY') ?: ($_ENV['API_KEY'] ?? '');
 

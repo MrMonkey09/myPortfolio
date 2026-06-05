@@ -8,7 +8,7 @@
     "build": "cd frontend && npm run web:build",
     "lint": "cd frontend && npm run lint",
     "api:dev": "cd frontend && npm run api:dev",
-    "api:php": "php -S localhost:3001 backend/router.php",
+    "api:php": "cross-env APP_ENV=development php -S localhost:3001 backend/router.php",
     "dev:full": "node scripts/local.js",
     "dev:node": "node scripts/local-node.mjs",
     "e2e": "node scripts/run-e2e-local.mjs",

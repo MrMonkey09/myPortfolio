@@ -73,10 +73,18 @@ function parseArgs(argv) {
 function targetFiles(target, envName) {
   const files = [];
   if (target === "deploy" || target === "all") {
-    files.push({ target: "deploy", file: path.join(ROOT, ".env.deploy") });
+    files.push({
+      target: "deploy",
+      file: path.join(ROOT, `.env.deploy.${envName}`),
+      fallbackFile: path.join(ROOT, ".env.deploy"),
+    });
   }
   if (target === "backend" || target === "all") {
-    files.push({ target: "backend", file: path.join(ROOT, "backend", ".env") });
+    files.push({
+      target: "backend",
+      file: path.join(ROOT, "backend", `.env.${envName}`),
+      fallbackFile: path.join(ROOT, "backend", ".env"),
+    });
   }
   if (target === "frontend" || target === "all") {
     files.push({ target: "frontend", file: path.join(ROOT, "frontend", `.env.${envName}`) });
@@ -99,6 +107,18 @@ function parseEnv(content) {
 function readEnv(file) {
   if (!fs.existsSync(file)) return new Map();
   return parseEnv(fs.readFileSync(file, "utf8"));
+}
+
+function readEnvWithFallback(file, fallbackFile) {
+  if (fs.existsSync(file)) return readEnv(file);
+  if (fallbackFile && fs.existsSync(fallbackFile)) return readEnv(fallbackFile);
+  return new Map();
+}
+
+function effectiveReadFile({ file, fallbackFile }) {
+  if (fs.existsSync(file)) return file;
+  if (fallbackFile && fs.existsSync(fallbackFile)) return fallbackFile;
+  return file;
 }
 
 function timestamp() {
@@ -208,8 +228,8 @@ function renderFrontendEnv(values) {
   return `${lines.join("\n")}\n`;
 }
 
-async function setupBackend(rl, file, yes) {
-  const current = readEnv(file);
+async function setupBackend(rl, file, yes, fallbackFile) {
+  const current = readEnvWithFallback(file, fallbackFile);
   const values = new Map(current);
 
   values.set("API_KEY", await ask(rl, "API_KEY", values.get("API_KEY") || "", { secret: true }));
@@ -227,8 +247,8 @@ async function setupBackend(rl, file, yes) {
   await writeEnvFile(rl, file, renderBackendEnv(values), yes);
 }
 
-async function setupDeploy(rl, file, yes) {
-  const current = readEnv(file);
+async function setupDeploy(rl, file, yes, fallbackFile) {
+  const current = readEnvWithFallback(file, fallbackFile);
   const values = new Map(current);
 
   values.set("FTP_HOST", await ask(rl, "FTP_HOST", values.get("FTP_HOST") || ""));
@@ -244,8 +264,8 @@ async function setupDeploy(rl, file, yes) {
   await writeEnvFile(rl, file, renderDeployEnv(values), yes);
 }
 
-async function setupFrontend(rl, file, yes) {
-  const current = readEnv(file);
+async function setupFrontend(rl, file, yes, fallbackFile) {
+  const current = readEnvWithFallback(file, fallbackFile);
   const values = new Map(current);
   values.set("VITE_BASE_URL", await ask(rl, "VITE_BASE_URL", values.get("VITE_BASE_URL") || "http://localhost:3001", { defaultValue: "http://localhost:3001" }));
   values.set("VITE_API_KEY", await ask(rl, "VITE_API_KEY", values.get("VITE_API_KEY") || "", { secret: true }));
@@ -278,14 +298,17 @@ function requiredKeysFor(target, values) {
   return keys;
 }
 
-function showFile({ target, file }) {
-  console.log(`\n${target.toUpperCase()} — ${path.relative(ROOT, file)}`);
-  if (!fs.existsSync(file)) {
+function showFile(item) {
+  const { target, file, fallbackFile } = item;
+  const readFile = effectiveReadFile(item);
+  const fallbackNote = readFile !== file ? ` (fallback: ${path.relative(ROOT, readFile)})` : "";
+  console.log(`\n${target.toUpperCase()} — ${path.relative(ROOT, file)}${fallbackNote}`);
+  if (!fs.existsSync(readFile)) {
     console.log("  Estado: archivo no existe");
     return;
   }
 
-  const values = readEnv(file);
+  const values = readEnvWithFallback(file, fallbackFile);
   for (const key of requiredKeysFor(target, values)) {
     const value = values.get(key) || "";
     const fp = value && isSecretKey(key) ? ` ${fingerprint(value)}` : "";
@@ -293,14 +316,17 @@ function showFile({ target, file }) {
   }
 }
 
-function checkFile({ target, file }) {
-  console.log(`\n${target.toUpperCase()} — ${path.relative(ROOT, file)}`);
-  if (!fs.existsSync(file)) {
+function checkFile(item) {
+  const { target, file, fallbackFile } = item;
+  const readFile = effectiveReadFile(item);
+  const fallbackNote = readFile !== file ? ` (fallback: ${path.relative(ROOT, readFile)})` : "";
+  console.log(`\n${target.toUpperCase()} — ${path.relative(ROOT, file)}${fallbackNote}`);
+  if (!fs.existsSync(readFile)) {
     console.log("  ❌ archivo no existe");
     return false;
   }
 
-  const values = readEnv(file);
+  const values = readEnvWithFallback(file, fallbackFile);
   const missing = requiredKeysFor(target, values).filter((key) => !values.get(key));
   if (target === "backend") {
     const driver = values.get("DB_DRIVER") || "mysql";
@@ -333,9 +359,9 @@ async function main() {
   try {
     for (const item of files) {
       console.log(`\nConfigurando ${item.target}: ${path.relative(ROOT, item.file)}`);
-      if (item.target === "deploy") await setupDeploy(rl, item.file, args.yes);
-      else if (item.target === "backend") await setupBackend(rl, item.file, args.yes);
-      else await setupFrontend(rl, item.file, args.yes);
+      if (item.target === "deploy") await setupDeploy(rl, item.file, args.yes, item.fallbackFile);
+      else if (item.target === "backend") await setupBackend(rl, item.file, args.yes, item.fallbackFile);
+      else await setupFrontend(rl, item.file, args.yes, item.fallbackFile);
     }
   } finally {
     rl.close();
