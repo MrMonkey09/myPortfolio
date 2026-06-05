@@ -182,6 +182,28 @@ function Avanzada() {
     trackAdvancedStepViewed(1, 'contexto');
   }, []);
 
+  // Sincronizar requerimientos → módulos al navegar al paso 3
+  useEffect(() => {
+    if (activeStep === "modulos") {
+      if (formState.requerimientos.diseno === "yes") {
+        const disenoModule = formState.modulos.find(m => m.module_id === "diseno-ui-ux");
+        if (disenoModule && disenoModule.include === "no") {
+          updateModulos(formState.modulos.map(m =>
+            m.module_id === "diseno-ui-ux" ? { ...m, include: "yes" as const, quantity: 1 } : m
+          ));
+        }
+      }
+      if (formState.requerimientos.redaccion === "yes") {
+        const contenidoModule = formState.modulos.find(m => m.module_id === "contenido");
+        if (contenidoModule && contenidoModule.include === "no") {
+          updateModulos(formState.modulos.map(m =>
+            m.module_id === "contenido" ? { ...m, include: "yes" as const, quantity: 1 } : m
+          ));
+        }
+      }
+    }
+  }, [activeStep]);
+
   function handleNext() {
     const currentIndex = STEPS.indexOf(activeStep);
     if (currentIndex < STEPS.length - 1) {
@@ -343,6 +365,7 @@ function Avanzada() {
             onNext={handleNext}
             onBack={handleBack}
             status={activeStep === "modulos" ? "active" : "completed"}
+            requerimientos={formState.requerimientos}
           />
         )}
         {activeStep === "ajustes" && (

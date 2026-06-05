@@ -1,4 +1,4 @@
-import type { ModuloLinea } from "@/types/index.js";
+import type { ModuloLinea, RequerimientosData } from "@/types/index.js";
 import "./Estilos.css";
 import { trackAdvancedStepViewed } from "@/hooks/useAnalytics";
 import { useEffect } from "react";
@@ -9,12 +9,30 @@ interface Props {
   readonly onNext: () => void;
   readonly onBack?: () => void;
   readonly status: "active" | "completed" | "invalid" | "warning";
+  readonly requerimientos: RequerimientosData;
 }
 
-function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status }: Props) {
+function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status, requerimientos }: Props) {
   useEffect(() => {
     trackAdvancedStepViewed(3, 'modulos');
   }, []);
+
+  // Sync requerimientos → módulos al montar el componente
+  useEffect(() => {
+    let changed = false;
+    const synced = modulos.map((m) => {
+      if (m.module_id === "diseno-ui-ux" && requerimientos.diseno === "yes" && m.include === "no") {
+        changed = true;
+        return { ...m, include: "yes" as const, quantity: Math.max(m.quantity, 1), complexity: "medium" as const };
+      }
+      if (m.module_id === "contenido" && requerimientos.redaccion === "yes" && m.include === "no") {
+        changed = true;
+        return { ...m, include: "yes" as const, quantity: Math.max(m.quantity, 1), complexity: "medium" as const };
+      }
+      return m;
+    });
+    if (changed) onChange(synced);
+  }, []); // Solo al montar
 
   // Helpers to get/set logic from the underlying technical array
   const pagesQuantity = modulos.find((m) => m.module_id === "desarrollo-frontend")?.quantity || 1;
@@ -24,6 +42,7 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status }: P
   const hasDesign = modulos.find((m) => m.module_id === "diseno-ui-ux")?.include === "yes";
   const hasContent = modulos.find((m) => m.module_id === "contenido")?.include === "yes";
   const hasAnalytics = modulos.find((m) => m.module_id === "analytics")?.include === "yes";
+  const hasCatalogo = modulos.find((m) => m.module_id === "catalogo")?.include === "yes";
 
   function handlePagesChange(qty: number) {
     const validQty = Math.max(1, qty);
@@ -32,7 +51,6 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status }: P
         if (m.module_id === "desarrollo-frontend") {
           return { ...m, include: "yes", quantity: validQty, complexity: "medium" };
         }
-        // Design usually follows pages but can be separate. We'll sync it if it's already included.
         if (m.module_id === "diseno-ui-ux" && m.include === "yes") {
           return { ...m, quantity: validQty };
         }
@@ -82,11 +100,11 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status }: P
   return (
     <form className="avanzada__step-form" onSubmit={handleSubmit} noValidate>
       <header className="modulos__header">
-        <h3>Ajuste de Funcionalidades</h3>
-        <p>Hemos pre-seleccionado estas opciones basado en tus respuestas anteriores. Puedes ajustarlas aquí.</p>
+        <h3>Parrilla de Funcionalidades</h3>
+        <p>Seleccioná los módulos que necesite tu proyecto. Los que marcamos vienen de tus respuestas anteriores — podés cambiarlos.</p>
       </header>
 
-      {/* Páginas Principales */}
+      {/* Páginas Principales — ocupa todo el ancho */}
       <fieldset className={`modulos__field modulos__field--active`} disabled={status === "completed"}>
         <legend className="modulos__name">
           📄 Páginas y Secciones Informativas
@@ -105,8 +123,8 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status }: P
         </div>
       </fieldset>
 
+      {/* Fila 1: Diseño UI/UX | Copywriting */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-        {/* Diseño UI/UX */}
         <fieldset className={`modulos__field ${hasDesign ? "modulos__field--active" : ""}`} disabled={status === "completed"}>
           <legend className="modulos__name">🎨 Diseño UI/UX</legend>
           <label className={`form-option ${hasDesign ? "avanzada__step-selected" : ""}`}>
@@ -120,7 +138,6 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status }: P
           </label>
         </fieldset>
 
-        {/* Contenido */}
         <fieldset className={`modulos__field ${hasContent ? "modulos__field--active" : ""}`} disabled={status === "completed"}>
           <legend className="modulos__name">✍️ Copywriting</legend>
           <label className={`form-option ${hasContent ? "avanzada__step-selected" : ""}`}>
@@ -135,38 +152,8 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status }: P
         </fieldset>
       </div>
 
+      {/* Fila 2: SEO Pro | Analytics */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-        {/* Tienda Online */}
-        <fieldset className={`modulos__field ${hasEcommerce ? "modulos__field--active" : ""}`} disabled={status === "completed"}>
-          <legend className="modulos__name">🛒 Tienda Online</legend>
-          <label className={`form-option ${hasEcommerce ? "avanzada__step-selected" : ""}`}>
-            <input
-              type="checkbox"
-              checked={hasEcommerce}
-              onChange={(e) => handleToggleFeature("ecommerce", e.target.checked, 10)}
-              disabled={status === "completed"}
-            />
-            <span>{hasEcommerce ? "✅ Ventas" : "❌ No"}</span>
-          </label>
-        </fieldset>
-
-        {/* Backend */}
-        <fieldset className={`modulos__field ${hasBackend ? "modulos__field--active" : ""}`} disabled={status === "completed"}>
-          <legend className="modulos__name">🔐 Usuarios / Reservas</legend>
-          <label className={`form-option ${hasBackend ? "avanzada__step-selected" : ""}`}>
-            <input
-              type="checkbox"
-              checked={hasBackend}
-              onChange={(e) => handleToggleFeature("backend-api", e.target.checked, 1)}
-              disabled={status === "completed"}
-            />
-            <span>{hasBackend ? "✅ Usuarios" : "❌ No"}</span>
-          </label>
-        </fieldset>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-        {/* SEO */}
         <fieldset className={`modulos__field ${hasSeo ? "modulos__field--active" : ""}`} disabled={status === "completed"}>
           <legend className="modulos__name">🔍 SEO Pro</legend>
           <label className={`form-option ${hasSeo ? "avanzada__step-selected" : ""}`}>
@@ -176,11 +163,10 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status }: P
               onChange={(e) => handleToggleFeature("seo-busqueda", e.target.checked, 1)}
               disabled={status === "completed"}
             />
-            <span>{hasSeo ? "✅ SEO" : "❌ No"}</span>
+            <span>{hasSeo ? "✅ Incluido" : "❌ No incluido"}</span>
           </label>
         </fieldset>
 
-        {/* Analytics */}
         <fieldset className={`modulos__field ${hasAnalytics ? "modulos__field--active" : ""}`} disabled={status === "completed"}>
           <legend className="modulos__name">📊 Analytics</legend>
           <label className={`form-option ${hasAnalytics ? "avanzada__step-selected" : ""}`}>
@@ -190,9 +176,57 @@ function AvanzadaModulos({ value: modulos, onChange, onNext, onBack, status }: P
               onChange={(e) => handleToggleFeature("analytics", e.target.checked, 1)}
               disabled={status === "completed"}
             />
-            <span>{hasAnalytics ? "✅ GTM" : "❌ No"}</span>
+            <span>{hasAnalytics ? "✅ Incluido" : "❌ No incluido"}</span>
           </label>
         </fieldset>
+      </div>
+
+      {/* Fila 3: Tienda Online | Backend/API */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+        <fieldset className={`modulos__field ${hasEcommerce ? "modulos__field--active" : ""}`} disabled={status === "completed"}>
+          <legend className="modulos__name">🛒 Tienda Online</legend>
+          <label className={`form-option ${hasEcommerce ? "avanzada__step-selected" : ""}`}>
+            <input
+              type="checkbox"
+              checked={hasEcommerce}
+              onChange={(e) => handleToggleFeature("ecommerce", e.target.checked, 10)}
+              disabled={status === "completed"}
+            />
+            <span>{hasEcommerce ? "✅ Incluido" : "❌ No incluido"}</span>
+          </label>
+        </fieldset>
+
+        <fieldset className={`modulos__field ${hasBackend ? "modulos__field--active" : ""}`} disabled={status === "completed"}>
+          <legend className="modulos__name">🔐 Backend / API</legend>
+          <label className={`form-option ${hasBackend ? "avanzada__step-selected" : ""}`}>
+            <input
+              type="checkbox"
+              checked={hasBackend}
+              onChange={(e) => handleToggleFeature("backend-api", e.target.checked, 1)}
+              disabled={status === "completed"}
+            />
+            <span>{hasBackend ? "✅ Incluido" : "❌ No incluido"}</span>
+          </label>
+        </fieldset>
+      </div>
+
+      {/* Fila 4: Catálogo de Productos (solo, centrado) */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+        <fieldset className={`modulos__field ${hasCatalogo ? "modulos__field--active" : ""}`} disabled={status === "completed"}>
+          <legend className="modulos__name">📦 Catálogo de Productos</legend>
+          <label className={`form-option ${hasCatalogo ? "avanzada__step-selected" : ""}`}>
+            <input
+              type="checkbox"
+              checked={hasCatalogo}
+              onChange={(e) => handleToggleFeature("catalogo", e.target.checked, 5)}
+              disabled={status === "completed"}
+            />
+            <span>{hasCatalogo ? "✅ Incluido" : "❌ No incluido"}</span>
+          </label>
+        </fieldset>
+
+        {/* Celda vacía para mantener el grid */}
+        <div />
       </div>
 
       {/* Footer */}
