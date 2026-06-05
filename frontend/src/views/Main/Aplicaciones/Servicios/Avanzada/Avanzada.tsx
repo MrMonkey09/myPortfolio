@@ -46,8 +46,6 @@ const INITIAL_CONTEXT: ContextoData = {
 const INITIAL_REQUERIMIENTOS: RequerimientosData = {
   diseno: "no",
   redaccion: "no",
-  seo: "no",
-  analytics: "no",
 };
 
 const INITIAL_AJUSTES: AjustesComerciales = {
@@ -120,8 +118,6 @@ function Avanzada() {
         // ... (lógica de sync simplificada para el guardado final)
         if (m.module_id === "diseno-ui-ux" && formState.requerimientos.diseno === "yes") include = "yes";
         if (m.module_id === "contenido" && formState.requerimientos.redaccion === "yes") include = "yes";
-        if (m.module_id === "seo-busqueda" && formState.requerimientos.seo === "yes") include = "yes";
-        if (m.module_id === "analitica-basica" && formState.requerimientos.analytics === "yes") include = "yes";
         return { ...m, include, quantity: quantity || (include === "yes" ? 1 : 0) };
       });
 
@@ -239,14 +235,6 @@ function Avanzada() {
         if (quantity === 0) quantity = 1;
       }
       if (m.module_id === "contenido" && formState.requerimientos.redaccion === "yes") {
-        include = "yes";
-        if (quantity === 0) quantity = 1;
-      }
-      if (m.module_id === "seo-busqueda" && formState.requerimientos.seo === "yes") {
-        include = "yes";
-        if (quantity === 0) quantity = 1;
-      }
-      if (m.module_id === "analitica-basica" && formState.requerimientos.analytics === "yes") {
         include = "yes";
         if (quantity === 0) quantity = 1;
       }
