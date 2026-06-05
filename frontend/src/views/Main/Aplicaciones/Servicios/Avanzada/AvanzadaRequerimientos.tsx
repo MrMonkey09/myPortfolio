@@ -43,7 +43,7 @@ function AvanzadaRequerimientos({ value, onChange, onNext, onBack, status }: Pro
     <form className="avanzada__step-form" onSubmit={handleSubmit} noValidate>
       
       <fieldset className={`quick-quote__field`} disabled={status === "completed"}>
-        <legend>¿Tienes tu identidad visual definida? (Logo, colores, tipografías) *</legend>
+        <legend>¿Tenés tu identidad visual definida? (Logo, colores, tipografías)</legend>
         <div className="form-option-group">
           <label className={`form-option ${value.diseno === "no" ? "avanzada__step-selected" : ""}`}>
             <input
@@ -54,7 +54,7 @@ function AvanzadaRequerimientos({ value, onChange, onNext, onBack, status }: Pro
               disabled={status === "completed"}
             />
             <span className={`form-option-name ${value.diseno === "no" ? "avanzada__step-highlight" : ""}`}>
-              ✅ Sí, tengo mi manual de marca listo
+              Sí, tengo mi manual de marca listo
             </span>
           </label>
           <label className={`form-option ${value.diseno === "yes" ? "avanzada__step-selected" : ""}`}>
@@ -66,14 +66,14 @@ function AvanzadaRequerimientos({ value, onChange, onNext, onBack, status }: Pro
               disabled={status === "completed"}
             />
             <span className={`form-option-name ${value.diseno === "yes" ? "avanzada__step-highlight" : ""}`}>
-              🎨 No, necesito que diseñen mi identidad visual
+              No, necesito que diseñen mi identidad visual
             </span>
           </label>
         </div>
       </fieldset>
 
       <fieldset className={`quick-quote__field`} disabled={status === "completed"}>
-        <legend>Textos e Imágenes de la web *</legend>
+        <legend>¿Tenés los textos e imágenes de tu web?</legend>
         <div className="form-option-group">
           <label className={`form-option ${value.redaccion === "no" ? "avanzada__step-selected" : ""}`}>
             <input
@@ -84,7 +84,7 @@ function AvanzadaRequerimientos({ value, onChange, onNext, onBack, status }: Pro
               disabled={status === "completed"}
             />
             <span className={`form-option-name ${value.redaccion === "no" ? "avanzada__step-highlight" : ""}`}>
-              📸 Yo entregaré todos los textos y fotos
+              Yo entrego todos los textos y fotos
             </span>
           </label>
           <label className={`form-option ${value.redaccion === "yes" ? "avanzada__step-selected" : ""}`}>
@@ -96,44 +96,11 @@ function AvanzadaRequerimientos({ value, onChange, onNext, onBack, status }: Pro
               disabled={status === "completed"}
             />
             <span className={`form-option-name ${value.redaccion === "yes" ? "avanzada__step-highlight" : ""}`}>
-              ✍️ Necesito servicio de Redacción (Copywriting)
+              Necesito servicio de Redacción Profesional
             </span>
           </label>
         </div>
       </fieldset>
-
-      <fieldset className={`quick-quote__field`} disabled={status === "completed"}>
-        <legend>Crecimiento y Estrategia (Opcional)</legend>
-        <div className="form-option-group">
-          <label className={`form-option ${value.seo === "yes" ? "avanzada__step-selected" : ""}`}>
-            <input
-              type="checkbox"
-              name="req_seo"
-              checked={value.seo === "yes"}
-              onChange={(e) => handleChange("seo", e.target.checked ? "yes" : "no")}
-              disabled={status === "completed"}
-            />
-            <span className={`form-option-name ${value.seo === "yes" ? "avanzada__step-highlight" : ""}`}>
-              🔍 Optimización SEO (Aparecer en Google)
-            </span>
-          </label>
-          <label className={`form-option ${value.analytics === "yes" ? "avanzada__step-selected" : ""}`}>
-            <input
-              type="checkbox"
-              name="req_analytics"
-              checked={value.analytics === "yes"}
-              onChange={(e) => handleChange("analytics", e.target.checked ? "yes" : "no")}
-              disabled={status === "completed"}
-            />
-            <span className={`form-option-name ${value.analytics === "yes" ? "avanzada__step-highlight" : ""}`}>
-              📊 Google Analytics (Medir mis visitas)
-            </span>
-          </label>
-        </div>
-      </fieldset>
-
-      {/* Hidden field so `desarrollo` is always true, which makes totalAreas > 0 */}
-      <input type="hidden" name="req_desarrollo" value="true" />
 
       {/* Footer con validación */}
       <footer className="avanzada__step-footer">
