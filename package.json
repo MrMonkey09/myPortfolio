@@ -12,6 +12,9 @@
     "dev:full": "node scripts/local.js",
     "dev:node": "node scripts/local-node.mjs",
     "e2e": "node scripts/run-e2e-local.mjs",
+    "env:setup": "node scripts/env-manager.mjs setup",
+    "env:check": "node scripts/env-manager.mjs check",
+    "env:show": "node scripts/env-manager.mjs show",
     "test:api": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest frontend/api --forceExit",
     "install:all": "npm install && cd frontend && npm install"
   },
